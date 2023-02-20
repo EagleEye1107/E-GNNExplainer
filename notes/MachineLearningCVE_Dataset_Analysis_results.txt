@@ -1,0 +1,37 @@
+Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv contains -> 78 attribute and labels are {'DDoS', 'BENIGN'}
+Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv contains -> 78 attribute and labels are {'PortScan', 'BENIGN'}
+Friday-WorkingHours-Morning.pcap_ISCX.csv contains -> 78 attribute and labels are {'BENIGN', 'Bot'}
+Monday-WorkingHours.pcap_ISCX.csv contains -> 78 attribute and labels are {'BENIGN'}
+Thursday-WorkingHours-Afternoon-Infilteration.pcap_ISCX.csv contains -> 78 attribute and labels are {'Infiltration', 'BENIGN'}
+Thursday-WorkingHours-Morning-WebAttacks.pcap_ISCX.csv contains -> 78 attribute and labels are {'Web Attack � XSS', 'BENIGN', 'Web Attack � Sql Injection', 'Web Attack � Brute Force'}
+Tuesday-WorkingHours.pcap_ISCX.csv contains -> 78 attribute and labels are {'BENIGN', 'SSH-Patator', 'FTP-Patator'}
+Wednesday-workingHours.pcap_ISCX.csv contains -> 78 attribute and labels are {'DoS Hulk', 'DoS GoldenEye', 'DoS Slowhttptest', 'BENIGN', 'DoS slowloris', 'Heartbleed'}
+
+In the CIC-IDS-2017 We have :
+            -> 78 attribute, all similar in all the dataset files
+            -> Attributes are : [' Destination Port' ' Flow Duration' ' Total Fwd Packets'
+ ' Total Backward Packets' 'Total Length of Fwd Packets'
+ ' Total Length of Bwd Packets' ' Fwd Packet Length Max'
+ ' Fwd Packet Length Min' ' Fwd Packet Length Mean'
+ ' Fwd Packet Length Std' 'Bwd Packet Length Max' ' Bwd Packet Length Min'
+ ' Bwd Packet Length Mean' ' Bwd Packet Length Std' 'Flow Bytes/s'
+ ' Flow Packets/s' ' Flow IAT Mean' ' Flow IAT Std' ' Flow IAT Max'
+ ' Flow IAT Min' 'Fwd IAT Total' ' Fwd IAT Mean' ' Fwd IAT Std'
+ ' Fwd IAT Max' ' Fwd IAT Min' 'Bwd IAT Total' ' Bwd IAT Mean'
+ ' Bwd IAT Std' ' Bwd IAT Max' ' Bwd IAT Min' 'Fwd PSH Flags'
+ ' Bwd PSH Flags' ' Fwd URG Flags' ' Bwd URG Flags' ' Fwd Header Length'
+ ' Bwd Header Length' 'Fwd Packets/s' ' Bwd Packets/s'
+ ' Min Packet Length' ' Max Packet Length' ' Packet Length Mean'
+ ' Packet Length Std' ' Packet Length Variance' 'FIN Flag Count'
+ ' SYN Flag Count' ' RST Flag Count' ' PSH Flag Count' ' ACK Flag Count'
+ ' URG Flag Count' ' CWE Flag Count' ' ECE Flag Count' ' Down/Up Ratio'
+ ' Average Packet Size' ' Avg Fwd Segment Size' ' Avg Bwd Segment Size'
+ ' Fwd Header Length.1' 'Fwd Avg Bytes/Bulk' ' Fwd Avg Packets/Bulk'
+ ' Fwd Avg Bulk Rate' ' Bwd Avg Bytes/Bulk' ' Bwd Avg Packets/Bulk'
+ 'Bwd Avg Bulk Rate' 'Subflow Fwd Packets' ' Subflow Fwd Bytes'
+ ' Subflow Bwd Packets' ' Subflow Bwd Bytes' 'Init_Win_bytes_forward'
+ ' Init_Win_bytes_backward' ' act_data_pkt_fwd' ' min_seg_size_forward'
+ 'Active Mean' ' Active Std' ' Active Max' ' Active Min' 'Idle Mean'
+ ' Idle Std' ' Idle Max' ' Idle Min']
+            -> 15 labels
+            -> Labels are : {'DoS Hulk', 'DoS GoldenEye', 'BENIGN', 'DoS Slowhttptest', 'Bot', 'Infiltration', 'Web Attack � XSS', 'FTP-Patator', 'Web Attack � Sql Injection', 'DoS slowloris', 'Heartbleed', 'DDoS', 'Web Attack � Brute Force', 'PortScan', 'SSH-Patator'}

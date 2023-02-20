@@ -1,0 +1,38 @@
+After doing : 
+    1. 'Flow Bytes/s',' Flow Packets/s' deletion
+    2. Source IP : Source Port // Destination IP : Destination Port concatenations
+    3. 'Flow ID',' Source Port',' Destination Port',' Timestamp' deletion
+    4. Transforming labels to binary classes {0, 1}
+    5. Spliting data (test_size = 0.3)
+    6. Categorical Target encoding (or simply the mean encoding) on all digital data
+    7. Standardization on all the digital data
+    8. Create the h attribute that will contain the content of our packets
+    9. Deletion of packet content from instances since it is stored in the h attribute
+
+The prepared dataset will then be in the form below :
+
+                  Source IP      Destination IP                                                  h  label
+212399   192.168.10.3:61909     192.168.10.1:53  [-0.27666483895841804, -0.4870152757233604, -0...      0
+27094      172.16.0.1:51198    192.168.10.50:80  [-0.28223656101517247, -0.21485614153494653, -...      1
+179505     172.16.0.1:64151    192.168.10.50:80  [-0.2704740366731353, 2.711548789820244, 0.113...      1
+7026     192.168.10.3:61895     192.168.10.1:53  [-0.27573621861562564, -0.4870152757233604, -0...      0
+71456      172.16.0.1:22390    192.168.10.50:80  [-0.28223656101517247, -0.23148427269156427, -...      1
+...                     ...                 ...                                                ...    ...
+31493   192.168.10.15:58764   68.67.178.196:443  [-0.28595104238634206, -0.4870094169673988, -0...      0
+61258      192.168.10.50:80    172.16.0.1:56436  [0.13595213335567383, -0.4870152757233604, 0.0...      0
+46665      172.16.0.1:54913    192.168.10.50:80  [-0.27418851804430494, -0.2927324675693687, 0....      1
+223999  192.168.10.25:54164  172.217.12.131:443  [-0.06091537931631597, 0.48205462928291964, 0....      0
+121198     192.168.10.50:80    172.16.0.1:50981  [-0.28780828307192685, -0.4870152757233604, 0....      0
+
+----------------------------------------------------------------------------------------------------------
+
+Now that our dataset is prepared, we can create the graph representation, we will end up with a graph G = (V,E)
+
+Where each node form V have : 
+    - IP:Port
+    - Une sorte de buffer [1. 1. 1. ...] sous forme de liste d'une longueur = sizeh = nb_packet_content, qui peut signifie ce que chaque noeud peut envoyer ?
+
+Where each edge from E have :
+    - list = packet content
+    - Label {0} or {1}
+    - train_mask = une liste de type bool
