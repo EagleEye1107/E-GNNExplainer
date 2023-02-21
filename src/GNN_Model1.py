@@ -310,7 +310,7 @@ for i in range(file_count):
     pr = True
     # True if you want to print the embedding vectors
     # the name of the file where the vectors are printed
-    filename = './models/M1_weights.txt'
+    filename = './models/M1_All_weights.txt'
 
 
     # Model architecture
