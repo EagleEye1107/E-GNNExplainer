@@ -1,6 +1,7 @@
 import csv
 import dgl.nn as dglnn
 from dgl import from_networkx
+import sklearn
 import torch.nn as nn
 import torch as th
 import torch.nn.functional as F
@@ -331,6 +332,13 @@ c[1][0]= c[1][0]/2
 c[0][1]= c[0][1]/2
 c[1][1]= c[1][1]/2
 print(c)
+
+
+
+print("Accuracy : ", sklearn.metrics.accuracy_score(edge_label1, pred1))
+print("Precision : ", sklearn.metrics.precision_score(edge_label1, pred1, labels=[0,1]))
+print("Recall : ", sklearn.metrics.recall_score(edge_label1, pred1, labels=[0,1]))
+print("f1_score", sklearn.metrics.f1_score(edge_label1, pred1, labels=[0,1]))
 
 
 # -------------------------------------------- ---------------------------------------- -----------------------------------------------------
