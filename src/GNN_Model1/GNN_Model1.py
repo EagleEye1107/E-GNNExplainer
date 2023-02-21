@@ -358,21 +358,23 @@ for i in range(2):
 print(X_test)
 
 # ------------------------------------------------ Test ---------------------------------------------------------------------
-X1_test = encoder1.transform(X1_test)
-X1_test[cols_to_norm1] = scaler1.transform(X1_test[cols_to_norm1])
-X1_test['h'] = X1_test[ cols_to_norm1 ].values.tolist()
+X_test = encoder1.transform(X_test)
+X_test[cols_to_norm1] = scaler1.transform(X_test[cols_to_norm1])
+X_test['h'] = X_test[ cols_to_norm1 ].values.tolist()
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # Before training the data :
 # We need to delete all the attributes (cols_to_norm1) to have the {Source IP, Destination IP, label, h} representation
-X1_test.drop(columns = cols_to_norm1, inplace = True)
+X_test.drop(columns = cols_to_norm1, inplace = True)
 
 # Then we need to Swap {label, h} Columns to have the {Source IP, Destination IP, h, label} representation
 columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
-X1_test=X1_test.reindex(columns=columns_titles)
+X_test=X_test.reindex(columns=columns_titles)
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-G1_test = nx.from_pandas_edgelist(X1_test, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
+print(X_test)
+
+G1_test = nx.from_pandas_edgelist(X_test, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
 G1_test = G1_test.to_directed()
 G1_test = from_networkx(G1_test,edge_attrs=['h','label'] )
 actual1 = G1_test.edata.pop('label')
@@ -384,7 +386,6 @@ G1_test = G1_test.to('cuda:0')
 
 node_features_test1 = G1_test.ndata['feature']
 edge_features_test1 = G1_test.edata['h']
-
 
 # to print
 pr = True
@@ -413,8 +414,8 @@ print(c)
 #                      target_names = np.unique(actual1),
 #                      title        = "Confusion Matrix")
 
-class_labels = ["Normal", "Attack"] 
-df_cm = pd.DataFrame(c, index = class_labels, columns = class_labels)
-plt.figure(figsize = (10,7))
-sns.heatmap(df_cm, cmap="Greens", annot=True, fmt = 'g')
-plt.show()
+# class_labels = ["Normal", "Attack"] 
+# df_cm = pd.DataFrame(c, index = class_labels, columns = class_labels)
+# plt.figure(figsize = (10,7))
+# sns.heatmap(df_cm, cmap="Greens", annot=True, fmt = 'g')
+# plt.show()
