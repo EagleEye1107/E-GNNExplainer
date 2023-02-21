@@ -228,7 +228,7 @@ X1_train[cols_to_norm1] = scaler1.fit_transform(X1_train[cols_to_norm1])
 
 ## Create the h attribute that will contain the content of our flows
 X1_train['h'] = X1_train[ cols_to_norm1 ].values.tolist()
-print(X1_train.columns)
+# print(X1_train)
 
 # size of the list containig the content of our flows
 sizeh = len(cols_to_norm1)
@@ -237,23 +237,23 @@ sizeh = len(cols_to_norm1)
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # Before training the data :
 # We need to delete all the attributes (cols_to_norm1) to have the {Source IP, Destination IP, label, h} representation
-# X1_train.drop(columns = cols_to_norm1, inplace = True)
+X1_train.drop(columns = cols_to_norm1, inplace = True)
 
 # Then we need to Swap {label, h} Columns to have the {Source IP, Destination IP, h, label} representation
-# columns_titles = ['Source IP', 'Destination IP', 'h', 'label']
-# X1_train=X1_train.reindex(columns=columns_titles)
+columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
+X1_train=X1_train.reindex(columns=columns_titles)
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 
 
 # ------------------------------------------- Testing with a simple example -----------------------------------------------------------------
-sizeh = 3
-nbclasses =  2
+# sizeh = 3
+# nbclasses =  2
 
-columns=[" Source IP", " Destination IP", 'h','label']
-data = [[1,2,[1,2,3],0], [2,3,[1,20,3],1],[1,3,[2,2,3],0],[3,4,[3,2,3],0],[1,2,[1,2,4],0]]
-X1_train = pd.DataFrame(data, columns=columns)
+# columns=[" Source IP", " Destination IP", 'h','label']
+# data = [[1,2,[1,2,3],0], [2,3,[1,20,3],1],[1,3,[2,2,3],0],[3,4,[3,2,3],0],[1,2,[1,2,4],0]]
+# X1_train = pd.DataFrame(data, columns=columns)
 # ------------------------------------------- ----------------------------- -----------------------------------------------------------------
 
 
@@ -297,12 +297,11 @@ edge_features1 = G1.edata['h']
 edge_label1 = G1.edata['label']
 train_mask1 = G1.edata['train_mask']
 
-
 # to print
 pr = True
 # True if you want to print the embedding vectors
 # the name of the file where the vectors are printed
-filename = './models/Testing_M_weights.txt'
+filename = './models/M1_weights.txt'
 
 
 # Model architecture
@@ -312,7 +311,7 @@ opt = th.optim.Adam(model1.parameters())
 
 
 
-for epoch in range(1,10):
+for epoch in range(1,1000):
     pred = model1(G1, node_features1, edge_features1).cuda()
     loss = criterion1(pred[train_mask1], edge_label1[train_mask1])
     opt.zero_grad()
