@@ -19,7 +19,6 @@ from sklearn.decomposition import PCA
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.metrics import plot_confusion_matrix
 from sklearn.metrics import confusion_matrix
 
 import os
