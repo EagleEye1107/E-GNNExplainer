@@ -175,7 +175,7 @@ file_count = len(files)
 
 X_test = pd.DataFrame()
 
-for i in range(2):
+for i in range(file_count):
     data1 = pd.read_csv(f'{path}{files[i]}', encoding="ISO-8859–1", dtype = str)
 
     print(f'{files[i]} ++++++++++++++++++++++++++++++++++++++++++++++')
