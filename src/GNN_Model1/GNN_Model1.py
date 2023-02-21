@@ -19,7 +19,7 @@ from sklearn.decomposition import PCA
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
-# from sklearn.metrics import plot_confusion_matrix
+from sklearn.metrics import plot_confusion_matrix
 from sklearn.metrics import confusion_matrix
 
 import os
@@ -312,7 +312,7 @@ for i in range(file_count):
     pr = True
     # True if you want to print the embedding vectors
     # the name of the file where the vectors are printed
-    filename = './models/M1_weights.txt'
+    filename = './models/M1_Final_weights.txt'
 
 
     # Model architecture
@@ -355,11 +355,19 @@ for i in range(file_count):
 
 
 # ------------------------------------------------ Test ---------------------------------------------------------------------
-'''
-
 X1_test = encoder1.transform(X1_test)
 X1_test[cols_to_norm1] = scaler1.transform(X1_test[cols_to_norm1])
 X1_test['h'] = X1_test[ cols_to_norm1 ].values.tolist()
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Before training the data :
+# We need to delete all the attributes (cols_to_norm1) to have the {Source IP, Destination IP, label, h} representation
+X1_test.drop(columns = cols_to_norm1, inplace = True)
+
+# Then we need to Swap {label, h} Columns to have the {Source IP, Destination IP, h, label} representation
+columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
+X1_test=X1_test.reindex(columns=columns_titles)
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 G1_test = nx.from_pandas_edgelist(X1_test, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
 G1_test = G1_test.to_directed()
@@ -379,9 +387,7 @@ edge_features_test1 = G1_test.edata['h']
 pr = True
 # True if you want to print the embedding vectors
 # the name of the file where the vectors are printed
-filename = 'M1_weights.txt'
-
-
+filename = 'M1_Final_weights.txt'
 
 test_pred1 = model1(G1_test, node_features_test1, edge_features_test1).cuda()
 
@@ -391,15 +397,15 @@ test_pred1 = th.Tensor.cpu(test_pred1).detach().numpy()
 
 actual11 = ["Normal" if i == 0 else "Attack" for i in actual1]
 test_pred11 = ["Normal" if i == 0 else "Attack" for i in test_pred1]
+
 c = confusion_matrix(actual11, test_pred11)
 c[0][0]= c[0][0]/2
 c[1][0]= c[1][0]/2
 c[0][1]= c[0][1]/2
 c[1][1]= c[1][1]/2
 print(c)
-#plot_confusion_matrix(cm = c, #confusion_matrix(actual11, test_pred11), 
-#                      normalize    = False,
-#                      target_names = np.unique(actual1),
-#                      title        = "Confusion Matrix")
 
-'''
+plot_confusion_matrix(cm = c, #confusion_matrix(actual11, test_pred11), 
+                     normalize    = False,
+                     target_names = np.unique(actual1),
+                     title        = "Confusion Matrix")
