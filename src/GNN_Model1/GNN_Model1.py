@@ -174,8 +174,9 @@ nbclasses =  2
 path, dirs, files = next(os.walk("./input/Dataset/TrafficLabelling/"))
 file_count = len(files)
 
+X_test = pd.DataFrame()
 
-for i in range(file_count):
+for i in range(2):
     data1 = pd.read_csv(f'{path}{files[i]}', encoding="ISO-8859–1", dtype = str)
 
     print(f'{files[i]} ++++++++++++++++++++++++++++++++++++++++++++++')
@@ -222,6 +223,8 @@ for i in range(file_count):
     # -------------------- ????????????????????????????????????????? --------------------
     # X will contain the label column due to the concatination made earlier !!
     X1_train, X1_test, y1_train, y1_test = train_test_split(data1, label1, test_size=0.3, random_state=123, stratify= label1)
+
+    X_test = pd.concat([X_test, X1_test], ignore_index = True)
 
     # for non numerical attributes (categorical data)
     # Since we have a binary classification, the category values willl be replaced with the posterior probability (p(target = Ti | category = Cj))
@@ -353,6 +356,7 @@ for i in range(file_count):
 
 # ---------------------------------------------------------------------------------------------------------------------------
 
+print(X_test)
 
 # ------------------------------------------------ Test ---------------------------------------------------------------------
 X1_test = encoder1.transform(X1_test)
@@ -405,7 +409,13 @@ c[0][1]= c[0][1]/2
 c[1][1]= c[1][1]/2
 print(c)
 
-plot_confusion_matrix(cm = c, #confusion_matrix(actual11, test_pred11), 
-                     normalize    = False,
-                     target_names = np.unique(actual1),
-                     title        = "Confusion Matrix")
+# plot_confusion_matrix(cm = c, #confusion_matrix(actual11, test_pred11), 
+#                      normalize    = False,
+#                      target_names = np.unique(actual1),
+#                      title        = "Confusion Matrix")
+
+class_labels = ["Normal", "Attack"] 
+df_cm = pd.DataFrame(c, index = class_labels, columns = class_labels)
+plt.figure(figsize = (10,7))
+sns.heatmap(df_cm, cmap="Greens", annot=True, fmt = 'g')
+plt.show()
