@@ -1,5 +1,5 @@
 import csv
-import dgl.nn as dglnn
+# import dgl.nn as dglnn
 from dgl import from_networkx
 import sklearn
 import torch.nn as nn
@@ -8,10 +8,10 @@ import torch.nn.functional as F
 import dgl.function as fn
 import networkx as nx
 import pandas as pd
-import socket
-import struct
+# import socket
+# import struct
 import random
-from sklearn.preprocessing import LabelEncoder
+# from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 import category_encoders as ce
@@ -391,7 +391,7 @@ edge_features_test1 = G1_test.edata['h']
 pr = True
 # True if you want to print the embedding vectors
 # the name of the file where the vectors are printed
-filename = 'M1_Final_weights.txt'
+filename = 'M1_Final_Test_weights.txt'
 
 test_pred1 = model1(G1_test, node_features_test1, edge_features_test1).cuda()
 
