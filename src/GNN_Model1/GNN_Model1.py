@@ -179,7 +179,7 @@ for i in range(file_count):
     data1 = pd.read_csv(f'{path}{files[i]}', encoding="ISO-8859–1", dtype = str)
 
     print(f'{files[i]} ++++++++++++++++++++++++++++++++++++++++++++++')
-
+    print("nb instances : ", len(data1.values))
     # Delete two columns (U and V in the excel)
     cols = list(set(list(data1.columns )) - set(list(['Flow Bytes/s',' Flow Packets/s'])) )
     data1 = data1[cols]
@@ -338,6 +338,7 @@ for i in range(file_count):
 
     print('confusion matrix :')
     c = confusion_matrix(edge_label1, pred1)
+    print(c)
     c[0][0]= c[0][0]/2
     c[1][0]= c[1][0]/2
     c[0][1]= c[0][1]/2
@@ -393,6 +394,8 @@ pr = True
 # the name of the file where the vectors are printed
 filename = 'M1_Final_weights.txt'
 
+print("nb instances : ", len(X_test.values))
+
 test_pred1 = model1(G1_test, node_features_test1, edge_features_test1).cuda()
 
 
@@ -402,12 +405,20 @@ test_pred1 = th.Tensor.cpu(test_pred1).detach().numpy()
 actual11 = ["Normal" if i == 0 else "Attack" for i in actual1]
 test_pred11 = ["Normal" if i == 0 else "Attack" for i in test_pred1]
 
+print("Confusion matrix : ")
 c = confusion_matrix(actual11, test_pred11)
+print(c)
 c[0][0]= c[0][0]/2
 c[1][0]= c[1][0]/2
 c[0][1]= c[0][1]/2
 c[1][1]= c[1][1]/2
 print(c)
+
+print('Metrics : ')
+print("Accuracy : ", sklearn.metrics.accuracy_score(actual11, test_pred11))
+print("Precision : ", sklearn.metrics.precision_score(actual11, test_pred11, labels = ['Attack', 'Normal']))
+print("Recall : ", sklearn.metrics.recall_score(actual11, test_pred11, labels = ['Attack', 'Normal']))
+print("f1_score : ", sklearn.metrics.f1_score(actual11, test_pred11, labels = ['Attack', 'Normal']))
 
 # plot_confusion_matrix(cm = c, #confusion_matrix(actual11, test_pred11), 
 #                      normalize    = False,
