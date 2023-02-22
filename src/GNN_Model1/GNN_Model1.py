@@ -128,6 +128,7 @@ class SAGE(nn.Module):
                 nfeats = self.dropout(nfeats)
             nfeats = layer(g, nfeats, efeats)
         return nfeats.sum(1)
+        # Return a list of node features [[node1_feature1, node1_feature2, ...], [node2_feature1, node2_feature2, ...], ...]
     
 class MLPPredictor(nn.Module):
     def __init__(self, in_features, out_classes):
@@ -159,6 +160,7 @@ class Model(nn.Module):
         self.pred = MLPPredictor(ndim_out, nbclasses)
     def forward(self, g, nfeats, efeats):
         h = self.gnn(g, nfeats, efeats)
+        # h = list of node features [[node1_feature1, node1_feature2, ...], [node2_feature1, node2_feature2, ...], ...]
         return self.pred(g, h)
 
 # -------------------------------------------------------------------------------------------------------------------------------
