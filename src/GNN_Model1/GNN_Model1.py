@@ -103,9 +103,9 @@ class SAGELayer(nn.Module):
             g = g_dgl
             g.ndata['h'] = nfeats
             g.edata['h'] = efeats
-            # Eq4
+            # Line 4 of algorithm 1
             g.update_all(self.message_func, fn.mean('m', 'h_neigh'))
-            # Eq5                   
+            # Line 5 of algorithm 1
             g.ndata['h'] = F.relu(self.W_apply(th.cat([g.ndata['h'], g.ndata['h_neigh']], 2)))
             return g.ndata['h']
 
