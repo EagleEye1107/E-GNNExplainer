@@ -394,7 +394,7 @@ edge_features_test1 = G1_test.edata['h']
 pr = True
 # True if you want to print the embedding vectors
 # the name of the file where the vectors are printed
-filename = 'M1_Final_Test_weights.txt'
+filename = './models/M1_Final_weights.txt'
 
 print("nb instances : ", len(X_test.values))
 
