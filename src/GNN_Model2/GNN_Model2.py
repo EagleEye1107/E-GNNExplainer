@@ -104,63 +104,72 @@ X1_train
 
 
 
-## dataset
-# nmber of classes
+# --------------------------------------------------- MAIN -----------------------------------------------------------
+
+#Data
 nbclasses =  2
-# True if you want to print the embedding vectors
+data1 = pd.read_csv('./input/Dataset/TrafficLabelling/Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv')
 
-#data1 = pd.read_csv(p + 'Wednesday-workingHours.pcap_ISCX.csv')
-#data1 = pd.read_csv('Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv')
-data1 = pd.read_csv('Thursday-WorkingHours-Afternoon-Infilteration.pcap_ISCX.csv')
-###data1 = pd.read_csv('Thursday-WorkingHours-Morning-WebAttacks.pcap_ISCX.csv')
-#data1 = pd.read_csv('Monday-WorkingHours.pcap_ISCX.csv') -> benin
-#data1 = pd.read_csv('Friday-WorkingHours-Morning.pcap_ISCX.csv')
-#data1 = pd.read_csv('Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv')
-
+# Delete two columns (U and V in the excel)
 cols = list(set(list(data1.columns )) - set(list(['Flow Bytes/s',' Flow Packets/s'])) )
 data1 = data1[cols]
 
-##mise en forme des noeuds
+# Mise en forme des noeuds
 data1[' Source IP'] = data1[' Source IP'].apply(str)
 data1[' Source Port'] = data1[' Source Port'].apply(str)
 data1[' Destination IP'] = data1[' Destination IP'].apply(str)
 data1[' Destination Port'] = data1[' Destination Port'].apply(str)
 data1[' Source IP'] = data1[' Source IP'] + ':' + data1[' Source Port']
 data1[' Destination IP'] = data1[' Destination IP'] + ':' + data1[' Destination Port']
-data1.drop(columns=['Flow ID',' Source Port',' Destination Port',' Timestamp'],inplace=True)
 
-# labels
+data1.drop(columns=['Flow ID',' Source Port',' Destination Port',' Timestamp'], inplace=True)
+
+# labels and there count
 print(data1[' Label'].value_counts())
+
+# -------------------- ????????????????????????????????????????? --------------------
+# simply do : nom = list(data1[' Label'].unique())
 nom = []
 nom = nom + [data1[' Label'].unique()[0]]
-for i in range(1,len(data1[' Label'].unique())):
+for i in range(1, len(data1[' Label'].unique())):
     nom = nom + [data1[' Label'].unique()[i]]
+
+# Naming the two classes BENIGN {0} / Any Intrusion {1}
 data1[' Label'].replace(nom[0], 0,inplace = True)
 for i in range(1,len(data1[' Label'].unique())):
     data1[' Label'].replace(nom[i], 1,inplace = True)
+
 data1.rename(columns={" Label": "label"},inplace = True)
 label1 = data1.label
 data1.drop(columns=['label'],inplace = True)
 
+# ******** At this step data1 contains only the data without label column
+# ******** The label column is stored in the label variale 
 
-#split train and co
-data1 =  pd.concat([data1, label1], axis=1)
+# split train and test
+data1 =  pd.concat([data1, label1], axis=1) # ??????? WHY ?
 
-X1_train, X1_test, y1_train, y1_test = train_test_split(
-     data1, label1, test_size=0.3, random_state=123, stratify= label1)
+# -------------------- ????????????????????????????????????????? --------------------
+# X will contain the label column due to the concatination made earlier !!
+X1_train, X1_test, y1_train, y1_test = train_test_split(data1, label1, test_size=0.3, random_state=123, stratify= label1)
 
-# for non numerical attributes
+# for non numerical attributes (categorical data)
+# Since we have a binary classification, the category values willl be replaced with the posterior probability (p(target = Ti | category = Cj))
+# TargetEncoding is also called MeanEncoding, cuz it simply replace each value with (target_i_count_on_category_j) / (total_occurences_of_category_j)
 encoder1 = ce.TargetEncoder(cols=[' Protocol',  'Fwd PSH Flags', ' Fwd URG Flags', ' Bwd PSH Flags', ' Bwd URG Flags'])
 encoder1.fit(X1_train, y1_train)
 X1_train = encoder1.transform(X1_train)
 
-# scaler
+# scaler (normalization)
 scaler1 = StandardScaler()
-cols_to_norm1 = list(set(list(X1_train.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])) )
 
+# Manipulate flow content (all columns except : label, Source IP & Destination IP)
+cols_to_norm1 = list(set(list(X1_train.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])) )
 X1_train[cols_to_norm1] = scaler1.fit_transform(X1_train[cols_to_norm1])
 
 X1_train['h'] = X1_train[ cols_to_norm1 ].values.tolist()
+
+
 ##test
 X1_test = encoder1.transform(X1_test)
 X1_test[cols_to_norm1] = scaler1.transform(X1_test[cols_to_norm1])

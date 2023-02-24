@@ -228,7 +228,6 @@ X1_train[cols_to_norm1] = scaler1.fit_transform(X1_train[cols_to_norm1])
 
 ## Create the h attribute that will contain the content of our flows
 X1_train['h'] = X1_train[ cols_to_norm1 ].values.tolist()
-print(X1_train.columns)
 
 # size of the list containig the content of our flows
 sizeh = len(cols_to_norm1)
