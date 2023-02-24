@@ -340,7 +340,7 @@ for i in range(file_count):
         opt.step()
         if epoch % 100 == 0:
             print('Training acc:', compute_accuracy(pred[train_mask1], edge_label1[train_mask1]), loss)
-   
+
     pred1 = model1(G1, node_features1, edge_features1).cuda()
     pred1 = pred1.argmax(1)
     pred1 = th.Tensor.cpu(pred1).detach().numpy()
@@ -407,11 +407,11 @@ for i in range(file_count):
     test_pred1 = test_pred1.argmax(1)
     test_pred1 = th.Tensor.cpu(test_pred1).detach().numpy()
 
-    actual11 = ["Normal" if i == 0 else "Attack" for i in actual1]
-    test_pred11 = ["Normal" if i == 0 else "Attack" for i in test_pred1]
+    # actual11 = ["Normal" if i == 0 else "Attack" for i in actual1]
+    # test_pred11 = ["Normal" if i == 0 else "Attack" for i in test_pred1]
 
     print("Confusion matrix : ")
-    c = confusion_matrix(actual11, test_pred11)
+    c = confusion_matrix(actual1, test_pred1)
     print(c)
     c[0][0]= c[0][0]/2
     c[1][0]= c[1][0]/2
@@ -420,10 +420,10 @@ for i in range(file_count):
     print(c)
 
     print('Metrics : ')
-    print("Accuracy : ", sklearn.metrics.accuracy_score(actual11, test_pred11))
-    # print("Precision : ", sklearn.metrics.precision_score(actual11, test_pred11, labels = ['Attack', 'Normal']))
-    # print("Recall : ", sklearn.metrics.recall_score(actual11, test_pred11, labels = ['Attack', 'Normal']))
-    # print("f1_score : ", sklearn.metrics.f1_score(actual11, test_pred11, labels = ['Attack', 'Normal']))
+    print("Accuracy : ", sklearn.metrics.accuracy_score(actual1, test_pred1))
+    print("Precision : ", sklearn.metrics.precision_score(actual1, test_pred1, labels = [0,1]))
+    print("Recall : ", sklearn.metrics.recall_score(actual1, test_pred1, labels = [0,1]))
+    print("f1_score : ", sklearn.metrics.f1_score(actual1, test_pred1, labels = [0,1]))
 
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
