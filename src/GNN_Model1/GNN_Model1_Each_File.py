@@ -324,7 +324,7 @@ for i in range(file_count):
     pr = True
     # True if you want to print the embedding vectors
     # the name of the file where the vectors are printed
-    filename = './models/M1_Final_weights.txt'
+    filename = './models/M1_Final_Each_File_weights.txt'
 
 
     # Model architecture
@@ -364,23 +364,23 @@ for i in range(file_count):
 
     # ------------------------------------------------ Test ---------------------------------------------------------------------
     print("++++++++++++++++++++++++++++ Test ++++++++++++++++++++++++++++++++")
-    X_test = encoder1.transform(X_test)
-    X_test[cols_to_norm1] = scaler1.transform(X_test[cols_to_norm1])
-    X_test['h'] = X_test[ cols_to_norm1 ].values.tolist()
+    X1_test = encoder1.transform(X1_test)
+    X1_test[cols_to_norm1] = scaler1.transform(X1_test[cols_to_norm1])
+    X1_test['h'] = X1_test[ cols_to_norm1 ].values.tolist()
 
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     # Before training the data :
     # We need to delete all the attributes (cols_to_norm1) to have the {Source IP, Destination IP, label, h} representation
-    X_test.drop(columns = cols_to_norm1, inplace = True)
+    X1_test.drop(columns = cols_to_norm1, inplace = True)
 
     # Then we need to Swap {label, h} Columns to have the {Source IP, Destination IP, h, label} representation
     columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
-    X_test=X_test.reindex(columns=columns_titles)
+    X1_test=X1_test.reindex(columns=columns_titles)
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-    print(X_test)
+    print(X1_test)
 
-    G1_test = nx.from_pandas_edgelist(X_test, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
+    G1_test = nx.from_pandas_edgelist(X1_test, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
     G1_test = G1_test.to_directed()
     G1_test = from_networkx(G1_test,edge_attrs=['h','label'] )
     actual1 = G1_test.edata.pop('label')
@@ -397,9 +397,9 @@ for i in range(file_count):
     pr = True
     # True if you want to print the embedding vectors
     # the name of the file where the vectors are printed
-    filename = './models/M1_Final_weights.txt'
+    filename = './models/M1_Final_Each_File_weights.txt'
 
-    print("nb instances : ", len(X_test.values))
+    print("nb instances : ", len(X1_test.values))
 
     test_pred1 = model1(G1_test, node_features_test1, edge_features_test1).cuda()
 
