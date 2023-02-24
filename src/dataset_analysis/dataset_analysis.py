@@ -21,6 +21,8 @@ for i in range(file_count):
     label_column = set(df_values[:, -1])
     labels += label_column
 
+    print(df[" Label"].value_counts())
+
     # Attributes count
     att_count = len(df_values[0, :]) - 1
     att_count_glb.append(att_count)

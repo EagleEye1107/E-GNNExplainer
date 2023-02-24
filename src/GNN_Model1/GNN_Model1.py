@@ -86,10 +86,7 @@ def compute_accuracy(pred, labels):
 class SAGELayer(nn.Module):
     def __init__(self, ndim_in, edims, ndim_out, activation):
         super(SAGELayer, self).__init__()
-        # nn.Linear(152, 20)
         self.W_msg = nn.Linear(ndim_in + edims, ndim_out)
-        ### apply weight
-        # nn.Linear(96, 20)
         self.W_apply = nn.Linear(ndim_in + ndim_out, ndim_out)
         self.activation = activation
 
