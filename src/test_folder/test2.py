@@ -35,6 +35,9 @@ G1 = nx.from_pandas_edgelist(X1_train, " Source IP", " Destination IP", ['h','la
 ## directed
 G1 = G1.to_directed()
 
+print(G1)
+print('******')
+
 G1 = from_networkx(G1,edge_attrs=['h','label'] )
 # nodes data // G1.edata['h'].shape[1] : sizeh = number of attributes in a packet
 G1.ndata['h'] = th.ones(G1.num_nodes(), G1.edata['h'].shape[1])
@@ -64,7 +67,14 @@ G1 = G1.to('cuda:0')
 # print(G1.ndata['h'].device)
 # print(G1.edata['h'].device)
 
-print(G1.ndata['h'].shape[0])
-print(G1.ndata['h'].shape[1])
-print(G1.ndata['h'].shape[2])
+print(G1)
+# print(G1.ndata['h'].shape[0])
+# print(G1.ndata['h'].shape[1])
+# print(G1.ndata['h'].shape[2])
+print()
+print(G1.nodes())
+print(G1.edges())
+
+print()
+print(G1.ndata)
 print(G1.edata)

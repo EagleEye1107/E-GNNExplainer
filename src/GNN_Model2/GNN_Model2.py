@@ -169,6 +169,16 @@ X1_train[cols_to_norm1] = scaler1.fit_transform(X1_train[cols_to_norm1])
 
 X1_train['h'] = X1_train[ cols_to_norm1 ].values.tolist()
 
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Before training the data :
+# We need to delete all the attributes (cols_to_norm1) to have the {Source IP, Destination IP, label, h} representation
+# X1_train.drop(columns = cols_to_norm1, inplace = True)
+
+# # Then we need to Swap {label, h} Columns to have the {Source IP, Destination IP, h, label} representation
+# columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
+# X1_train=X1_train.reindex(columns=columns_titles)
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 
 ##test
 X1_test = encoder1.transform(X1_test)
@@ -290,14 +300,15 @@ G1 = G1.to_directed()
 att  = {}
 for n in G1.nodes():
     x = np.ones(sizeh)
-    att[n] = {'h':x, 'nb':1}
-                   
+    att[n] = {'h':x, 'nb':1}          
 nx.set_node_attributes(G1, att)
+
 att  = {}
 for n in G1.edges(keys=True): 
     x = np.ones(sizeh)
     att[n] = {'g':x}
 nx.set_edge_attributes(G1, att)
+
 for node1, node2, data in G1.edges(data=True):
     G1.nodes[node2]['h'] = G1.nodes[node2]['h'] + data['h']
     G1.nodes[node2]['nb'] = G1.nodes[node2]['nb'] + 1
