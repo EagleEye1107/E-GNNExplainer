@@ -65,6 +65,6 @@ In the CIC-IDS-2017 We have :
  ' Init_Win_bytes_backward' ' act_data_pkt_fwd' ' min_seg_size_forward'      
  'Active Mean' ' Active Std' ' Active Max' ' Active Min' 'Idle Mean'
  ' Idle Std' ' Idle Max' ' Idle Min']
-            -> 16 labels
+            -> 15 labels
             -> Labels are : {'Heartbleed', 'Bot', 'SSH-Patator', 'DoS Hulk', 
-'DDoS', 'DoS Slowhttptest', 'DoS slowloris', nan, 'Web Attack \x96 XSS', 'DoS GoldenEye', 'Web Attack \x96 Sql Injection', 'Infiltration', 'Web Attack \x96 Brute Force', 'FTP-Patator', 'PortScan', 'BENIGN'}
+'DDoS', 'DoS Slowhttptest', 'DoS slowloris', 'Web Attack \x96 XSS', 'DoS GoldenEye', 'Web Attack \x96 Sql Injection', 'Infiltration', 'Web Attack \x96 Brute Force', 'FTP-Patator', 'PortScan', 'BENIGN'}

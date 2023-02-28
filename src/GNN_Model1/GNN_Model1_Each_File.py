@@ -325,7 +325,7 @@ for i in range(file_count):
     pr = True
     # True if you want to print the embedding vectors
     # the name of the file where the vectors are printed
-    filename = './models/M1_weights_shuffle_dataset.txt'
+    filename = './models/M1_weights_shuffle_dataset_With_Monday.txt'
 
 
     # Model architecture
@@ -398,7 +398,7 @@ for i in range(file_count):
     pr = True
     # True if you want to print the embedding vectors
     # the name of the file where the vectors are printed
-    filename = './models/M1_weights_shuffle_dataset.txt'
+    filename = './models/M1_weights_shuffle_dataset_With_Monday.txt'
 
     print("nb instances : ", len(X1_test.values))
 
