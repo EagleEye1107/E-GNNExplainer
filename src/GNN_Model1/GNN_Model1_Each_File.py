@@ -178,7 +178,8 @@ class Model(nn.Module):
 nbclasses =  2
 
 # path, dirs, files = next(os.walk("./input/Dataset/TrafficLabelling/"))
-path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
+# path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
+path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted_With_Monday/"))
 file_count = len(files)
 
 # X_test = pd.DataFrame()

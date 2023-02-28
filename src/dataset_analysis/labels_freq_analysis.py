@@ -6,8 +6,8 @@ import numpy as np
 freq_list = []
 binary_freq_list = []
 
-path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
-# path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted_With_Monday/"))
+# path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
+path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted_With_Monday/"))
 file_count = len(files)
 
 for i in range(file_count):
