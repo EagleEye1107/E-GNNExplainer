@@ -284,6 +284,9 @@ for i in range(file_count):
 
     # ------------------------------------------- Creating the Graph Representation -------------------------------------------------------------
     # Create our Multigraph
+
+    print("Number of rows after dropping duplicates : ", len(X1_train.drop_duplicates()))
+
     G1 = nx.from_pandas_edgelist(X1_train, " Source IP", " Destination IP", ['h','label'], create_using=nx.MultiGraph())
 
     print("initial nx multigraph G1 : ", G1)
