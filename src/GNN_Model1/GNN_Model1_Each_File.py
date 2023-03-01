@@ -325,7 +325,8 @@ for i in range(file_count):
     pr = True
     # True if you want to print the embedding vectors
     # the name of the file where the vectors are printed
-    filename = './models/M1_weights_shuffle_dataset_With_Monday.txt'
+    # filename = './models/conf_matrix_problem.txt'
+    filename = './models/conf_matrix_problem.txt'
 
 
     # Model architecture
@@ -346,6 +347,12 @@ for i in range(file_count):
     pred1 = pred1.argmax(1)
     pred1 = th.Tensor.cpu(pred1).detach().numpy()
     edge_label1 = th.Tensor.cpu(edge_label1).detach().numpy()
+
+    print("edge_features1 : ", len(edge_features1))
+    print("pred1 : ", len(pred1))
+    print("edge_label1 : ", len(edge_label1))
+
+    print(drrrr)
 
     print('confusion matrix :')
     c = confusion_matrix(edge_label1, pred1)
@@ -398,7 +405,7 @@ for i in range(file_count):
     pr = True
     # True if you want to print the embedding vectors
     # the name of the file where the vectors are printed
-    filename = './models/M1_weights_shuffle_dataset_With_Monday.txt'
+    filename = './models/conf_matrix_problem.txt'
 
     print("nb instances : ", len(X1_test.values))
 
