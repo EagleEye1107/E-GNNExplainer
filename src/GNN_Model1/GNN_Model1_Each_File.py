@@ -178,8 +178,8 @@ class Model(nn.Module):
 nbclasses =  2
 
 # path, dirs, files = next(os.walk("./input/Dataset/TrafficLabelling/"))
-path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
-# path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted_With_Monday/"))
+# path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
+path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted_With_Monday/"))
 file_count = len(files)
 
 # X_test = pd.DataFrame()
@@ -188,10 +188,10 @@ for i in range(file_count):
     data1 = pd.read_csv(f'{path}{files[i]}', encoding="ISO-8859–1", dtype = str)
 
     print(f'{files[i]} ++++++++++++++++++++++++++++++++++++++++++++++')
+    print("nb total instances in the file : ", len(data1.values))
 
     print("++++++++++++++++++++++++++++ Train ++++++++++++++++++++++++++++++++")
     
-    print("nb instances : ", len(data1.values))
     # Delete two columns (U and V in the excel)
     cols = list(set(list(data1.columns )) - set(list(['Flow Bytes/s',' Flow Packets/s'])) )
     data1 = data1[cols]
@@ -235,6 +235,7 @@ for i in range(file_count):
     # X will contain the label column due to the concatination made earlier !!
     X1_train, X1_test, y1_train, y1_test = train_test_split(data1, label1, test_size=0.3, random_state=123, stratify= label1)
 
+    print("nb Train instances : ", len(X1_train.values))
     # X_test = pd.concat([X_test, X1_test], ignore_index = True)
 
     # for non numerical attributes (categorical data)
@@ -284,9 +285,6 @@ for i in range(file_count):
 
     # ------------------------------------------- Creating the Graph Representation -------------------------------------------------------------
     # Create our Multigraph
-
-    print("Number of rows after dropping duplicates : ", X1_train)
-
     G1 = nx.from_pandas_edgelist(X1_train, " Source IP", " Destination IP", ['h','label'], create_using=nx.MultiGraph())
 
     print("initial nx multigraph G1 : ", G1)
@@ -334,8 +332,7 @@ for i in range(file_count):
     pr = True
     # True if you want to print the embedding vectors
     # the name of the file where the vectors are printed
-    # filename = './models/conf_matrix_problem.txt'
-    filename = './models/conf_matrix_problem.txt'
+    filename = './models/M1_weights_shuffle_dataset_With_Monday.txt'
 
 
     # Model architecture
@@ -375,12 +372,11 @@ for i in range(file_count):
     print("Precision : ", sklearn.metrics.precision_score(edge_label1, pred1, labels=[0,1]))
     print("Recall : ", sklearn.metrics.recall_score(edge_label1, pred1, labels=[0,1]))
     print("f1_score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels=[0,1]))
-
-    print(drrrr)
     # print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
     # ------------------------------------------------ Test ---------------------------------------------------------------------
     print("++++++++++++++++++++++++++++ Test ++++++++++++++++++++++++++++++++")
+    print("nb Test instances : ", len(X1_test.values))
     X1_test = encoder1.transform(X1_test)
     X1_test[cols_to_norm1] = scaler1.transform(X1_test[cols_to_norm1])
     X1_test['h'] = X1_test[ cols_to_norm1 ].values.tolist()
@@ -414,7 +410,7 @@ for i in range(file_count):
     pr = True
     # True if you want to print the embedding vectors
     # the name of the file where the vectors are printed
-    filename = './models/conf_matrix_problem.txt'
+    filename = './models/M1_weights_shuffle_dataset_With_Monday.txt'
 
     print("nb instances : ", len(X1_test.values))
 
