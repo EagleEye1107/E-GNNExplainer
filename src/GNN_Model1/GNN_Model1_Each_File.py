@@ -286,12 +286,12 @@ for i in range(file_count):
     # Create our Multigraph
     G1 = nx.from_pandas_edgelist(X1_train, " Source IP", " Destination IP", ['h','label'], create_using=nx.MultiGraph())
 
-    print("initial G1.edata['h'] : ", len(G1.edata['h']))
+    print("initial nx multigraph G1 : ", G1)
 
     # Convert it to a directed Graph
     # NB : IT WILL CREATE A DEFAULT BIDIRECTIONAL RELATIONSHIPS BETWEEN NODES, and not the original relationships ???????????????????????
     G1 = G1.to_directed()
-    print("G1.edata['h'] after todirected : ", len(G1.edata['h']))
+    print("G1 after todirected : ", G1)
     # Convert the graph from a networkx Graph to a DGL Graph
     G1 = from_networkx(G1,edge_attrs=['h','label'] )
     print("G1.edata['h'] after converting it to a dgl graph : ", len(G1.edata['h']))
@@ -358,8 +358,6 @@ for i in range(file_count):
     print("pred1 : ", len(pred1))
     print("edge_label1 : ", len(edge_label1))
 
-    print(drrrr)
-
     print('confusion matrix :')
     c = confusion_matrix(edge_label1, pred1)
     print(c)
@@ -374,6 +372,8 @@ for i in range(file_count):
     print("Precision : ", sklearn.metrics.precision_score(edge_label1, pred1, labels=[0,1]))
     print("Recall : ", sklearn.metrics.recall_score(edge_label1, pred1, labels=[0,1]))
     print("f1_score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels=[0,1]))
+
+    print(drrrr)
     # print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
     # ------------------------------------------------ Test ---------------------------------------------------------------------
