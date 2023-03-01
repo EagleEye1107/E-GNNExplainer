@@ -178,8 +178,8 @@ class Model(nn.Module):
 nbclasses =  2
 
 # path, dirs, files = next(os.walk("./input/Dataset/TrafficLabelling/"))
-# path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
-path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted_With_Monday/"))
+path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
+# path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted_With_Monday/"))
 file_count = len(files)
 
 # X_test = pd.DataFrame()
@@ -286,11 +286,15 @@ for i in range(file_count):
     # Create our Multigraph
     G1 = nx.from_pandas_edgelist(X1_train, " Source IP", " Destination IP", ['h','label'], create_using=nx.MultiGraph())
 
+    print("initial G1.edata['h'] : ", len(G1.edata['h']))
+
     # Convert it to a directed Graph
     # NB : IT WILL CREATE A DEFAULT BIDIRECTIONAL RELATIONSHIPS BETWEEN NODES, and not the original relationships ???????????????????????
     G1 = G1.to_directed()
+    print("G1.edata['h'] after todirected : ", len(G1.edata['h']))
     # Convert the graph from a networkx Graph to a DGL Graph
     G1 = from_networkx(G1,edge_attrs=['h','label'] )
+    print("G1.edata['h'] after converting it to a dgl graph : ", len(G1.edata['h']))
 
     # nodes data // G1.edata['h'].shape[1] : sizeh = number of attributes in a flow
     G1.ndata['h'] = th.ones(G1.num_nodes(), G1.edata['h'].shape[1])
@@ -300,6 +304,7 @@ for i in range(file_count):
     # Reshape both tensor lists to a single value in each element for both axis
     G1.ndata['h'] = th.reshape(G1.ndata['h'], (G1.ndata['h'].shape[0], 1, G1.ndata['h'].shape[1]))
     G1.edata['h'] = th.reshape(G1.edata['h'], (G1.edata['h'].shape[0], 1, G1.edata['h'].shape[1]))
+    print("G1.edata['h'] after reshape : ", len(G1.edata['h']))
     # ------------------------------------------- --------------------------------- -------------------------------------------------------------
 
 
