@@ -35,8 +35,13 @@ G1 = nx.from_pandas_edgelist(X1_train, " Source IP", " Destination IP", ['h','la
 ## directed
 G1 = G1.to_directed()
 
-print(G1)
+print()
 print('******')
+print("G1 : ", G1)
+print("G1.nodes() : ", G1.nodes())
+print("G1.edges(keys=True) : ", G1.edges(keys=True))
+print('******')
+print()
 
 G1 = from_networkx(G1,edge_attrs=['h','label'] )
 # nodes data // G1.edata['h'].shape[1] : sizeh = number of attributes in a packet
