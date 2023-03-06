@@ -233,28 +233,37 @@ for i in range(file_count):
 
     # -------------------- ????????????????????????????????????????? --------------------
     # X will contain the label column due to the concatination made earlier !!
-    X1_train, X1_test, y1_train, y1_test = train_test_split(data1, label1, test_size=0.3, random_state=123, stratify= label1)
+    
+    
+    
+    
 
-    print("nb Train instances : ", len(X1_train.values))
+    
+    # X1_train, X1_test, y1_train, y1_test = train_test_split(data1, label1, test_size=0.3, random_state=123, stratify= label1)
+
+
+
+
+
+
     # X_test = pd.concat([X_test, X1_test], ignore_index = True)
 
     # for non numerical attributes (categorical data)
     # Since we have a binary classification, the category values willl be replaced with the posterior probability (p(target = Ti | category = Cj))
     # TargetEncoding is also called MeanEncoding, cuz it simply replace each value with (target_i_count_on_category_j) / (total_occurences_of_category_j)
     encoder1 = ce.TargetEncoder(cols=[' Protocol',  'Fwd PSH Flags', ' Fwd URG Flags', ' Bwd PSH Flags', ' Bwd URG Flags'])
-    encoder1.fit(X1_train, y1_train)
-    X1_train = encoder1.transform(X1_train)
+    encoder1.fit(data1, label1)
+    data1 = encoder1.transform(data1)
 
     # scaler (normalization)
     scaler1 = StandardScaler()
 
     # Manipulate flow content (all columns except : label, Source IP & Destination IP)
-    cols_to_norm1 = list(set(list(X1_train.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])) )
-    X1_train[cols_to_norm1] = scaler1.fit_transform(X1_train[cols_to_norm1])
+    cols_to_norm1 = list(set(list(data1.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])) )
+    data1[cols_to_norm1] = scaler1.fit_transform(data1[cols_to_norm1])
 
     ## Create the h attribute that will contain the content of our flows
-    X1_train['h'] = X1_train[ cols_to_norm1 ].values.tolist()
-    # print(X1_train)
+    data1['h'] = data1[ cols_to_norm1 ].values.tolist()
 
     # size of the list containig the content of our flows
     sizeh = len(cols_to_norm1)
@@ -263,12 +272,17 @@ for i in range(file_count):
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     # Before training the data :
     # We need to delete all the attributes (cols_to_norm1) to have the {Source IP, Destination IP, label, h} representation
-    X1_train.drop(columns = cols_to_norm1, inplace = True)
+    data1.drop(columns = cols_to_norm1, inplace = True)
 
     # Then we need to Swap {label, h} Columns to have the {Source IP, Destination IP, h, label} representation
     columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
-    X1_train=X1_train.reindex(columns=columns_titles)
+    data1=data1.reindex(columns=columns_titles)
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    print()
+    print("##################### DATA1 #################################")
+    print(data1)
+    print()
 
 
 
@@ -285,9 +299,18 @@ for i in range(file_count):
 
     # ------------------------------------------- Creating the Graph Representation -------------------------------------------------------------
     # Create our Multigraph
-    G1 = nx.from_pandas_edgelist(X1_train, " Source IP", " Destination IP", ['h','label'], create_using=nx.MultiGraph())
+    G1 = nx.from_pandas_edgelist(data1, " Source IP", " Destination IP", ['h','label'], create_using=nx.MultiGraph())
 
     print("initial nx multigraph G1 : ", G1)
+    print()
+
+    print("##################### Components #################################")
+    print(list(nx.connected_components(G1)))
+    print("number_connected_components(G1) : ", nx.number_connected_components(G1))
+    print()
+
+
+    print(testttt)
 
     # Convert it to a directed Graph
     # NB : IT WILL CREATE A DEFAULT BIDIRECTIONAL RELATIONSHIPS BETWEEN NODES, and not the original relationships ???????????????????????
