@@ -297,20 +297,30 @@ G1 = G1.to_directed()
 
 
 
-#pretreatment to compute the vectors associated to the nodes: 
-#the average values of the attributes associated to the edges for which the node is a destination
+# pretreatment to compute the vectors associated to the nodes: 
+# the average values of the attributes associated to the edges for which the node is a destination
+
 att  = {}
+# G1.nodes() :  [1, 2, 3, 4]
+# G1.nodes[1] :  {}
 for n in G1.nodes():
     x = np.ones(sizeh)
     att[n] = {'h':x, 'nb':1}          
 nx.set_node_attributes(G1, att)
+# after this we'll have G1.nodes[1] :  {'h': array([1., 1., 1.]), 'nb': 1}
 
 att  = {}
+# G1.edges(keys=True) :  [(1, 2, 0), (1, 2, 1), (1, 3, 0), (2, 1, 0), (2, 1, 1), (2, 3, 0), (3, 2, 0), (3, 1, 0), (3, 4, 0), (4, 3, 0)]
+# G1.edges.data() :  [(1, 2, {'h': [1, 2, 3], 'label': 0}), ....
 for n in G1.edges(keys=True): 
     x = np.ones(sizeh)
     att[n] = {'g':x}
 nx.set_edge_attributes(G1, att)
+# after this we'll have G1.edges.data() :  [(1, 2, {'h': [1, 2, 3], 'label': 0, 'g': array([1., 1., 1.])}), ....
 
+# node1 = Source IP
+# node2 = Destination IP
+# data = edge_content = {'h': [1, 2, 3], 'label': 0, 'g': array([1., 1., 1.])}
 for node1, node2, data in G1.edges(data=True):
     G1.nodes[node2]['h'] = G1.nodes[node2]['h'] + data['h']
     G1.nodes[node2]['nb'] = G1.nodes[node2]['nb'] + 1
@@ -319,6 +329,10 @@ for node1, node2, data in G1.edges(data=True):
 for node2 in G1.nodes:
     G1.nodes[node2]['h'] = G1.nodes[node2]['h'] / G1.nodes[node2]['nb'] 
 
+
+
+
+# DGL Part
 G1 = from_networkx(G1, edge_attrs=['g','label'], node_attrs=['h'] )
 
 # create the variables to store the embedding vectors

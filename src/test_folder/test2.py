@@ -39,9 +39,59 @@ print()
 print('******')
 print("G1 : ", G1)
 print("G1.nodes() : ", G1.nodes())
+print("G1.nodes[1] : ", G1.nodes[1])
 print("G1.edges(keys=True) : ", G1.edges(keys=True))
+print("G1.edges.data() : ", G1.edges.data())
 print('******')
 print()
+
+
+
+print('******')
+att  = {}
+# G1.nodes() :  [1, 2, 3, 4]
+for n in G1.nodes():
+    x = np.ones(sizeh)
+    att[n] = {'h':x, 'nb':1}          
+nx.set_node_attributes(G1, att)
+
+att  = {}
+# G1.edges(keys=True) :  [(1, 2, 0), (1, 2, 1), (1, 3, 0), (2, 1, 0), (2, 1, 1), (2, 3, 0), (3, 2, 0), (3, 1, 0), (3, 4, 0), (4, 3, 0)]
+for n in G1.edges(keys=True): 
+    x = np.ones(sizeh)
+    att[n] = {'g':x}
+nx.set_edge_attributes(G1, att)
+
+
+print("G1 : ", G1)
+print("G1.nodes() : ", G1.nodes())
+print("G1.nodes[1] : ", G1.nodes[1])
+print("G1.edges(keys=True) : ", G1.edges(keys=True))
+print("G1.edges.data() : ", G1.edges.data())
+print('******')
+print()
+
+
+
+
+
+
+
+print("##################################")
+for node1, node2, data in G1.edges(data=True):
+    G1.nodes[node2]['h'] = G1.nodes[node2]['h'] + data['h']
+    G1.nodes[node2]['nb'] = G1.nodes[node2]['nb'] + 1
+    G1.nodes[node2]['g'] = np.ones(sizeh)
+
+for node2 in G1.nodes:
+    G1.nodes[node2]['h'] = G1.nodes[node2]['h'] / G1.nodes[node2]['nb'] 
+
+print("G1.nodes[1] : ", G1.nodes[1])
+print("G1.edges.data() : ", G1.edges.data())
+print("##################################")
+
+
+print(mmmmmmmmmm)
 
 G1 = from_networkx(G1,edge_attrs=['h','label'] )
 # nodes data // G1.edata['h'].shape[1] : sizeh = number of attributes in a packet
