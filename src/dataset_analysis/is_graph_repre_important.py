@@ -1,3 +1,10 @@
+'''
+    The idea here is to change all nodes to a single node,
+    With this modification we won't have the graph structure,
+    This approach is to understand wethere or not the graph structure have a good impact on the classification or not
+'''
+
+
 import os
 import pandas as pd
 from sklearn.utils import shuffle
