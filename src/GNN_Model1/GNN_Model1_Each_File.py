@@ -179,7 +179,8 @@ nbclasses =  2
 
 # path, dirs, files = next(os.walk("./input/Dataset/TrafficLabelling/"))
 # path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
-path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted_With_Monday/"))
+# path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted_With_Monday/"))
+path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted_Modified_IP/"))
 file_count = len(files)
 
 # X_test = pd.DataFrame()
@@ -332,7 +333,7 @@ for i in range(file_count):
     pr = True
     # True if you want to print the embedding vectors
     # the name of the file where the vectors are printed
-    filename = './models/M1_weights_shuffle_dataset_With_Monday.txt'
+    filename = './models/M1_weights_Modified_IP.txt'
 
 
     # Model architecture
@@ -410,7 +411,7 @@ for i in range(file_count):
     pr = True
     # True if you want to print the embedding vectors
     # the name of the file where the vectors are printed
-    filename = './models/M1_weights_shuffle_dataset_With_Monday.txt'
+    filename = './models/M1_weights_Modified_IP.txt'
 
     print("nb instances : ", len(X1_test.values))
 
