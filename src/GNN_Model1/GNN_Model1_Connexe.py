@@ -319,27 +319,33 @@ for nb_files in range(file_count):
     # print(attack_df[' Source IP'])
     # print(list(attack_df[' Source IP']))
 
-    cpt = 0
-    for x in list(attack_df[' Source IP']) : 
-        if x.count('172.16.0.1') != 0 :
-            cpt += 1
+
+    ip_adr_set = set()
+    for x in list(attack_df[' Source IP']) :
+        ip_adr_set.add(x[0:x.index(':')])
+
+    # print("set of attacks IP Sources : ", ip_adr_set)
     
     nb_instances = len(data1.values)
-    nb_benign = len(data1.loc[data1['label'] == 0].values)
     nb_attacks = len(attack_df.values)
 
+
     res = {}
-
-    for x in list(attack_df[' Source IP']):
+    for x in ip_adr_set :
         # This represent the IP Address
-        # print(x[0:x.index(':')])
-        res[x[0:x.index(':')]] = sum(x[0:x.index(':')] in s for s in list(attack_df[' Source IP']))
+        res[x] = sum(x in s for s in list(attack_df[' Source IP']))
 
-    print(res)
-    
-    print("nb instances : ", nb_instances)
-    print(f"freq of Benign : {nb_benign / nb_instances}          freq of Attacks : {nb_attacks / nb_instances}")
-    print("freq of 172.16.0.1 as Source IP in the attack dataframe : ", cpt / nb_attacks)
+    sorted_res = dict(sorted(res.items(), key = lambda item: item[1]))
+    print("sorted_res : ", sorted_res)
+
+    cpt = 0
+    for z in range(len(sorted_res)-1):
+        cpt += list(sorted_res.values())[z]
+
+    print(f"{list(sorted_res.keys())[-1]} : {list(sorted_res.values())[-1]}, Others : {cpt}")
+
+    print("nb attacks : ", nb_attacks)
+    print("occ of each attacks IP Source : ", res)
     print()
 
 
