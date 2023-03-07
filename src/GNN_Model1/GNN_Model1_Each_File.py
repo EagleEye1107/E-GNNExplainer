@@ -342,7 +342,7 @@ for nb_files in range(file_count):
     pr = True
     # True if you want to print the embedding vectors
     # the name of the file where the vectors are printed
-    filename = './models/M1_weights_Modified_IP.txt'
+    filename = './models/M1_weights.txt'
 
 
     # Model architecture
@@ -420,7 +420,7 @@ for nb_files in range(file_count):
     pr = True
     # True if you want to print the embedding vectors
     # the name of the file where the vectors are printed
-    filename = './models/M1_weights_Modified_IP.txt'
+    filename = './models/M1_weights.txt'
 
     print("nb instances : ", len(X1_test.values))
 
