@@ -184,10 +184,10 @@ file_count = len(files)
 
 # X_test = pd.DataFrame()
 
-for i in range(file_count):
-    data1 = pd.read_csv(f'{path}{files[i]}', encoding="ISO-8859–1", dtype = str)
+for nb_files in range(file_count):
+    data1 = pd.read_csv(f'{path}{files[nb_files]}', encoding="ISO-8859–1", dtype = str)
 
-    print(f'{files[i]} ++++++++++++++++++++++++++++++++++++++++++++++')
+    print(f'{files[nb_files]} ++++++++++++++++++++++++++++++++++++++++++++++')
     print("nb total instances in the file : ", len(data1.values))
 
     print("++++++++++++++++++++++++++++ Train ++++++++++++++++++++++++++++++++")
@@ -206,20 +206,30 @@ for i in range(file_count):
 
     data1.drop(columns=['Flow ID',' Source Port',' Destination Port',' Timestamp'], inplace=True)
 
-    # labels and there count
-    print(data1[' Label'].value_counts())
-
     # -------------------- ????????????????????????????????????????? --------------------
     # simply do : nom = list(data1[' Label'].unique())
     nom = []
     nom = nom + [data1[' Label'].unique()[0]]
     for i in range(1, len(data1[' Label'].unique())):
         nom = nom + [data1[' Label'].unique()[i]]
+    
+    nom.insert(0, nom.pop(nom.index('BENIGN')))
 
     # Naming the two classes BENIGN {0} / Any Intrusion {1}
     data1[' Label'].replace(nom[0], 0,inplace = True)
     for i in range(1,len(data1[' Label'].unique())):
         data1[' Label'].replace(nom[i], 1,inplace = True)
+    
+    ##################### LABELS FREQ #######################################
+    print()
+    print("labels freq after changing labels to binary")
+    counts = list(data1[' Label'].value_counts().to_dict().items())
+    for j, x in enumerate(counts):
+        x = list(x)
+        x[1] = x[1] / len(data1)
+        counts[j] = x
+    print({f'{files[nb_files]}' : counts})
+    ##############################################################################
 
     data1.rename(columns={" Label": "label"},inplace = True)
     label1 = data1.label
