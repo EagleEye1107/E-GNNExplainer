@@ -196,24 +196,6 @@ for nb_files in range(file_count):
     print()
     print()
     print(f'{files[nb_files]} ++++++++++++++++++++++++++++++++++++++++++++++')
-
-
-
-    ##################### LABELS FREQ #######################################
-    print("labels freq before changing labels to binary")
-    counts = list(data1[' Label'].value_counts().to_dict().items())
-    for j, x in enumerate(counts):
-        x = list(x)
-        x[1] = x[1] / len(data1)
-        counts[j] = x
-    print({f'{files[nb_files]}' : counts})
-    ##############################################################################
-
-
-
-    # print("nb total instances in the file : ", len(data1.values))
-
-    # print("++++++++++++++++++++++++++++ Train ++++++++++++++++++++++++++++++++")
     
     # Delete two columns (U and V in the excel)
     cols = list(set(list(data1.columns )) - set(list(['Flow Bytes/s',' Flow Packets/s'])) )
@@ -229,9 +211,6 @@ for nb_files in range(file_count):
 
     data1.drop(columns=['Flow ID',' Source Port',' Destination Port',' Timestamp'], inplace=True)
 
-    # labels and there count
-    # print(data1[' Label'].value_counts())
-
     # -------------------- ????????????????????????????????????????? --------------------
     # simply do : nom = list(data1[' Label'].unique())
     nom = []
@@ -241,10 +220,6 @@ for nb_files in range(file_count):
     
     nom.insert(0, nom.pop(nom.index('BENIGN')))
 
-    # Naming the two classes BENIGN {0} / Any Intrusion {1}
-    print("****** DEBUGGING ******")
-    print(f'{files[nb_files]} ++++++++++++++++++++++++++++++++++++++++++++++')
-    print("nom[0] : ", nom[0])
     data1[' Label'].replace(nom[0], 0,inplace = True)
     for i in range(1,len(data1[' Label'].unique())):
         data1[' Label'].replace(nom[i], 1,inplace = True)
@@ -318,72 +293,54 @@ for nb_files in range(file_count):
     data1=data1.reindex(columns=columns_titles)
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+
+    # Dataframe containing only attack instances
+    attack_df = data1.loc[data1['label'] == 1]
+
+    # ------------------------------------------- Creating the Graph Representation -------------------------------------------------------------
+    # Create our Multigraph
+    G1 = nx.from_pandas_edgelist(data1, " Source IP", " Destination IP", ['h','label'], create_using=nx.MultiGraph())
+
+    # print("initial nx multigraph G1 : ", G1)
+    # print()
+
+    # print("##################### Components #################################")
+    # print(list(nx.connected_components(G1)))
+    # print("number_connected_components(G1) : ", nx.number_connected_components(G1))
+    # print()
+
     # print()
     # print("##################### DATA1 #################################")
     # print(data1)
     # print()
 
-    # # Dataframe containing only attack instances
-    # attack_df = data1.loc[data1['label'] == 1]
 
+    # Source IP of attack instances
+    # print(attack_df[' Source IP'])
+    # print(list(attack_df[' Source IP']))
 
-
-
-
-    # # ------------------------------------------- Testing with a simple example -----------------------------------------------------------------
-    # # sizeh = 3
-    # # nbclasses =  2
-
-    # # columns=[" Source IP", " Destination IP", 'h','label']
-    # # data = [[1,2,[1,2,3],0], [2,3,[1,20,3],1],[1,3,[2,2,3],0],[3,4,[3,2,3],0],[1,2,[1,2,4],0]]
-    # # X1_train = pd.DataFrame(data, columns=columns)
-    # # ------------------------------------------- ----------------------------- -----------------------------------------------------------------
-
-
-    # # ------------------------------------------- Creating the Graph Representation -------------------------------------------------------------
-    # # Create our Multigraph
-    # G1 = nx.from_pandas_edgelist(data1, " Source IP", " Destination IP", ['h','label'], create_using=nx.MultiGraph())
-
-    # # print("initial nx multigraph G1 : ", G1)
-    # # print()
-
-    # # print("##################### Components #################################")
-    # # print(list(nx.connected_components(G1)))
-    # # print("number_connected_components(G1) : ", nx.number_connected_components(G1))
-    # # print()
-
-    # # print()
-    # # print("##################### DATA1 #################################")
-    # # print(data1)
-    # # print()
-
-
-    # # Source IP of attack instances
-    # # print(attack_df[' Source IP'])
-    # # print(list(attack_df[' Source IP']))
-
-    # cpt = 0
-    # for x in list(attack_df[' Source IP']) : 
-    #     if x.count('172.16.0.1') != 0 :
-    #         cpt += 1
+    cpt = 0
+    for x in list(attack_df[' Source IP']) : 
+        if x.count('172.16.0.1') != 0 :
+            cpt += 1
     
-    # nb_instances = len(data1.values)
-    # nb_benign = len(data1.loc[data1['label'] == 0].values)
-    # nb_attacks = len(attack_df.values)
+    nb_instances = len(data1.values)
+    nb_benign = len(data1.loc[data1['label'] == 0].values)
+    nb_attacks = len(attack_df.values)
 
-    # res = {}
+    res = {}
 
-    # for x in list(attack_df[' Source IP']):
-    #     # This represent the IP Address
-    #     # print(x[0:x.index(':')])
-    #     res[x[0:x.index(':')]] = sum(x[0:x.index(':')] in s for s in list(attack_df[' Source IP']))
+    for x in list(attack_df[' Source IP']):
+        # This represent the IP Address
+        # print(x[0:x.index(':')])
+        res[x[0:x.index(':')]] = sum(x[0:x.index(':')] in s for s in list(attack_df[' Source IP']))
 
-    # print(res)
+    print(res)
     
-    # print("nb instances : ", nb_instances)
-    # print(f"freq of Benign : {nb_benign / nb_instances}          freq of Attacks : {nb_attacks / nb_instances}")
-    # print("freq of 172.16.0.1 as Source IP in the attack dataframe : ", cpt / nb_attacks)
-    # print()
+    print("nb instances : ", nb_instances)
+    print(f"freq of Benign : {nb_benign / nb_instances}          freq of Attacks : {nb_attacks / nb_instances}")
+    print("freq of 172.16.0.1 as Source IP in the attack dataframe : ", cpt / nb_attacks)
+    print()
 
 
     # print(testttt)
