@@ -248,27 +248,27 @@ for nb_files in range(file_count):
 
 
     # IP Mapping *************************************************************************
-    # Train
-    train_res = set()
-    for x in list(X1_train[' Source IP']) :
-        train_res.add(x)
-    # for x in list(X1_train[' Destination IP']) :
-        # train_res.add(x)
+    # We do tha mapping of test set only because its faster and it will generate totally new nodes from the train set
+    test_res = set()
+    for x in list(X1_test[' Source IP']) :
+        test_res.add(x)
+    for x in list(X1_test[' Destination IP']) :
+        test_res.add(x)
 
-    train_re = {}
+    test_re = {}
     cpt = 0
-    for x in train_res:
-        train_re[x] = str(cpt)
+    for x in test_res:
+        test_re[x] = str(cpt)
         cpt +=1
     
-    print(train_re)
+    print(test_re)
 
     print()
 
-    print(X1_train[[' Source IP', ' Destination IP']])
-    X1_train_mapped = X1_train.replace({' Source IP': train_re})
-    # X1_train_mapped = X1_train_mapped.replace({' Destination IP': train_re})
-    print(X1_train_mapped[[' Source IP', ' Destination IP']])
+    print(X1_test[[' Source IP', ' Destination IP']])
+    X1_test_mapped = X1_test.replace({' Source IP': test_re})
+    X1_test_mapped = X1_test_mapped.replace({' Destination IP': test_re})
+    print(X1_test_mapped[[' Source IP', ' Destination IP']])
 
     print()
 
