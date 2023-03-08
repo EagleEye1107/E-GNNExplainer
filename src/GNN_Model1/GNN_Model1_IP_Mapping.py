@@ -260,8 +260,6 @@ for nb_files in range(file_count):
     for x in test_res:
         test_re[x] = str(cpt)
         cpt +=1
-    
-    print(test_re)
 
     print()
 
@@ -271,8 +269,7 @@ for nb_files in range(file_count):
     print(X1_test[[' Source IP', ' Destination IP']])
 
     print()
-    
-    
+
     print("nb Train instances : ", len(X1_train.values))
     # X_test = pd.concat([X_test, X1_test], ignore_index = True)
 
