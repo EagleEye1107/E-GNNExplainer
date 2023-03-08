@@ -12,7 +12,7 @@ sizeh = 3
 nbclasses =  2
 
 columns=[" Source IP", " Destination IP", 'h','label']
-data = [[1,2,[1,2,3],0], [2,3,[1,20,3],1],[1,3,[2,2,3],0],[3,4,[3,2,3],0],[1,2,[1,2,4],0]]
+data = [["192.168.10.25:222",2,[1,2,3],0], ["192.168.10.25:222",3,[1,20,3],1],["192.168.10.25:222",3,[2,2,3],0],["192.168.10.25:333",4,[3,2,3],0],[1,2,[1,2,4],0]]
 X1_train = pd.DataFrame(data,columns=columns)
 
 G1 = nx.from_pandas_edgelist(X1_train, " Source IP", " Destination IP", ['h','label'], create_using=nx.MultiGraph())
@@ -90,6 +90,8 @@ print("G1.nodes[1] : ", G1.nodes[1])
 print("G1.edges.data() : ", G1.edges.data())
 print("##################################")
 
+
+print(G1.nodes())
 
 print(mmmmmmmmmm)
 

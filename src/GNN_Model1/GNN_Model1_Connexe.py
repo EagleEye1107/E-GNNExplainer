@@ -293,11 +293,6 @@ for nb_files in range(file_count):
     data1=data1.reindex(columns=columns_titles)
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-
-    # Dataframe containing only attack instances
-    attack_df = data1.loc[data1['label'] == 1]
-    benign_df = data1.loc[data1['label'] == 0]
-
     # ------------------------------------------- Creating the Graph Representation -------------------------------------------------------------
     # Create our Multigraph
     G1 = nx.from_pandas_edgelist(data1, " Source IP", " Destination IP", ['h','label'], create_using=nx.MultiGraph())
@@ -321,6 +316,11 @@ for nb_files in range(file_count):
     # print(list(attack_df[' Source IP']))
 
 
+    # Split Dataframe depending on the label
+    attack_df = data1.loc[data1['label'] == 1]
+    benign_df = data1.loc[data1['label'] == 0]
+
+
     res = {}
     for x in list(attack_df[' Source IP']) :
         if x[0:x.index(':')] in res :
@@ -340,6 +340,53 @@ for nb_files in range(file_count):
     print(f"{list(sorted_res.keys())[-1]} : {list(sorted_res.values())[-1]}, Others : {cpt}")
     print("nb attacks : ", nb_attacks)
     print()
+
+
+    # ********************************************************** BENIGN Split **********************************************************
+    # benign_df_label1 = benign_df.label
+    # benign_df.drop(columns=['label'], inplace = True)
+
+    # benign_df =  pd.concat([benign_df, benign_df_label1], axis=1) # ??????? WHY ?
+
+    # benign_df_X1_train, benign_df_X1_test, benign_df_y1_train, benign_df_y1_test = train_test_split(benign_df, benign_df_label1, test_size=0.3, random_state=123, stratify= label1)
+    # ********************************************************** ********************************************************** **********************************************************
+
+    # ********************************************************** ATTACKs Split **********************************************************
+    
+    # list(sorted_res.keys())[-1] : represent the Source IP Adr having the max number of occurences 
+    # ~ is the negation of contains
+    attack_df_X1_train = attack_df[attack_df[' Source IP'].str.contains(list(sorted_res.keys())[-1])]
+    attack_df_X1_test = attack_df[~attack_df[' Source IP'].str.contains(list(sorted_res.keys())[-1])]
+
+    print("len(attack_df_X1_train) / nb_attacks : ", len(attack_df_X1_train) / nb_attacks)
+    print("len(attack_df_X1_test) / nb_attacks : ", len(attack_df_X1_test) / nb_attacks)
+
+    # Create the right split which is 70% for train set & 30% for test set
+    cpt = 0
+    while (len(attack_df_X1_train) / nb_attacks) < 0.7 :
+        pd.concat([attack_df_X1_train, attack_df_X1_test.tail(1)], ignore_index=True)
+        cpt += 1
+    attack_df_X1_test.drop(attack_df_X1_test.tail(cpt).index, inplace=True)
+    
+    cpt = 0
+    while (len(attack_df_X1_test) / nb_attacks) < 0.3 :
+        pd.concat([attack_df_X1_test, attack_df_X1_train.tail(1)], ignore_index=True)
+        cpt += 1
+    attack_df_X1_train.drop(attack_df_X1_train.tail(cpt).index, inplace=True)
+
+    print()
+    print("After splitting 70 -- 30")
+    print("len(attack_df_X1_train) / nb_attacks : ", len(attack_df_X1_train) / nb_attacks)
+    print("len(attack_df_X1_test) / nb_attacks : ", len(attack_df_X1_test) / nb_attacks)
+    
+    
+    # attack_df_label1 = attack_df.label
+    # attack_df.drop(columns=['label'], inplace = True)
+
+    # attack_df =  pd.concat([attack_df, attack_df_label1], axis=1) # ??????? WHY ?
+
+    # attack_df_X1_train, attack_df_X1_test, attack_df_y1_train, attack_df_y1_test = train_test_split(attack_df, attack_df_label1, test_size=0.3, random_state=123, stratify= label1)
+    # ********************************************************** ********************************************************************************************************************
 
 
     # print(testttt)
