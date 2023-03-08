@@ -252,8 +252,8 @@ for nb_files in range(file_count):
     train_res = set()
     for x in list(X1_train[' Source IP']) :
         train_res.add(x)
-    for x in list(X1_train[' Destination IP']) :
-        train_res.add(x)
+    # for x in list(X1_train[' Destination IP']) :
+        # train_res.add(x)
 
     train_re = {}
     cpt = 0
@@ -267,7 +267,7 @@ for nb_files in range(file_count):
 
     print(X1_train[[' Source IP', ' Destination IP']])
     X1_train_mapped = X1_train.replace({' Source IP': train_re})
-    X1_train_mapped = X1_train_mapped.replace({' Destination IP': train_re})
+    # X1_train_mapped = X1_train_mapped.replace({' Destination IP': train_re})
     print(X1_train_mapped[[' Source IP', ' Destination IP']])
 
     print()
