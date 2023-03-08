@@ -266,13 +266,11 @@ for nb_files in range(file_count):
     print()
 
     print(X1_test[[' Source IP', ' Destination IP']])
-    X1_test_mapped = X1_test.replace({' Source IP': test_re})
-    X1_test_mapped = X1_test_mapped.replace({' Destination IP': test_re})
-    print(X1_test_mapped[[' Source IP', ' Destination IP']])
+    X1_test = X1_test.replace({' Source IP': test_re})
+    X1_test = X1_test.replace({' Destination IP': test_re})
+    print(X1_test[[' Source IP', ' Destination IP']])
 
     print()
-
-    print(resss)
     
     
     print("nb Train instances : ", len(X1_train.values))
