@@ -344,7 +344,7 @@ for nb_files in range(file_count):
     pr = True
     # True if you want to print the embedding vectors
     # the name of the file where the vectors are printed
-    filename = './models/M1_weights.txt'
+    filename = './models/M1_weights_Test_IP_Mapped.txt'
 
 
     # Model architecture
@@ -403,8 +403,6 @@ for nb_files in range(file_count):
     X1_test=X1_test.reindex(columns=columns_titles)
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-    print(X1_test)
-
     # IP Mapping *************************************************************************
     # We do tha mapping of test set only because its faster and it will generate totally new nodes from the train set
     test_res = set()
@@ -421,10 +419,10 @@ for nb_files in range(file_count):
 
     print()
 
-    print(X1_test[[' Source IP', ' Destination IP']])
+    print(X1_test)
     X1_test = X1_test.replace({' Source IP': test_re})
     X1_test = X1_test.replace({' Destination IP': test_re})
-    print(X1_test[[' Source IP', ' Destination IP']])
+    print(X1_test)
 
     print()
     # ***********************************************************************************
@@ -446,7 +444,7 @@ for nb_files in range(file_count):
     pr = True
     # True if you want to print the embedding vectors
     # the name of the file where the vectors are printed
-    filename = './models/M1_weights.txt'
+    filename = './models/M1_weights_Test_IP_Mapped.txt'
 
     print("nb instances : ", len(X1_test.values))
 
