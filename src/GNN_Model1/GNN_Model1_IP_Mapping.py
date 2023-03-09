@@ -247,29 +247,6 @@ for nb_files in range(file_count):
     X1_train, X1_test, y1_train, y1_test = train_test_split(data1, label1, test_size=0.3, random_state=123, stratify= label1)
 
 
-    # IP Mapping *************************************************************************
-    # We do tha mapping of test set only because its faster and it will generate totally new nodes from the train set
-    test_res = set()
-    for x in list(X1_test[' Source IP']) :
-        test_res.add(x)
-    for x in list(X1_test[' Destination IP']) :
-        test_res.add(x)
-
-    test_re = {}
-    cpt = 0
-    for x in test_res:
-        test_re[x] = str(cpt)
-        cpt +=1
-
-    print()
-
-    print(X1_test[[' Source IP', ' Destination IP']])
-    X1_test = X1_test.replace({' Source IP': test_re})
-    X1_test = X1_test.replace({' Destination IP': test_re})
-    print(X1_test[[' Source IP', ' Destination IP']])
-
-    print()
-
     print("nb Train instances : ", len(X1_train.values))
     # X_test = pd.concat([X_test, X1_test], ignore_index = True)
 
@@ -427,6 +404,30 @@ for nb_files in range(file_count):
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     print(X1_test)
+
+    # IP Mapping *************************************************************************
+    # We do tha mapping of test set only because its faster and it will generate totally new nodes from the train set
+    test_res = set()
+    for x in list(X1_test[' Source IP']) :
+        test_res.add(x)
+    for x in list(X1_test[' Destination IP']) :
+        test_res.add(x)
+
+    test_re = {}
+    cpt = 0
+    for x in test_res:
+        test_re[x] = str(cpt)
+        cpt +=1
+
+    print()
+
+    print(X1_test[[' Source IP', ' Destination IP']])
+    X1_test = X1_test.replace({' Source IP': test_re})
+    X1_test = X1_test.replace({' Destination IP': test_re})
+    print(X1_test[[' Source IP', ' Destination IP']])
+
+    print()
+    # ***********************************************************************************
 
     G1_test = nx.from_pandas_edgelist(X1_test, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
     G1_test = G1_test.to_directed()
