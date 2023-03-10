@@ -8,7 +8,7 @@
 
 import csv
 # import dgl.nn as dglnn
-from dgl import from_networkx
+from dgl import from_networkx, to_networkx
 import sklearn
 import torch.nn as nn
 import torch as th
@@ -303,9 +303,10 @@ for nb_files in range(file_count):
     # NB : IT WILL CREATE A DEFAULT BIDIRECTIONAL RELATIONSHIPS BETWEEN NODES, and not the original relationships ???????????????????????
     
     # Removing the bidirectional edges
-    # G1 = G1.to_directed()
+    G1 = G1.to_directed()
 
     print("G1 after todirected : ", G1)
+    print("G1 visualization : ", to_networkx(G1).nodes())
     # Convert the graph from a networkx Graph to a DGL Graph
     G1 = from_networkx(G1,edge_attrs=['h','label'] )
     print("G1.edata['h'] after converting it to a dgl graph : ", len(G1.edata['h']))
