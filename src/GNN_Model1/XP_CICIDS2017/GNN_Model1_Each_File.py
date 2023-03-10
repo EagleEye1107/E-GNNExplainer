@@ -303,12 +303,18 @@ for nb_files in range(file_count):
     # NB : IT WILL CREATE A DEFAULT BIDIRECTIONAL RELATIONSHIPS BETWEEN NODES, and not the original relationships ???????????????????????
     
     # Removing the bidirectional edges
-    G1 = G1.to_directed()
+    # G1 = G1.to_directed()
 
     print("G1 after todirected : ", G1)
-    print("G1 visualization : ", to_networkx(G1).nodes())
     # Convert the graph from a networkx Graph to a DGL Graph
     G1 = from_networkx(G1,edge_attrs=['h','label'] )
+
+    # Another proof that our model doesn't take in consideration the node IP:Port
+    # The from_networkx DGL function relabel the nodes using consecutive integers
+    # starting from zero if we do not pass the node attribute to it (which is our case)
+    # nxg = to_networkx(G1)
+    # print("G1 nodes visualization : ", nxg.nodes())
+
     print("G1.edata['h'] after converting it to a dgl graph : ", len(G1.edata['h']))
 
     # nodes data // G1.edata['h'].shape[1] : sizeh = number of attributes in a flow
