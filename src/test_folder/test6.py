@@ -76,6 +76,20 @@ data1.drop(columns=['label'],inplace = True)
 # split train and test
 data1 =  pd.concat([data1, label1], axis=1) # ??????? WHY ?
 
+# Is Graph Representation Important ?? *************************************************************************
+print("data IP Addr before changing them : ")
+print(data1[[' Source IP', ' Destination IP']])
+
+dff = pd.DataFrame({'col1': list(range(len(data1.values))), 'col2': list(range(len(data1.values), 2 * len(data1.values)))})
+
+data1[' Source IP'] = dff['col1']
+data1[' Destination IP'] = dff['col2']
+
+print()
+print("data IP Addr after changing them : ")
+print(data1[[' Source IP', ' Destination IP']])
+# ***********************************************************************************
+
 # -------------------- ????????????????????????????????????????? --------------------
 # X will contain the label column due to the concatination made earlier !!
 X1_train, X1_test, y1_train, y1_test = train_test_split(data1, label1, test_size=0.3, random_state=123, stratify= label1)
@@ -117,6 +131,9 @@ X1_train=X1_train.reindex(columns=columns_titles)
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
+X1_train = X1_train.head(20)
+
+
 
 
 # ------------------------------------------- Testing with a simple example -----------------------------------------------------------------
@@ -133,7 +150,7 @@ X1_train=X1_train.reindex(columns=columns_titles)
 # Create our Multigraph
 G1 = nx.from_pandas_edgelist(X1_train, " Source IP", " Destination IP", ['h','label'], create_using=nx.MultiGraph())
 
-nx.draw_shell(G1, with_labels = True)
+nx.draw_planar(G1, with_labels = True)
 plt.show()
 
 print("initial nx multigraph G1 : ", G1)
