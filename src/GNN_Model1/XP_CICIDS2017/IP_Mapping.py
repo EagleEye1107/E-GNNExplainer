@@ -40,26 +40,13 @@ from collections import defaultdict
 
 
 def redefined_from_networkx(nx_graph, node_attrs=None, edge_attrs=None, edge_id_attr_name=None, idtype=None, device=None):
-    # Sanity check
-    if edge_id_attr_name is not None and \
-            edge_id_attr_name not in next(iter(nx_graph.edges(data=True)))[-1]:
-        print('Failed to find the pre-specified edge IDs in the edge features of '
-                       'the NetworkX graph with name {}'.format(edge_id_attr_name))
-
-    if not nx_graph.is_directed() and not (edge_id_attr_name is None and edge_attrs is None):
-        print('Expect edge_id_attr_name and edge_attrs to be None when nx_graph is '
-                       'undirected, got {} and {}'.format(edge_id_attr_name, edge_attrs))
-
-
     # DON'T Relabel nodes using consecutive integers starting from the last value
     nx_graph = nx.convert_node_labels_to_integers(nx_graph, ordering='decreasing degree')
-
 
     if not nx_graph.is_directed():
         nx_graph = nx_graph.to_directed()
 
-    u, v, urange, vrange = utils.graphdata2tensors(
-        nx_graph, idtype=idtype, edge_id_attr_name=edge_id_attr_name)
+    u, v, urange, vrange = utils.graphdata2tensors(nx_graph, edge_id_attr_name)
 
     g = create_from_edges(u, v, '_N', '_E', '_N', urange, vrange)
 
