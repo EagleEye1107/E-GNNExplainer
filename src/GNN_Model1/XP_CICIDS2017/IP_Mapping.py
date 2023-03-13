@@ -34,7 +34,7 @@ import os
 
 
 # Redefining the from_networkx function to not relabel nodes
-from dgl import create_from_edges
+from dgl.convert import create_from_edges
 from collections import defaultdict
 from . import utils
 
