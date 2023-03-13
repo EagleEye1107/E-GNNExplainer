@@ -32,77 +32,6 @@ from sklearn.metrics import confusion_matrix
 
 import os
 
-
-# Redefining the from_networkx function to not relabel nodes
-from dgl.convert import create_from_edges
-from dgl import utils
-from collections import defaultdict
-
-
-def redefined_from_networkx(nx_graph, node_attrs=None, edge_attrs=None, edge_id_attr_name=None, idtype=None, device=None):
-    # DON'T Relabel nodes using consecutive integers starting from the last value
-    nx_graph = nx.convert_node_labels_to_integers(nx_graph, ordering='decreasing degree')
-
-    if not nx_graph.is_directed():
-        nx_graph = nx_graph.to_directed()
-
-    u, v, urange, vrange = utils.graphdata2tensors(nx_graph, edge_id_attr_name)
-
-    g = create_from_edges(u, v, '_N', '_E', '_N', urange, vrange)
-
-    # nx_graph.edges(data=True) returns src, dst, attr_dict
-    has_edge_id = nx_graph.number_of_edges() > 0 and edge_id_attr_name is not None
-
-    # handle features
-    # copy attributes
-    def _batcher(lst):
-        if F.is_tensor(lst[0]):
-            return F.cat([F.unsqueeze(x, 0) for x in lst], dim=0)
-        else:
-            return F.tensor(lst)
-    if node_attrs is not None:
-        # mapping from feature name to a list of tensors to be concatenated
-        attr_dict = defaultdict(list)
-        for nid in range(g.number_of_nodes()):
-            for attr in node_attrs:
-                attr_dict[attr].append(nx_graph.nodes[nid][attr])
-        for attr in node_attrs:
-            g.ndata[attr] = F.copy_to(_batcher(attr_dict[attr]), g.device)
-
-    if edge_attrs is not None:
-        # mapping from feature name to a list of tensors to be concatenated
-        attr_dict = defaultdict(lambda: [None] * g.number_of_edges())
-        # each defaultdict value is initialized to be a list of None
-        # None here serves as placeholder to be replaced by feature with
-        # corresponding edge id
-        if has_edge_id:
-            num_edges = g.number_of_edges()
-            for _, _, attrs in nx_graph.edges(data=True):
-                if attrs[edge_id_attr_name] >= num_edges:
-                    print('Expect the pre-specified edge ids to be'
-                                   ' smaller than the number of edges --'
-                                   ' {}, got {}.'.format(num_edges, attrs['id']))
-                for key in edge_attrs:
-                    attr_dict[key][attrs[edge_id_attr_name]] = attrs[key]
-        else:
-            # XXX: assuming networkx iteration order is deterministic
-            #      so the order is the same as graph_index.from_networkx
-            for eid, (_, _, attrs) in enumerate(nx_graph.edges(data=True)):
-                for key in edge_attrs:
-                    attr_dict[key][eid] = attrs[key]
-        for attr in edge_attrs:
-            for val in attr_dict[attr]:
-                if val is None:
-                    print('Not all edges have attribute {}.'.format(attr))
-            g.edata[attr] = F.copy_to(_batcher(attr_dict[attr]), g.device)
-
-    return g.to(device)
-
-
-
-
-
-
 # Confusion Matrix ------------------------------------------------------------
 def plot_confusion_matrix(cm,
                           target_names,
@@ -372,12 +301,14 @@ for nb_files in range(file_count):
 
     print("initial nx multigraph G1 : ", G1)
 
+    G1_scipy = nx.to_scipy_sparse_matrix(G1,nodelist=G1.nodes())
+
     # Convert it to a directed Graph
     # NB : IT WILL CREATE A DEFAULT BIDIRECTIONAL RELATIONSHIPS BETWEEN NODES, and not the original relationships ???????????????????????
     G1 = G1.to_directed()
     print("G1 after todirected : ", G1)
     # Convert the graph from a networkx Graph to a DGL Graph
-    G1 = redefined_from_networkx(G1,edge_attrs=['h','label'] )
+    G1 = from_networkx(G1,edge_attrs=['h','label'] )
     print("Train nodes : ***********************************************************************************************")
     print(G1.nodes())
     print("G1.edata['h'] after converting it to a dgl graph : ", len(G1.edata['h']))
