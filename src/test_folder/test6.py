@@ -155,9 +155,15 @@ plt.show()
 
 print("initial nx multigraph G1 : ", G1)
 
+print(G1.nodes())
+
 # Convert it to a directed Graph
 # NB : IT WILL CREATE A DEFAULT BIDIRECTIONAL RELATIONSHIPS BETWEEN NODES, and not the original relationships ???????????????????????
 G1 = G1.to_directed()
 print("G1 after todirected : ", G1)
 # Convert the graph from a networkx Graph to a DGL Graph
-G1 = from_networkx(G1,edge_attrs=['h','label'] )
+
+G1 = from_networkx(G1, edge_attrs=['h','label'] )
+
+
+print(G1.nodes())
