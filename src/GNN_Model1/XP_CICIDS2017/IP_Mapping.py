@@ -391,6 +391,8 @@ for nb_files in range(file_count):
     print("G1 after todirected : ", G1)
     # Convert the graph from a networkx Graph to a DGL Graph
     G1 = redefined_from_networkx(G1,edge_attrs=['h','label'] )
+    print("Train nodes : ***********************************************************************************************")
+    print(G1.nodes())
     print("G1.edata['h'] after converting it to a dgl graph : ", len(G1.edata['h']))
 
     # nodes data // G1.edata['h'].shape[1] : sizeh = number of attributes in a flow
@@ -489,31 +491,33 @@ for nb_files in range(file_count):
 
     # IP Mapping *************************************************************************
     # We do tha mapping of test set only because its faster and it will generate totally new nodes from the train set
-    test_res = set()
-    for x in list(X1_test[' Source IP']) :
-        test_res.add(x)
-    for x in list(X1_test[' Destination IP']) :
-        test_res.add(x)
+    # test_res = set()
+    # for x in list(X1_test[' Source IP']) :
+    #     test_res.add(x)
+    # for x in list(X1_test[' Destination IP']) :
+    #     test_res.add(x)
 
-    test_re = {}
-    cpt = 0
-    for x in test_res:
-        test_re[x] = str(cpt)
-        cpt +=1
+    # test_re = {}
+    # cpt = 0
+    # for x in test_res:
+    #     test_re[x] = str(cpt)
+    #     cpt +=1
 
-    print()
+    # print()
 
-    print(X1_test)
-    X1_test = X1_test.replace({' Source IP': test_re})
-    X1_test = X1_test.replace({' Destination IP': test_re})
-    print(X1_test)
+    # print(X1_test)
+    # X1_test = X1_test.replace({' Source IP': test_re})
+    # X1_test = X1_test.replace({' Destination IP': test_re})
+    # print(X1_test)
 
-    print()
+    # print()
     # ***********************************************************************************
 
     G1_test = nx.from_pandas_edgelist(X1_test, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
     G1_test = G1_test.to_directed()
     G1_test = from_networkx(G1_test,edge_attrs=['h','label'] )
+    print("Test nodes : ***********************************************************************************************")
+    print(G1.nodes())
     actual1 = G1_test.edata.pop('label')
     G1_test.ndata['feature'] = th.ones(G1_test.num_nodes(), G1.ndata['h'].shape[2])
 
