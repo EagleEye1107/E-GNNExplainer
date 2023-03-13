@@ -415,6 +415,7 @@ for nb_files in range(file_count):
     test_nodes = list(G1_test.nodes())
     G1_test.remove_nodes_from(set(train_nodes))
     print("len(list(G1_test.nodes())) : ", len(list(G1_test.nodes())))
+    print("len(list(G1_test.edges())) : ", len(list(G1_test.edges())))
 
 
     G1_test = G1_test.to_directed()
