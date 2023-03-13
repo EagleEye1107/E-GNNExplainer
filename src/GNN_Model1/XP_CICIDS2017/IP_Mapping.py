@@ -301,16 +301,15 @@ for nb_files in range(file_count):
 
     print("initial nx multigraph G1 : ", G1)
 
+    # Train_nodes to delete them from the test nodes ***************************************************************************
+    train_nodes = list(G1.nodes())
+
+
     # Convert it to a directed Graph
     # NB : IT WILL CREATE A DEFAULT BIDIRECTIONAL RELATIONSHIPS BETWEEN NODES, and not the original relationships ???????????????????????
     G1 = G1.to_directed()
     print("G1 after todirected : ", G1)
     # Convert the graph from a networkx Graph to a DGL Graph
-
-
-    train_nodes = G1.nodes()
-
-
     G1 = from_networkx(G1,edge_attrs=['h','label'] )
     print("G1.edata['h'] after converting it to a dgl graph : ", len(G1.edata['h']))
 
@@ -408,40 +407,16 @@ for nb_files in range(file_count):
     X1_test=X1_test.reindex(columns=columns_titles)
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-    # IP Mapping *************************************************************************
-    # We do tha mapping of test set only because its faster and it will generate totally new nodes from the train set
-    # test_res = set()
-    # for x in list(X1_test[' Source IP']) :
-    #     test_res.add(x)
-    # for x in list(X1_test[' Destination IP']) :
-    #     test_res.add(x)
-
-    # test_re = {}
-    # cpt = 0
-    # for x in test_res:
-    #     test_re[x] = str(cpt)
-    #     cpt +=1
-
-    # print()
-
-    # print(X1_test)
-    # X1_test = X1_test.replace({' Source IP': test_re})
-    # X1_test = X1_test.replace({' Destination IP': test_re})
-    # print(X1_test)
-
-    # print()
-    # ***********************************************************************************
 
     G1_test = nx.from_pandas_edgelist(X1_test, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
+
+
+    # Delete Train_nodes from the Test_nodes *************************************************************************************
+    test_nodes = list(G1_test.nodes())
+    G1_test.remove_nodes_from(list(set(test_nodes) - set(train_nodes)))
+
+
     G1_test = G1_test.to_directed()
-
-
-    test_nodes = G1.nodes()
-
-
-    print(train_nodes)
-    print(test_nodes)
-
     G1_test = from_networkx(G1_test,edge_attrs=['h','label'] )
     actual1 = G1_test.edata.pop('label')
     G1_test.ndata['feature'] = th.ones(G1_test.num_nodes(), G1.ndata['h'].shape[2])
