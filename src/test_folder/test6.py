@@ -163,7 +163,14 @@ G1 = G1.to_directed()
 print("G1 after todirected : ", G1)
 # Convert the graph from a networkx Graph to a DGL Graph
 
-G1 = from_networkx(G1, edge_attrs=['h','label'] )
+list1 = list(reversed(range(28)))
+list2 = [str(x) for x in list1]
+npa = np.asarray(list2, dtype=str)
+
+print(npa)
+
+
+G1 = from_networkx(G1, node_attrs = ['10', '26', '25', '24', '23', '22', '21', '20', '19', '18', '17', '16', '15', '14', '13', '12', '11', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1', '0'], edge_attrs=['h','label'] )
 
 
 print(G1.nodes())

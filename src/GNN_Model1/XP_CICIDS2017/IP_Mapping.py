@@ -302,93 +302,93 @@ for nb_files in range(file_count):
     print("initial nx multigraph G1 : ", G1)
 
     # Train_nodes to delete them from the test nodes ***************************************************************************
-    train_nodes = list(G1.nodes())
+    train_nodes = list(sorted(G1_test.nodes()))
 
 
-    # Convert it to a directed Graph
-    # NB : IT WILL CREATE A DEFAULT BIDIRECTIONAL RELATIONSHIPS BETWEEN NODES, and not the original relationships ???????????????????????
-    G1 = G1.to_directed()
-    print("G1 after todirected : ", G1)
-    # Convert the graph from a networkx Graph to a DGL Graph
-    G1 = from_networkx(G1,edge_attrs=['h','label'] )
-    print("G1.edata['h'] after converting it to a dgl graph : ", len(G1.edata['h']))
+    # # Convert it to a directed Graph
+    # # NB : IT WILL CREATE A DEFAULT BIDIRECTIONAL RELATIONSHIPS BETWEEN NODES, and not the original relationships ???????????????????????
+    # G1 = G1.to_directed()
+    # print("G1 after todirected : ", G1)
+    # # Convert the graph from a networkx Graph to a DGL Graph
+    # G1 = from_networkx(G1,edge_attrs=['h','label'] )
+    # print("G1.edata['h'] after converting it to a dgl graph : ", len(G1.edata['h']))
 
-    # nodes data // G1.edata['h'].shape[1] : sizeh = number of attributes in a flow
-    G1.ndata['h'] = th.ones(G1.num_nodes(), G1.edata['h'].shape[1])
-    # edges data // we create a tensor bool array that will represent the train mask
-    G1.edata['train_mask'] = th.ones(len(G1.edata['h']), dtype=th.bool)
+    # # nodes data // G1.edata['h'].shape[1] : sizeh = number of attributes in a flow
+    # G1.ndata['h'] = th.ones(G1.num_nodes(), G1.edata['h'].shape[1])
+    # # edges data // we create a tensor bool array that will represent the train mask
+    # G1.edata['train_mask'] = th.ones(len(G1.edata['h']), dtype=th.bool)
 
-    # Reshape both tensor lists to a single value in each element for both axis
-    G1.ndata['h'] = th.reshape(G1.ndata['h'], (G1.ndata['h'].shape[0], 1, G1.ndata['h'].shape[1]))
-    G1.edata['h'] = th.reshape(G1.edata['h'], (G1.edata['h'].shape[0], 1, G1.edata['h'].shape[1]))
-    print("G1.edata['h'] after reshape : ", len(G1.edata['h']))
-    # ------------------------------------------- --------------------------------- -------------------------------------------------------------
-
-
-    # ------------------------------------------- Model -----------------------------------------------------------------------------------------
-    ## use of model
-    from sklearn.utils import class_weight
-    class_weights1 = class_weight.compute_class_weight(class_weight = 'balanced',
-                                                    classes = np.unique(G1.edata['label'].cpu().numpy()),
-                                                    y = G1.edata['label'].cpu().numpy())
-    class_weights1 = th.FloatTensor(class_weights1).cuda()
-    criterion1 = nn.CrossEntropyLoss(weight=class_weights1)
-    G1 = G1.to('cuda:0')
-    #print(G1.device)
-    #print(G1.ndata['h'].device)
-    #print(G1.edata['h'].device)
-
-    node_features1 = G1.ndata['h']
-    edge_features1 = G1.edata['h']
-
-    edge_label1 = G1.edata['label']
-    train_mask1 = G1.edata['train_mask']
-
-    # to print
-    pr = True
-    # True if you want to print the embedding vectors
-    # the name of the file where the vectors are printed
-    filename = './models/M1_weights_Test_IP_Mapped.txt'
+    # # Reshape both tensor lists to a single value in each element for both axis
+    # G1.ndata['h'] = th.reshape(G1.ndata['h'], (G1.ndata['h'].shape[0], 1, G1.ndata['h'].shape[1]))
+    # G1.edata['h'] = th.reshape(G1.edata['h'], (G1.edata['h'].shape[0], 1, G1.edata['h'].shape[1]))
+    # print("G1.edata['h'] after reshape : ", len(G1.edata['h']))
+    # # ------------------------------------------- --------------------------------- -------------------------------------------------------------
 
 
-    # Model architecture
-    # G1.ndata['h'].shape[2] = sizeh = 76 dans ANIDS
-    model1 = Model(G1.ndata['h'].shape[2], size_embedding, G1.ndata['h'].shape[2], F.relu, 0.2).cuda()
-    opt = th.optim.Adam(model1.parameters())
+    # # ------------------------------------------- Model -----------------------------------------------------------------------------------------
+    # ## use of model
+    # from sklearn.utils import class_weight
+    # class_weights1 = class_weight.compute_class_weight(class_weight = 'balanced',
+    #                                                 classes = np.unique(G1.edata['label'].cpu().numpy()),
+    #                                                 y = G1.edata['label'].cpu().numpy())
+    # class_weights1 = th.FloatTensor(class_weights1).cuda()
+    # criterion1 = nn.CrossEntropyLoss(weight=class_weights1)
+    # G1 = G1.to('cuda:0')
+    # #print(G1.device)
+    # #print(G1.ndata['h'].device)
+    # #print(G1.edata['h'].device)
 
-    for epoch in range(1,1000):
-        pred = model1(G1, node_features1, edge_features1).cuda()
-        loss = criterion1(pred[train_mask1], edge_label1[train_mask1])
-        opt.zero_grad()
-        loss.backward()
-        opt.step()
-        if epoch % 100 == 0:
-            print('Training acc:', compute_accuracy(pred[train_mask1], edge_label1[train_mask1]), loss)
+    # node_features1 = G1.ndata['h']
+    # edge_features1 = G1.edata['h']
 
-    pred1 = model1(G1, node_features1, edge_features1).cuda()
-    pred1 = pred1.argmax(1)
-    pred1 = th.Tensor.cpu(pred1).detach().numpy()
-    edge_label1 = th.Tensor.cpu(edge_label1).detach().numpy()
+    # edge_label1 = G1.edata['label']
+    # train_mask1 = G1.edata['train_mask']
 
-    print("edge_features1 : ", len(edge_features1))
-    print("pred1 : ", len(pred1))
-    print("edge_label1 : ", len(edge_label1))
+    # # to print
+    # pr = True
+    # # True if you want to print the embedding vectors
+    # # the name of the file where the vectors are printed
+    # filename = './models/M1_weights_Test_IP_Mapped.txt'
 
-    print('confusion matrix :')
-    c = confusion_matrix(edge_label1, pred1)
-    print(c)
-    c[0][0]= c[0][0]/2
-    c[1][0]= c[1][0]/2
-    c[0][1]= c[0][1]/2
-    c[1][1]= c[1][1]/2
-    print(c)
 
-    print('metrics :')
-    print("Accuracy : ", sklearn.metrics.accuracy_score(edge_label1, pred1))
-    print("Precision : ", sklearn.metrics.precision_score(edge_label1, pred1, labels=[0,1]))
-    print("Recall : ", sklearn.metrics.recall_score(edge_label1, pred1, labels=[0,1]))
-    print("f1_score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels=[0,1]))
-    # print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+    # # Model architecture
+    # # G1.ndata['h'].shape[2] = sizeh = 76 dans ANIDS
+    # model1 = Model(G1.ndata['h'].shape[2], size_embedding, G1.ndata['h'].shape[2], F.relu, 0.2).cuda()
+    # opt = th.optim.Adam(model1.parameters())
+
+    # for epoch in range(1,1000):
+    #     pred = model1(G1, node_features1, edge_features1).cuda()
+    #     loss = criterion1(pred[train_mask1], edge_label1[train_mask1])
+    #     opt.zero_grad()
+    #     loss.backward()
+    #     opt.step()
+    #     if epoch % 100 == 0:
+    #         print('Training acc:', compute_accuracy(pred[train_mask1], edge_label1[train_mask1]), loss)
+
+    # pred1 = model1(G1, node_features1, edge_features1).cuda()
+    # pred1 = pred1.argmax(1)
+    # pred1 = th.Tensor.cpu(pred1).detach().numpy()
+    # edge_label1 = th.Tensor.cpu(edge_label1).detach().numpy()
+
+    # print("edge_features1 : ", len(edge_features1))
+    # print("pred1 : ", len(pred1))
+    # print("edge_label1 : ", len(edge_label1))
+
+    # print('confusion matrix :')
+    # c = confusion_matrix(edge_label1, pred1)
+    # print(c)
+    # c[0][0]= c[0][0]/2
+    # c[1][0]= c[1][0]/2
+    # c[0][1]= c[0][1]/2
+    # c[1][1]= c[1][1]/2
+    # print(c)
+
+    # print('metrics :')
+    # print("Accuracy : ", sklearn.metrics.accuracy_score(edge_label1, pred1))
+    # print("Precision : ", sklearn.metrics.precision_score(edge_label1, pred1, labels=[0,1]))
+    # print("Recall : ", sklearn.metrics.recall_score(edge_label1, pred1, labels=[0,1]))
+    # print("f1_score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels=[0,1]))
+    # # print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
     # ------------------------------------------------ Test ---------------------------------------------------------------------
     print("++++++++++++++++++++++++++++ Test ++++++++++++++++++++++++++++++++")
@@ -411,70 +411,72 @@ for nb_files in range(file_count):
     G1_test = nx.from_pandas_edgelist(X1_test, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
 
 
-    # Delete Train_nodes from the Test_nodes *************************************************************************************
-    test_nodes = list(G1_test.nodes())
-    G1_test.remove_nodes_from(set(train_nodes))
-    print("len(list(G1_test.nodes())) : ", len(list(G1_test.nodes())))
-    print("len(list(G1_test.edges())) : ", len(list(G1_test.edges())))
+    # Compare Train_nodes from the Test_nodes *************************************************************************************
+    test_nodes = list(sorted(G1_test.nodes()))
+
+    # Compare
+    print("len(train_nodes) : ", len(train_nodes))
+    print("len(test_nodes) : ", len(test_nodes))
+    print("len of similar : ", len([i for i, j in zip(train_nodes, test_nodes) if i == j]))
 
 
-    G1_test = G1_test.to_directed()
-    G1_test = from_networkx(G1_test,edge_attrs=['h','label'] )
-    actual1 = G1_test.edata.pop('label')
-    G1_test.ndata['feature'] = th.ones(G1_test.num_nodes(), G1.ndata['h'].shape[2])
+    # G1_test = G1_test.to_directed()
+    # G1_test = from_networkx(G1_test,edge_attrs=['h','label'] )
+    # actual1 = G1_test.edata.pop('label')
+    # G1_test.ndata['feature'] = th.ones(G1_test.num_nodes(), G1.ndata['h'].shape[2])
 
-    G1_test.ndata['feature'] = th.reshape(G1_test.ndata['feature'], (G1_test.ndata['feature'].shape[0], 1, G1_test.ndata['feature'].shape[1]))
-    G1_test.edata['h'] = th.reshape(G1_test.edata['h'], (G1_test.edata['h'].shape[0], 1, G1_test.edata['h'].shape[1]))
-    G1_test = G1_test.to('cuda:0')
+    # G1_test.ndata['feature'] = th.reshape(G1_test.ndata['feature'], (G1_test.ndata['feature'].shape[0], 1, G1_test.ndata['feature'].shape[1]))
+    # G1_test.edata['h'] = th.reshape(G1_test.edata['h'], (G1_test.edata['h'].shape[0], 1, G1_test.edata['h'].shape[1]))
+    # G1_test = G1_test.to('cuda:0')
 
-    node_features_test1 = G1_test.ndata['feature']
-    edge_features_test1 = G1_test.edata['h']
+    # node_features_test1 = G1_test.ndata['feature']
+    # edge_features_test1 = G1_test.edata['h']
 
-    # to print
-    pr = True
-    # True if you want to print the embedding vectors
-    # the name of the file where the vectors are printed
-    filename = './models/M1_weights_Test_IP_Mapped.txt'
+    # # to print
+    # pr = True
+    # # True if you want to print the embedding vectors
+    # # the name of the file where the vectors are printed
+    # filename = './models/M1_weights_Test_IP_Mapped.txt'
 
-    print("nb instances : ", len(X1_test.values))
+    # print("nb instances : ", len(X1_test.values))
 
-    test_pred1 = model1(G1_test, node_features_test1, edge_features_test1).cuda()
+    # test_pred1 = model1(G1_test, node_features_test1, edge_features_test1).cuda()
 
 
-    test_pred1 = test_pred1.argmax(1)
-    test_pred1 = th.Tensor.cpu(test_pred1).detach().numpy()
+    # test_pred1 = test_pred1.argmax(1)
+    # test_pred1 = th.Tensor.cpu(test_pred1).detach().numpy()
 
-    # actual11 = ["Normal" if i == 0 else "Attack" for i in actual1]
-    # test_pred11 = ["Normal" if i == 0 else "Attack" for i in test_pred1]
+    # # actual11 = ["Normal" if i == 0 else "Attack" for i in actual1]
+    # # test_pred11 = ["Normal" if i == 0 else "Attack" for i in test_pred1]
 
-    print("Confusion matrix : ")
-    c = confusion_matrix(actual1, test_pred1)
-    print(c)
-    c[0][0]= c[0][0]/2
-    c[1][0]= c[1][0]/2
-    c[0][1]= c[0][1]/2
-    c[1][1]= c[1][1]/2
-    print(c)
+    # print("Confusion matrix : ")
+    # c = confusion_matrix(actual1, test_pred1)
+    # print(c)
+    # c[0][0]= c[0][0]/2
+    # c[1][0]= c[1][0]/2
+    # c[0][1]= c[0][1]/2
+    # c[1][1]= c[1][1]/2
+    # print(c)
 
-    print('Metrics : ')
-    print("Accuracy : ", sklearn.metrics.accuracy_score(actual1, test_pred1))
-    print("Precision : ", sklearn.metrics.precision_score(actual1, test_pred1, labels = [0,1]))
-    print("Recall : ", sklearn.metrics.recall_score(actual1, test_pred1, labels = [0,1]))
-    print("f1_score : ", sklearn.metrics.f1_score(actual1, test_pred1, labels = [0,1]))
+    # print('Metrics : ')
+    # print("Accuracy : ", sklearn.metrics.accuracy_score(actual1, test_pred1))
+    # print("Precision : ", sklearn.metrics.precision_score(actual1, test_pred1, labels = [0,1]))
+    # print("Recall : ", sklearn.metrics.recall_score(actual1, test_pred1, labels = [0,1]))
+    # print("f1_score : ", sklearn.metrics.f1_score(actual1, test_pred1, labels = [0,1]))
 
-    print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+    # print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
-    # plot_confusion_matrix(cm = c, #confusion_matrix(actual11, test_pred11), 
-    #                      normalize    = False,
-    #                      target_names = np.unique(actual1),
-    #                      title        = "Confusion Matrix")
+    # # plot_confusion_matrix(cm = c, #confusion_matrix(actual11, test_pred11), 
+    # #                      normalize    = False,
+    # #                      target_names = np.unique(actual1),
+    # #                      title        = "Confusion Matrix")
 
-    # class_labels = ["Normal", "Attack"] 
-    # df_cm = pd.DataFrame(c, index = class_labels, columns = class_labels)
-    # plt.figure(figsize = (10,7))
-    # sns.heatmap(df_cm, cmap="Greens", annot=True, fmt = 'g')
-    # plt.show()
+    # # class_labels = ["Normal", "Attack"] 
+    # # df_cm = pd.DataFrame(c, index = class_labels, columns = class_labels)
+    # # plt.figure(figsize = (10,7))
+    # # sns.heatmap(df_cm, cmap="Greens", annot=True, fmt = 'g')
+    # # plt.show()
 
-    # -------------------------------------------- ---------------------------------------- -----------------------------------------------------
+    # # -------------------------------------------- ---------------------------------------- -----------------------------------------------------
 
-    # ---------------------------------------------------------------------------------------------------------------------------
+    # # ---------------------------------------------------------------------------------------------------------------------------
