@@ -51,7 +51,7 @@ def redefined_from_networkx(nx_graph, node_attrs=None, edge_attrs=None, edge_id_
 
 
     # DON'T Relabel nodes using consecutive integers starting from the last value
-    nx_graph = nx.convert_node_labels_to_integers(nx_graph, ordering='decreasing degree')
+    nx_graph = nx.convert_node_labels_to_integers(nx_graph, ordering='sorted')
 
 
     if not nx_graph.is_directed():
