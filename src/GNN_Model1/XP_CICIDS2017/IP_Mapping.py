@@ -8,7 +8,7 @@
 
 import csv
 # import dgl.nn as dglnn
-from dgl import from_networkx
+from dgl import from_networkx, from_scipy
 from psutil import cpu_times
 import sklearn
 import torch.nn as nn
@@ -301,14 +301,18 @@ for nb_files in range(file_count):
 
     print("initial nx multigraph G1 : ", G1)
 
-    G1_scipy = nx.to_scipy_sparse_matrix(G1,nodelist=G1.nodes())
-
     # Convert it to a directed Graph
     # NB : IT WILL CREATE A DEFAULT BIDIRECTIONAL RELATIONSHIPS BETWEEN NODES, and not the original relationships ???????????????????????
     G1 = G1.to_directed()
+
+
+    G1_scipy = nx.to_scipy_sparse_matrix(G1,nodelist=G1.nodes())
+
+
     print("G1 after todirected : ", G1)
     # Convert the graph from a networkx Graph to a DGL Graph
-    G1 = from_networkx(G1,edge_attrs=['h','label'] )
+    # G1 = from_networkx(G1,edge_attrs=['h','label'] )
+    G1 = from_scipy(G1_scipy)
     print("Train nodes : ***********************************************************************************************")
     print(G1.nodes())
     print("G1.edata['h'] after converting it to a dgl graph : ", len(G1.edata['h']))
