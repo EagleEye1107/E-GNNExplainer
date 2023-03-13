@@ -8,7 +8,7 @@
 
 import csv
 # import dgl.nn as dglnn
-from dgl import from_networkx, from_scipy
+from dgl import from_networkx
 from psutil import cpu_times
 import sklearn
 import torch.nn as nn
@@ -304,17 +304,14 @@ for nb_files in range(file_count):
     # Convert it to a directed Graph
     # NB : IT WILL CREATE A DEFAULT BIDIRECTIONAL RELATIONSHIPS BETWEEN NODES, and not the original relationships ???????????????????????
     G1 = G1.to_directed()
-
-
-    G1_scipy = nx.to_scipy_sparse_matrix(G1,nodelist=G1.nodes())
-
-
     print("G1 after todirected : ", G1)
     # Convert the graph from a networkx Graph to a DGL Graph
-    # G1 = from_networkx(G1,edge_attrs=['h','label'] )
-    G1 = from_scipy(G1_scipy)
-    print("Train nodes : ***********************************************************************************************")
-    print(G1.nodes())
+
+
+    train_nodes = G1.nodes()
+
+
+    G1 = from_networkx(G1,edge_attrs=['h','label'] )
     print("G1.edata['h'] after converting it to a dgl graph : ", len(G1.edata['h']))
 
     # nodes data // G1.edata['h'].shape[1] : sizeh = number of attributes in a flow
@@ -437,9 +434,15 @@ for nb_files in range(file_count):
 
     G1_test = nx.from_pandas_edgelist(X1_test, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
     G1_test = G1_test.to_directed()
+
+
+    test_nodes = G1.nodes()
+
+
+    print(train_nodes)
+    print(test_nodes)
+
     G1_test = from_networkx(G1_test,edge_attrs=['h','label'] )
-    print("Test nodes : ***********************************************************************************************")
-    print(G1.nodes())
     actual1 = G1_test.edata.pop('label')
     G1_test.ndata['feature'] = th.ones(G1_test.num_nodes(), G1.ndata['h'].shape[2])
 
