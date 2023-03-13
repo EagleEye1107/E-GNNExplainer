@@ -302,7 +302,7 @@ for nb_files in range(file_count):
     print("initial nx multigraph G1 : ", G1)
 
     # Train_nodes to delete them from the test nodes ***************************************************************************
-    train_nodes = list(sorted(G1_test.nodes()))
+    train_nodes = list(sorted(G1.nodes()))
 
 
     # # Convert it to a directed Graph
