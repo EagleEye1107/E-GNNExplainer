@@ -58,8 +58,7 @@ def redefined_from_networkx(nx_graph, node_attrs=None, edge_attrs=None, edge_id_
     if not nx_graph.is_directed():
         nx_graph = nx_graph.to_directed()
 
-    u, v, urange, vrange = utils.graphdata2tensors(
-        nx_graph, idtype, bipartite = False, edge_id_attr_name=edge_id_attr_name)
+    u, v, urange, vrange = utils.graphdata2tensors(nx_graph, idtype, edge_id_attr_name=edge_id_attr_name)
 
     g = create_from_edges(u, v, '_N', '_E', '_N', urange, vrange)
 

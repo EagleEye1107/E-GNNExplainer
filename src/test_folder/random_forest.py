@@ -22,6 +22,13 @@ import graphviz
 # data1 = pd.read_csv(f'{path}{files[nb_files]}', encoding="ISO-8859–1", dtype = str)
 data1 = pd.read_csv('./input/Dataset/GlobalDataset/Splitted/CIC-IDS-2017-Dataset0.csv', encoding="ISO-8859–1", dtype = str)
 
+# Delete unnecessary str data
+data1.drop(columns=['Flow ID',' Source IP',' Destination IP',' Source Port',' Destination Port',' Timestamp'], inplace=True)
+
+data1 = data1.fillna(0)
+
+# IF We want to use IP Adr and do the mapping of the ip addresses because the random forest doesn't take in consideration
+'''
 # Mise en forme des noeuds
 data1[' Source IP'] = data1[' Source IP'].apply(str)
 data1[' Source Port'] = data1[' Source Port'].apply(str)
@@ -32,7 +39,6 @@ data1[' Destination IP'] = data1[' Destination IP'] + ':' + data1[' Destination 
 
 data1.drop(columns=['Flow ID',' Source Port',' Destination Port',' Timestamp'], inplace=True)
 
-# We need to do the mapping of the ip addresses because the random forest doesn't take in consideration 
 # IP Mapping *************************************************************************
 # We do tha mapping of test set only because its faster and it will generate totally new nodes from the train set
 test_res = set()
@@ -54,6 +60,8 @@ print(data1)
 
 print()
 # ***********************************************************************************
+'''
+
 
 # -------------------- ????????????????????????????????????????? --------------------
 # simply do : nom = list(data1[' Label'].unique())
@@ -80,6 +88,7 @@ data1.drop(columns=['label'],inplace = True)
 data1 =  pd.concat([data1, label1], axis=1) # ??????? WHY ?
 
 
+print(data1)
 
 
 # Splitting the dataset to train and test sets
