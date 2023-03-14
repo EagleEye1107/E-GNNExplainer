@@ -441,7 +441,7 @@ for nb_files in range(file_count):
     G1_test = nx.from_pandas_edgelist(X1_test, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
 
     # Removing the bidirectional edges
-    # G1_test = G1_test.to_directed()
+    G1_test = G1_test.to_directed()
 
     G1_test = from_networkx(G1_test,edge_attrs=['h','label'] )
     actual1 = G1_test.edata.pop('label')
