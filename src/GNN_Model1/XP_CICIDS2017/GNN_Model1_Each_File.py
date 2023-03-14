@@ -1,14 +1,12 @@
 ''''
     This version of GNN1 is similar to the original,
     The only difference is that the test will be done after training on each dataset file
-    So we will have 7 test phaes (Train1 -> Test1 -> Train2 -> Test2 ...etc.)
+    So we will have 4 test phases (Train1 -> Test1 -> Train2 -> Test2 ...etc.)
 '''
 
 
 
-import csv
-# import dgl.nn as dglnn
-from dgl import from_networkx, to_networkx
+from dgl import from_networkx
 import sklearn
 import torch.nn as nn
 import torch as th
@@ -16,16 +14,9 @@ import torch.nn.functional as F
 import dgl.function as fn
 import networkx as nx
 import pandas as pd
-# import socket
-# import struct
-import random
-# from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 import category_encoders as ce
-from sklearn.decomposition import PCA
-import seaborn as sns
-import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import confusion_matrix
 
@@ -301,9 +292,8 @@ for nb_files in range(file_count):
 
     # Convert it to a directed Graph
     # NB : IT WILL CREATE A DEFAULT BIDIRECTIONAL RELATIONSHIPS BETWEEN NODES, and not the original relationships ???????????????????????
-    
-    # Removing the bidirectional edges
-    # G1 = G1.to_directed()
+
+    G1 = G1.to_directed()
 
     print("G1 after todirected : ", G1)
     # Convert the graph from a networkx Graph to a DGL Graph
@@ -415,8 +405,7 @@ for nb_files in range(file_count):
 
     G1_test = nx.from_pandas_edgelist(X1_test, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
 
-    # Removing the bidirectional edges
-    # G1_test = G1_test.to_directed()
+    G1_test = G1_test.to_directed()
 
     G1_test = from_networkx(G1_test,edge_attrs=['h','label'] )
     actual1 = G1_test.edata.pop('label')

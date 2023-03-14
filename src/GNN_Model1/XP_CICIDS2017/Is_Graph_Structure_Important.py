@@ -1,15 +1,18 @@
 ''''
-    This version of GNN1 is similar to the original,
-    The only difference is that the test will be done after training on each dataset file
-    So we will have 7 test phaes (Train1 -> Test1 -> Train2 -> Test2 ...etc.)
+    This version of GNN1 works on proving that the graph structure has an important role on our model prediction,
+    The idea here is to work to remove the graph structure : by mapping all IP:Port in the whole dataset with unique integers,
+    with that being done, each IP:Port will be absolutely unique, so each node will have a single adjacent edge
+
+    We evaluate our model on the new data representation (without graph structure) and compare it with the original one (with graph structure)
+    And we can notice decline in the Acc (~ -4%) and f1_score (~ -6%)
+
+    => Graph structure is important for our model prediction and is giving a great advance in research
+
+    With that being done, we proved that the GCN phase (edge embeddings) is doing great on NIDS prediction
 '''
 
 
-
-import csv
-# import dgl.nn as dglnn
 from dgl import from_networkx
-from psutil import cpu_times
 import sklearn
 import torch.nn as nn
 import torch as th
@@ -17,16 +20,9 @@ import torch.nn.functional as F
 import dgl.function as fn
 import networkx as nx
 import pandas as pd
-# import socket
-# import struct
-import random
-# from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 import category_encoders as ce
-from sklearn.decomposition import PCA
-import seaborn as sns
-import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import confusion_matrix
 
@@ -242,10 +238,24 @@ for nb_files in range(file_count):
     # split train and test
     data1 =  pd.concat([data1, label1], axis=1) # ??????? WHY ?
 
+
+    # Is Graph Representation Important ?? *************************************************************************
+    print("data IP Addr before changing them : ")
+    print(data1[[' Source IP', ' Destination IP']])
+
+    dff = pd.DataFrame({'col1': list(range(len(data1.values))), 'col2': list(range(len(data1.values), 2 * len(data1.values)))})
+
+    data1[' Source IP'] = dff['col1']
+    data1[' Destination IP'] = dff['col2']
+
+    print()
+    print("data IP Addr after changing them : ")
+    print(data1[[' Source IP', ' Destination IP']])
+    # ***********************************************************************************
+
     # -------------------- ????????????????????????????????????????? --------------------
     # X will contain the label column due to the concatination made earlier !!
     X1_train, X1_test, y1_train, y1_test = train_test_split(data1, label1, test_size=0.3, random_state=123, stratify= label1)
-
 
     print("nb Train instances : ", len(X1_train.values))
     # X_test = pd.concat([X_test, X1_test], ignore_index = True)
@@ -402,30 +412,6 @@ for nb_files in range(file_count):
     columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
     X1_test=X1_test.reindex(columns=columns_titles)
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    # IP Mapping *************************************************************************
-    # We do tha mapping of test set only because its faster and it will generate totally new nodes from the train set
-    test_res = set()
-    for x in list(X1_test[' Source IP']) :
-        test_res.add(x)
-    for x in list(X1_test[' Destination IP']) :
-        test_res.add(x)
-
-    test_re = {}
-    cpt = 0
-    for x in test_res:
-        test_re[x] = str(cpt)
-        cpt +=1
-
-    print()
-
-    print(X1_test)
-    X1_test = X1_test.replace({' Source IP': test_re})
-    X1_test = X1_test.replace({' Destination IP': test_re})
-    print(X1_test)
-
-    print()
-    # ***********************************************************************************
 
     G1_test = nx.from_pandas_edgelist(X1_test, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
     G1_test = G1_test.to_directed()
