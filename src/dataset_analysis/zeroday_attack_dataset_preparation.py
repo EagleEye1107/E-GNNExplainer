@@ -11,14 +11,14 @@ X_Test = pd.DataFrame()
 
 for i in range(file_count):
     data1 = pd.read_csv(f'{path}{files[i]}', encoding="ISO-8859–1", dtype = str)
-    if "Tuesday" in files[i] :
+    if ("Tuesday" in files[i]) or ("Wednesday" in files[i]) :
         X_Train = pd.concat([X_Train, data1], ignore_index = True)
     else :
         X_Test = pd.concat([X_Test, data1], ignore_index = True)
 
 # Add Monday to the train set
-data1 = pd.read_csv(f'{monday_file}', encoding="ISO-8859–1", dtype = str)
-X_Train = pd.concat([X_Train, data1], ignore_index = True)
+# data1 = pd.read_csv(f'{monday_file}', encoding="ISO-8859–1", dtype = str)
+# X_Train = pd.concat([X_Train, data1], ignore_index = True)
 
 print("Conacat DONE -> Now shuffle the rows of both Train and Test sets")
 
@@ -29,13 +29,13 @@ print("Shuffle done -> Split both Train and Test sets into Mega batchs")
 
 
 j = a = b = 0
-# Split Train set into 4 Training sets
+# Split Train set into 5 Training sets
 for i in range(len(X_Train)):
     if i != 0 :
-        if i % int(len(X_Train)/4) == 0:
+        if i % int(len(X_Train)/5) == 0:
             a = b
             b = i
-            if b >= ((3/4) * len(X_Train)) :
+            if b >= ((4/5) * len(X_Train)) :
                 b = len(X_Train)
             print(f"[{a}, {b}]")
             df = X_Train.iloc[a:b]
@@ -44,13 +44,13 @@ for i in range(len(X_Train)):
 
 
 j = a = b = 0
-# Split Test set into 6 Testing sets
+# Split Test set into 5 Testing sets
 for i in range(len(X_Test)):
     if i != 0 :
-        if i % int(len(X_Test)/6) == 0:
+        if i % int(len(X_Test)/5) == 0:
             a = b
             b = i
-            if b >= ((5/6) * len(X_Test)) :
+            if b >= ((4/5) * len(X_Test)) :
                 b = len(X_Test)
             print(f"[{a}, {b}]")
             df = X_Test.iloc[a:b]
