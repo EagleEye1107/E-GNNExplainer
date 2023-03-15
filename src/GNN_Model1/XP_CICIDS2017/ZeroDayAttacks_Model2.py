@@ -361,7 +361,7 @@ for nb_files in range(file_count):
     print("++++++++++++++++++++++++++++ Test ++++++++++++++++++++++++++++++++")
 
 
-    X1_test = pd.read_csv(f'{test_path}Test{[nb_files]}.csv', encoding="ISO-8859–1", dtype = str)
+    X1_test = pd.read_csv(f'{test_path}Test{nb_files}.csv', encoding="ISO-8859–1", dtype = str)
 
     print(f'{files[nb_files]} ++++++++++++++++++++++++++++++++++++++++++++++')
     print("nb total instances in the file : ", len(X1_test.values))
