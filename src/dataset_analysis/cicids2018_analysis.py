@@ -50,7 +50,7 @@ elif len(att_glb) - 1 != att_count_glb[0] :
 else :
     print(f'''In the CIC-IDS-2018 We have :
             -> {att_count_glb[0]} attribute, all similar in all the dataset files
-            -> Attributes are : {attt[0:-1]}
+            -> Attributes are : {list(attt[0:-1])}
             -> {len(labels)} labels
             -> Labels are : {labels}''')
 
