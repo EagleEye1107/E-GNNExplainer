@@ -378,14 +378,14 @@ for nb_files in range(file_count):
 
     src_column = dst_column = []
 
+    cpt = 0
     for nb_instances in range(len(X1_test.values)) :
-        ip_ports = list(range(122661))
-        src_ip_port = random.choice(ip_ports)
-        ip_ports.remove(src_ip_port)
-        dst_ip_port = random.choice(ip_ports)
-
+        print(cpt)
+        src_ip_port = random.randint(122661)
+        dst_ip_port = random.choice(np.setdiff1d(range(122661), src_ip_port))
         src_column.append(str(src_ip_port))
         dst_column.append(str(src_ip_port))
+        cpt += 1
 
     print(src_column)
     print(dst_column)
