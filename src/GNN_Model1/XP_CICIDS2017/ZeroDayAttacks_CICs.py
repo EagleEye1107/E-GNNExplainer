@@ -380,7 +380,8 @@ for nb_files in range(file_count):
 
     cpt = 0
     for nb_instances in range(len(X1_test.values)) :
-        print(cpt)
+        if cpt % 1000 == 0 :
+            print(cpt)
         src_ip_port = random.randint(122661)
         dst_ip_port = random.choice(np.setdiff1d(range(122661), src_ip_port))
         src_column.append(str(src_ip_port))
