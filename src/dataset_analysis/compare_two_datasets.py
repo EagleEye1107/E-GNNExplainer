@@ -1,56 +1,159 @@
+import pandas as pd
+import category_encoders as ce
+from sklearn.preprocessing import StandardScaler
+
+
+# # CIC-IDS-2017 *************************************************
+# data1 = pd.read_csv('./input/Dataset/GlobalDataset/Splitted/CIC-IDS-2017-Dataset0.csv', encoding="ISO-8859–1", dtype = str)
+
+# # Delete two columns (U and V in the excel)
+# cols = list(set(list(data1.columns )) - set(list(['Flow Bytes/s',' Flow Packets/s'])) )
+# data1 = data1[cols]
+# # Mise en forme des noeuds
+# data1[' Source IP'] = data1[' Source IP'].apply(str)
+# data1[' Source Port'] = data1[' Source Port'].apply(str)
+# data1[' Destination IP'] = data1[' Destination IP'].apply(str)
+# data1[' Destination Port'] = data1[' Destination Port'].apply(str)
+# data1[' Source IP'] = data1[' Source IP'] + ':' + data1[' Source Port']
+# data1[' Destination IP'] = data1[' Destination IP'] + ':' + data1[' Destination Port']
+# data1.drop(columns=['Flow ID',' Source Port',' Destination Port',' Timestamp'], inplace=True)
+# # -------------------- ????????????????????????????????????????? --------------------
+# # simply do : nom = list(data1[' Label'].unique())
+# nom = []
+# nom = nom + [data1[' Label'].unique()[0]]
+# for i in range(1, len(data1[' Label'].unique())):
+#     nom = nom + [data1[' Label'].unique()[i]]
+# nom.insert(0, nom.pop(nom.index('BENIGN')))
+# # Naming the two classes BENIGN {0} / Any Intrusion {1}
+# data1[' Label'].replace(nom[0], 0,inplace = True)
+# for i in range(1,len(data1[' Label'].unique())):
+#     data1[' Label'].replace(nom[i], 1,inplace = True)
+# data1.rename(columns={" Label": "label"},inplace = True)
+# label1 = data1.label
+# data1.drop(columns=['label'],inplace = True)
+# # split train and test
+# data1 =  pd.concat([data1, label1], axis=1) # ??????? WHY ?
+
+# print("nb Train instances : ", len(data1.values))
+# # X_test = pd.concat([X_test, X1_test], ignore_index = True)
+
+# # for non numerical attributes (categorical data)
+# # Since we have a binary classification, the category values willl be replaced with the posterior probability (p(target = Ti | category = Cj))
+# # TargetEncoding is also called MeanEncoding, cuz it simply replace each value with (target_i_count_on_category_j) / (total_occurences_of_category_j)
+# encoder1 = ce.TargetEncoder(cols=[' Protocol',  'Fwd PSH Flags', ' Fwd URG Flags', ' Bwd PSH Flags', ' Bwd URG Flags'])
+# encoder1.fit(data1, label1)
+# data1 = encoder1.transform(data1)
+
+# # scaler (normalization)
+# scaler1 = StandardScaler()
+
+# # Manipulate flow content (all columns except : label, Source IP & Destination IP)
+# cols_to_norm1 = list(set(list(data1.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])) )
+# data1[cols_to_norm1] = scaler1.fit_transform(data1[cols_to_norm1])
+
+# ## Create the h attribute that will contain the content of our flows
+# data1['h'] = data1[ cols_to_norm1 ].values.tolist()
+# # print(data1)
+
+# # size of the list containig the content of our flows
+# sizeh1 = len(cols_to_norm1)
+
+
+# # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# # Before training the data :
+# # We need to delete all the attributes (cols_to_norm1) to have the {Source IP, Destination IP, label, h} representation
+# data1.drop(columns = cols_to_norm1, inplace = True)
+
+# # Then we need to Swap {label, h} Columns to have the {Source IP, Destination IP, h, label} representation
+# columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
+# data1=data1.reindex(columns=columns_titles)
+# # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+# print("sizeh = ", sizeh1)
 
 
 
-cicids2017 = ['Flow ID', 'Source IP', 'Source Port', 'Destination IP',
- 'Destination Port', 'Protocol', 'Timestamp', 'Flow Duration',
- 'Total Fwd Packets', 'Total Backward Packets',
- 'Total Length of Fwd Packets', 'Total Length of Bwd Packets',
- 'Fwd Packet Length Max', 'Fwd Packet Length Min',
- 'Fwd Packet Length Mean', 'Fwd Packet Length Std',
- 'Bwd Packet Length Max', 'Bwd Packet Length Min',
- 'Bwd Packet Length Mean', 'Bwd Packet Length Std', 'Flow Bytes/s',
- 'Flow Packets/s', 'Flow IAT Mean', 'Flow IAT Std', 'Flow IAT Max',
- 'Flow IAT Min', 'Fwd IAT Total', 'Fwd IAT Mean', 'Fwd IAT Std',
- 'Fwd IAT Max', 'Fwd IAT Min', 'Bwd IAT Total', 'Bwd IAT Mean',
- 'Bwd IAT Std', 'Bwd IAT Max', 'Bwd IAT Min', 'Fwd PSH Flags',
- 'Bwd PSH Flags', 'Fwd URG Flags', 'Bwd URG Flags', 'Fwd Header Length',     
- 'Bwd Header Length', 'Fwd Packets/s', 'Bwd Packets/s',
- 'Min Packet Length', 'Max Packet Length', 'Packet Length Mean',
- 'Packet Length Std', 'Packet Length Variance', 'FIN Flag Count',
- 'SYN Flag Count', 'RST Flag Count', 'PSH Flag Count', 'ACK Flag Count',     
- 'URG Flag Count', 'CWE Flag Count', 'ECE Flag Count', 'Down/Up Ratio',      
- 'Average Packet Size', 'Avg Fwd Segment Size', 'Avg Bwd Segment Size',      
- 'Fwd Header Length.1', 'Fwd Avg Bytes/Bulk', 'Fwd Avg Packets/Bulk',
- 'Fwd Avg Bulk Rate', 'Bwd Avg Bytes/Bulk', 'Bwd Avg Packets/Bulk',
- 'Bwd Avg Bulk Rate', 'Subflow Fwd Packets', 'Subflow Fwd Bytes',
- 'Subflow Bwd Packets', 'Subflow Bwd Bytes', 'Init_Win_bytes_forward',        
- 'Init_Win_bytes_backward', 'act_data_pkt_fwd', 'min_seg_size_forward',      
- 'Active Mean', 'Active Std', 'Active Max', 'Active Min', 'Idle Mean',
- 'Idle Std', 'Idle Max', 'Idle Min']
-
-
-cicids2018 = ['Dst Port', 'Protocol', 'Timestamp', 'Flow Duration', 'Tot Fwd Pkts', 'Tot Bwd Pkts', 'TotLen Fwd Pkts', 'TotLen Bwd Pkts', 'Fwd Pkt Len Max', 'Fwd Pkt Len Min', 'Fwd Pkt Len Mean', 'Fwd Pkt Len Std', 'Bwd Pkt Len Max', 'Bwd Pkt Len Min', 'Bwd Pkt Len Mean', 'Bwd Pkt Len Std', 'Flow Byts/s', 'Flow Pkts/s', 'Flow IAT Mean', 'Flow IAT Std', 'Flow IAT Max', 'Flow IAT Min', 'Fwd IAT Tot', 'Fwd IAT Mean', 'Fwd IAT Std', 'Fwd IAT Max', 'Fwd IAT Min', 'Bwd IAT Tot', 'Bwd IAT Mean', 'Bwd IAT Std', 'Bwd IAT Max', 'Bwd IAT Min', 'Fwd PSH Flags', 'Bwd PSH Flags', 'Fwd URG Flags', 'Bwd URG Flags', 'Fwd Header Len', 'Bwd Header Len', 'Fwd Pkts/s', 'Bwd Pkts/s', 'Pkt Len Min', 'Pkt Len Max', 'Pkt Len Mean', 'Pkt Len Std', 'Pkt Len Var', 'FIN Flag Cnt', 'SYN Flag Cnt', 'RST Flag Cnt', 'PSH Flag Cnt', 'ACK Flag Cnt', 'URG Flag Cnt', 'CWE Flag Count', 'ECE Flag Cnt', 'Down/Up Ratio', 'Pkt Size Avg', 'Fwd Seg Size Avg', 'Bwd Seg Size Avg', 'Fwd Byts/b Avg', 'Fwd Pkts/b Avg', 'Fwd Blk Rate Avg', 'Bwd Byts/b Avg', 'Bwd Pkts/b Avg', 'Bwd Blk Rate Avg', 'Subflow Fwd Pkts', 'Subflow Fwd Byts', 'Subflow Bwd Pkts', 'Subflow Bwd Byts', 'Init Fwd Win Byts', 'Init Bwd Win Byts', 'Fwd Act Data Pkts', 'Fwd Seg Size Min', 'Active Mean', 'Active Std', 'Active Max', 'Active Min', 'Idle Mean', 'Idle Std', 'Idle Max', 'Idle Min']
 
 
 
 
-print("nb attributs dans le cicids-2017 : ", len(cicids2017))
-print("nb attributs dans le cicids-2018 : ", len(cicids2018))
-print()
+# CIC-IDS-2018 *************************************************
+data2 = pd.read_csv('./input/Dataset/CICIDS2018/02-14-2018.csv', encoding="ISO-8859–1", dtype = str)
+
+# Create Src and Dst IP:Port columns in a stochastic way **************************************************
+# From the xps we did on the CIC-IDS-2017, we noticed that we had 122661 Different IP:Port in the test set, lets use this info to create them
+
+src_column = list(range(len(data2.values)))
+dst_column = list(range(len(data2.values), 2 * len(data2.values)))
+
+data2.insert(loc=0, column='Destination IP', value = dst_column)
+data2.insert(loc=0, column='Source IP', value = src_column)
+
+# Delete unnecessary columns (U and V in the excel)
+cols = list(set(list(data2.columns )) - set(list(['Flow Byts/s','Flow Pkts/s', 'Dst Port', 'Timestamp'])) )
+data2 = data2[cols]
+
+# # Mise en forme des noeuds
+data2['Source IP'] = data2['Source IP'].apply(str)
+data2['Destination IP'] = data2['Destination IP'].apply(str)
+
+# -------------------- ????????????????????????????????????????? --------------------
+# simply do : nom = list(data2[' Label'].unique())
+nom = []
+nom = nom + [data2['Label'].unique()[0]]
+for i in range(1, len(data2['Label'].unique())):
+    nom = nom + [data2['Label'].unique()[i]]
+
+nom.insert(0, nom.pop(nom.index('Benign')))
+
+# Naming the two classes Benign {0} / Any Intrusion {1}
+data2['Label'].replace(nom[0], 0,inplace = True)
+for i in range(1,len(data2['Label'].unique())):
+    data2['Label'].replace(nom[i], 1,inplace = True)
+
+data2.rename(columns={"Label": "label"},inplace = True)
+label2 = data2.label
+data2.drop(columns=['label'],inplace = True)
+# split train and test
+data1 =  pd.concat([data2, label2], axis=1) # ??????? WHY ?
 
 
-in2017_notin2018 = set(cicids2017) - set(cicids2018)
-in2018_notin2017 = set(cicids2018) - set(cicids2017)
-in_both = set(cicids2017) & set(cicids2018)
-in_one = set(cicids2017) | set(cicids2018)
-print("len(in2017_notin2018) : ", len(in2017_notin2018))
-print("len(in2018_notin2017) : ", len(in2018_notin2017))
-print()
-print(in2017_notin2018)
-print(in2018_notin2017)
+encoder2 = ce.TargetEncoder(cols=['Protocol',  'Fwd PSH Flags', 'Fwd URG Flags', 'Bwd PSH Flags', 'Bwd URG Flags'])
+encoder2.fit(data2, label2)
+data2 = encoder2.transform(data2)
 
-print()
-print(len(in_both))
-print(len(in_one))
+# scaler (normalization)
+scaler2 = StandardScaler()
 
-print(in_one)
+# Manipulate flow content (all columns except : label, Source IP & Destination IP)
+cols_to_norm2 = list(set(list(data2.iloc[:, :].columns )) - set(list(['label', 'Source IP', 'Destination IP'])) )
+data2[cols_to_norm2] = scaler2.fit_transform(data1[cols_to_norm2])
+
+## Create the h attribute that will contain the content of our flows
+data2['h'] = data2[ cols_to_norm2 ].values.tolist()
+# print(data1)
+
+# size of the list containig the content of our flows
+sizeh2 = len(cols_to_norm2)
+
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Before training the data :
+# We need to delete all the attributes (cols_to_norm1) to have the {Source IP, Destination IP, label, h} representation
+data2.drop(columns = cols_to_norm2, inplace = True)
+
+# Then we need to Swap {label, h} Columns to have the {Source IP, Destination IP, h, label} representation
+columns_titles = ['Source IP', 'Destination IP', 'h', 'label']
+data2 = data2.reindex(columns=columns_titles)
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+print(cols_to_norm2)
+print("sizeh2 = ", sizeh2)
+
+
+
+
+print(data2)
+
+print(desttt)

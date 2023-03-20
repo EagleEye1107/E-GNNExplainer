@@ -190,7 +190,7 @@ nbclasses =  2
 #     X1_train[' Source IP'] = X1_train[' Source IP'] + ':' + X1_train[' Source Port']
 #     X1_train[' Destination IP'] = X1_train[' Destination IP'] + ':' + X1_train[' Destination Port']
 
-#     X1_train.drop(columns=['Flow ID',' Source Port',' Destination Port',' Timestamp'], inplace=True)
+#     X1_train.drop(columns=['Flow ID',' Source Port',' Destination Port',' Timestamp', ' Fwd Header Length.1'], inplace=True)
 
 #     # -------------------- ????????????????????????????????????????? --------------------
 #     # simply do : nom = list(X1_train[' Label'].unique())
@@ -376,93 +376,90 @@ for nb_files in range(file_count):
     # Create Src and Dst IP:Port columns in a stochastic way **************************************************
     # From the xps we did on the CIC-IDS-2017, we noticed that we had 122661 Different IP:Port in the test set, lets use this info to create them
 
-    src_column = dst_column = []
+    src_column = list(range(len(X1_test.values)))
+    dst_column = list(range(len(X1_test.values), 2 * len(X1_test.values)))
 
-    cpt = 0
-    for nb_instances in range(len(X1_test.values)) :
-        if cpt % 100000 == 0 :
-            print(cpt)
-        src_ip_port = random.randint(122661)
-        dst_ip_port = random.choice(np.setdiff1d(range(122661), src_ip_port))
-        src_column.append(str(src_ip_port))
-        dst_column.append(str(src_ip_port))
-        cpt += 1
+    X1_test.insert(loc=0, column='Destination IP', value = dst_column)
+    X1_test.insert(loc=0, column='Source IP', value = src_column)
+    
+    # Delete unnecessary columns (U and V in the excel)
+    cols = list(set(list(X1_test.columns )) - set(list(['Flow Byts/s','Flow Pkts/s', 'Dst Port', 'Timestamp'])) )
+    X1_test = X1_test[cols]
 
-    print(src_column)
-    print(dst_column)
+    # # Mise en forme des noeuds
+    X1_test['Source IP'] = X1_test['Source IP'].apply(str)
+    X1_test['Destination IP'] = X1_test['Destination IP'].apply(str)
 
-    X1_test.insert(loc=0, column=' Destination IP', value=dst_column)
-    X1_test.insert(loc=0, column=' Source IP', value=src_column)
+    print(len(X1_test.values[0, :]) - 1)
+
+    # -------------------- ????????????????????????????????????????? --------------------
+    # simply do : nom = list(X1_test[' Label'].unique())
+    nom = []
+    nom = nom + [X1_test['Label'].unique()[0]]
+    for i in range(1, len(X1_test['Label'].unique())):
+        nom = nom + [X1_test['Label'].unique()[i]]
+    
+    nom.insert(0, nom.pop(nom.index('Benign')))
+
+    # Naming the two classes Benign {0} / Any Intrusion {1}
+    X1_test['Label'].replace(nom[0], 0,inplace = True)
+    for i in range(1,len(X1_test['Label'].unique())):
+        X1_test['Label'].replace(nom[i], 1,inplace = True)
+    
+    ##################### LABELS FREQ #######################################
+    print()
+    print("labels freq after changing labels to binary")
+    counts = list(X1_test['Label'].value_counts().to_dict().items())
+    for j, x in enumerate(counts):
+        x = list(x)
+        x[1] = x[1] / len(X1_test)
+        counts[j] = x
+    print({f'{files[nb_files]}' : counts})
+    ##############################################################################
+
+    print(X1_test.columns)
+    print(len(X1_test.columns))
+
+    X1_test.rename(columns={"Label": "label"},inplace = True)
+    label1 = X1_test.label
+    X1_test.drop(columns=['label'],inplace = True)
+
+    # ******** At this step X1_test contains only the data without label column
+    # ******** The label column is stored in the label variale 
+
+    # split train and test
+    X1_test =  pd.concat([X1_test, label1], axis=1) # ??????? WHY ?
+
+    encoder2 = ce.TargetEncoder(cols=[' Protocol',  'Fwd PSH Flags', ' Fwd URG Flags', ' Bwd PSH Flags', ' Bwd URG Flags'])
+    scaler2 = StandardScaler()
+
+    cols_to_norm2 = list(set(list(X1_test.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])) )
+    X1_test[cols_to_norm2] = scaler2.fit_transform(X1_test[cols_to_norm2])
+
+    ## Create the h attribute that will contain the content of our flows
+    X1_test['h'] = X1_test[ cols_to_norm2 ].values.tolist()
+
+    # size of the list containig the content of our flows
+    sizeh = len(cols_to_norm2)
+
+    print("nb Test instances : ", len(X1_test.values))
+    X1_test = encoder2.transform(X1_test)
+    X1_test[cols_to_norm2] = scaler2.transform(X1_test[cols_to_norm2])
+    X1_test['h'] = X1_test[ cols_to_norm2 ].values.tolist()
+
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    # Before training the data :
+    # We need to delete all the attributes (cols_to_norm2) to have the {Source IP, Destination IP, label, h} representation
+    X1_test.drop(columns = cols_to_norm2, inplace = True)
+
+    # Then we need to Swap {label, h} Columns to have the {Source IP, Destination IP, h, label} representation
+    columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
+    X1_test=X1_test.reindex(columns=columns_titles)
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     print(X1_test)
 
-    print(desttt)
-    
-    # # Delete two columns (U and V in the excel)
-    # cols = list(set(list(X1_test.columns )) - set(list(['Flow Bytes/s',' Flow Packets/s'])) )
-    # X1_test = X1_test[cols]
-
-    # # Mise en forme des noeuds
-    # X1_test[' Source IP'] = X1_test[' Source IP'].apply(str)
-    # X1_test[' Source Port'] = X1_test[' Source Port'].apply(str)
-    # X1_test[' Destination IP'] = X1_test[' Destination IP'].apply(str)
-    # X1_test[' Destination Port'] = X1_test[' Destination Port'].apply(str)
-    # X1_test[' Source IP'] = X1_test[' Source IP'] + ':' + X1_test[' Source Port']
-    # X1_test[' Destination IP'] = X1_test[' Destination IP'] + ':' + X1_test[' Destination Port']
-
-    # X1_test.drop(columns=['Flow ID',' Source Port',' Destination Port',' Timestamp'], inplace=True)
-
-    # # -------------------- ????????????????????????????????????????? --------------------
-    # # simply do : nom = list(X1_test[' Label'].unique())
-    # nom = []
-    # nom = nom + [X1_test[' Label'].unique()[0]]
-    # for i in range(1, len(X1_test[' Label'].unique())):
-    #     nom = nom + [X1_test[' Label'].unique()[i]]
-    
-    # nom.insert(0, nom.pop(nom.index('BENIGN')))
-
-    # # Naming the two classes BENIGN {0} / Any Intrusion {1}
-    # X1_test[' Label'].replace(nom[0], 0,inplace = True)
-    # for i in range(1,len(X1_test[' Label'].unique())):
-    #     X1_test[' Label'].replace(nom[i], 1,inplace = True)
-    
-    # ##################### LABELS FREQ #######################################
-    # print()
-    # print("labels freq after changing labels to binary")
-    # counts = list(X1_test[' Label'].value_counts().to_dict().items())
-    # for j, x in enumerate(counts):
-    #     x = list(x)
-    #     x[1] = x[1] / len(X1_test)
-    #     counts[j] = x
-    # print({f'{files[nb_files]}' : counts})
-    # ##############################################################################
-
-    # X1_test.rename(columns={" Label": "label"},inplace = True)
-    # label1 = X1_test.label
-    # X1_test.drop(columns=['label'],inplace = True)
-
-    # # ******** At this step X1_test contains only the data without label column
-    # # ******** The label column is stored in the label variale 
-
-    # # split train and test
-    # X1_test =  pd.concat([X1_test, label1], axis=1) # ??????? WHY ?
-
-    # print("nb Test instances : ", len(X1_test.values))
-    # X1_test = encoder1.transform(X1_test)
-    # X1_test[cols_to_norm1] = scaler1.transform(X1_test[cols_to_norm1])
-    # X1_test['h'] = X1_test[ cols_to_norm1 ].values.tolist()
-
-    # # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # # Before training the data :
-    # # We need to delete all the attributes (cols_to_norm1) to have the {Source IP, Destination IP, label, h} representation
-    # X1_test.drop(columns = cols_to_norm1, inplace = True)
-
-    # # Then we need to Swap {label, h} Columns to have the {Source IP, Destination IP, h, label} representation
-    # columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
-    # X1_test=X1_test.reindex(columns=columns_titles)
-    # # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    # print(X1_test)
+    print(deesstt)
 
     # G1_test = nx.from_pandas_edgelist(X1_test, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
 
