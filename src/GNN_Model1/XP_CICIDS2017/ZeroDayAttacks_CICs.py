@@ -430,10 +430,10 @@ for nb_files in range(file_count):
     # split train and test
     X1_test =  pd.concat([X1_test, label2], axis=1) # ??????? WHY ?
 
-    encoder2 = ce.TargetEncoder(cols=[' Protocol',  'Fwd PSH Flags', ' Fwd URG Flags', ' Bwd PSH Flags', ' Bwd URG Flags'])
+    encoder2 = ce.TargetEncoder(cols=['Protocol',  'Fwd PSH Flags', 'Fwd URG Flags', 'Bwd PSH Flags', 'Bwd URG Flags'])
     encoder2.fit(X1_test, label2)
     scaler2 = StandardScaler()
-    cols_to_norm2 = list(set(list(X1_test.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])) )
+    cols_to_norm2 = list(set(list(X1_test.iloc[:, :].columns )) - set(list(['label', 'Source IP', 'Destination IP'])) )
 
     print("nb Test instances : ", len(X1_test.values))
     X1_test = encoder2.transform(X1_test)
