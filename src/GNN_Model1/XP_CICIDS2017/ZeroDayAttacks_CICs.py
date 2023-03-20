@@ -446,7 +446,7 @@ for nb_files in range(file_count):
     X1_test.drop(columns = cols_to_norm2, inplace = True)
 
     # Then we need to Swap {label, h} Columns to have the {Source IP, Destination IP, h, label} representation
-    columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
+    columns_titles = ['Source IP', 'Destination IP', 'h', 'label']
     X1_test=X1_test.reindex(columns=columns_titles)
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
