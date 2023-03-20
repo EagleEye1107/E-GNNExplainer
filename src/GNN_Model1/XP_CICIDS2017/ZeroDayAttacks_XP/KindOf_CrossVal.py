@@ -167,17 +167,16 @@ class Model(nn.Module):
 #Data
 nbclasses =  2
 
-test_path = "./input/Dataset/ZeroDayAttacks_Split/Test/"
-path, dirs, files = next(os.walk("./input/Dataset/ZeroDayAttacks_Split/Train/"))
+
+path, dirs, files = next(os.walk("./input/Dataset/TrafficLabelling/"))
 file_count = len(files)
 
 for nb_files in range(file_count):
-    print("++++++++++++++++++++++++++++ Train ++++++++++++++++++++++++++++++++")
+    print(f"****************************************** APPRAOCH {nb_files} ******************************************")
+
+    print(f"+++++ Train on the {files[nb_files]} data file and Test on the others +++++++++")
     X1_train = pd.read_csv(f'{path}{files[nb_files]}', encoding="ISO-8859–1", dtype = str)
 
-    print(f'{files[nb_files]} ++++++++++++++++++++++++++++++++++++++++++++++')
-    print("nb total instances in the file : ", len(X1_train.values))
-    
     # Delete two columns (U and V in the excel)
     cols = list(set(list(X1_train.columns )) - set(list(['Flow Bytes/s',' Flow Packets/s'])) )
     X1_train = X1_train[cols]
@@ -231,7 +230,6 @@ for nb_files in range(file_count):
     # X will contain the label column due to the concatination made earlier !!
     # X1_train, X1_test, y1_train, y1_test = train_test_split(data1, label1, test_size=0.3, random_state=123, stratify= label1)
 
-    print("nb Train instances : ", len(X1_train.values))
     # X_test = pd.concat([X_test, X1_test], ignore_index = True)
 
     # for non numerical attributes (categorical data)
@@ -254,7 +252,6 @@ for nb_files in range(file_count):
 
     # size of the list containig the content of our flows
     sizeh = len(cols_to_norm1)
-
 
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     # Before training the data :
@@ -354,130 +351,122 @@ for nb_files in range(file_count):
     print("Precision : ", sklearn.metrics.precision_score(edge_label1, pred1, labels=[0,1]))
     print("Recall : ", sklearn.metrics.recall_score(edge_label1, pred1, labels=[0,1]))
     print("f1_score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels=[0,1]))
-    # print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+    print()
 
 
     # ------------------------------------------------ Test ---------------------------------------------------------------------
-    print("++++++++++++++++++++++++++++ Test ++++++++++++++++++++++++++++++++")
+    test_path, tes_dirs, test_files = next(os.walk("./input/Dataset/TrafficLabelling/"))
+    test_file_count = len(test_files)
 
+    for nb_test_files in range(test_file_count):
+        if files[nb_files] not in files[nb_test_files]:
+            X1_test = pd.read_csv(f'{path}{files[nb_test_files]}', encoding="ISO-8859–1", dtype = str)
 
-    X1_test = pd.read_csv(f'{test_path}Test{nb_files}.csv', encoding="ISO-8859–1", dtype = str)
+            print(f'{files[nb_test_files]} ++++++++++++++++++++++++++++++++++++++++++++++')
+            
+            # Delete two columns (U and V in the excel)
+            cols = list(set(list(X1_test.columns )) - set(list(['Flow Bytes/s',' Flow Packets/s'])) )
+            X1_test = X1_test[cols]
 
-    print(f'{files[nb_files]} ++++++++++++++++++++++++++++++++++++++++++++++')
-    print("nb total instances in the file : ", len(X1_test.values))
-    
-    # Delete two columns (U and V in the excel)
-    cols = list(set(list(X1_test.columns )) - set(list(['Flow Bytes/s',' Flow Packets/s'])) )
-    X1_test = X1_test[cols]
+            # Mise en forme des noeuds
+            X1_test[' Source IP'] = X1_test[' Source IP'].apply(str)
+            X1_test[' Source Port'] = X1_test[' Source Port'].apply(str)
+            X1_test[' Destination IP'] = X1_test[' Destination IP'].apply(str)
+            X1_test[' Destination Port'] = X1_test[' Destination Port'].apply(str)
+            X1_test[' Source IP'] = X1_test[' Source IP'] + ':' + X1_test[' Source Port']
+            X1_test[' Destination IP'] = X1_test[' Destination IP'] + ':' + X1_test[' Destination Port']
 
-    # Mise en forme des noeuds
-    X1_test[' Source IP'] = X1_test[' Source IP'].apply(str)
-    X1_test[' Source Port'] = X1_test[' Source Port'].apply(str)
-    X1_test[' Destination IP'] = X1_test[' Destination IP'].apply(str)
-    X1_test[' Destination Port'] = X1_test[' Destination Port'].apply(str)
-    X1_test[' Source IP'] = X1_test[' Source IP'] + ':' + X1_test[' Source Port']
-    X1_test[' Destination IP'] = X1_test[' Destination IP'] + ':' + X1_test[' Destination Port']
+            X1_test.drop(columns=['Flow ID',' Source Port',' Destination Port',' Timestamp'], inplace=True)
 
-    X1_test.drop(columns=['Flow ID',' Source Port',' Destination Port',' Timestamp'], inplace=True)
+            # -------------------- ????????????????????????????????????????? --------------------
+            # simply do : nom = list(X1_test[' Label'].unique())
+            nom = []
+            nom = nom + [X1_test[' Label'].unique()[0]]
+            for i in range(1, len(X1_test[' Label'].unique())):
+                nom = nom + [X1_test[' Label'].unique()[i]]
+            
+            nom.insert(0, nom.pop(nom.index('BENIGN')))
 
-    # -------------------- ????????????????????????????????????????? --------------------
-    # simply do : nom = list(X1_test[' Label'].unique())
-    nom = []
-    nom = nom + [X1_test[' Label'].unique()[0]]
-    for i in range(1, len(X1_test[' Label'].unique())):
-        nom = nom + [X1_test[' Label'].unique()[i]]
-    
-    nom.insert(0, nom.pop(nom.index('BENIGN')))
+            # Naming the two classes BENIGN {0} / Any Intrusion {1}
+            X1_test[' Label'].replace(nom[0], 0,inplace = True)
+            for i in range(1,len(X1_test[' Label'].unique())):
+                X1_test[' Label'].replace(nom[i], 1,inplace = True)
+            
+            ##################### LABELS FREQ #######################################
+            print()
+            print("labels freq after changing labels to binary")
+            counts = list(X1_test[' Label'].value_counts().to_dict().items())
+            for j, x in enumerate(counts):
+                x = list(x)
+                x[1] = x[1] / len(X1_test)
+                counts[j] = x
+            print({f'{files[nb_test_files]}' : counts})
+            ##############################################################################
 
-    # Naming the two classes BENIGN {0} / Any Intrusion {1}
-    X1_test[' Label'].replace(nom[0], 0,inplace = True)
-    for i in range(1,len(X1_test[' Label'].unique())):
-        X1_test[' Label'].replace(nom[i], 1,inplace = True)
-    
-    ##################### LABELS FREQ #######################################
-    print()
-    print("labels freq after changing labels to binary")
-    counts = list(X1_test[' Label'].value_counts().to_dict().items())
-    for j, x in enumerate(counts):
-        x = list(x)
-        x[1] = x[1] / len(X1_test)
-        counts[j] = x
-    print({f'{files[nb_files]}' : counts})
-    ##############################################################################
+            X1_test.rename(columns={" Label": "label"},inplace = True)
+            label1 = X1_test.label
+            X1_test.drop(columns=['label'],inplace = True)
 
-    X1_test.rename(columns={" Label": "label"},inplace = True)
-    label1 = X1_test.label
-    X1_test.drop(columns=['label'],inplace = True)
+            # ******** At this step X1_test contains only the data without label column
+            # ******** The label column is stored in the label variale 
 
-    # ******** At this step X1_test contains only the data without label column
-    # ******** The label column is stored in the label variale 
+            # split train and test
+            X1_test =  pd.concat([X1_test, label1], axis=1) # ??????? WHY ?
 
-    # split train and test
-    X1_test =  pd.concat([X1_test, label1], axis=1) # ??????? WHY ?
+            X1_test = encoder1.transform(X1_test)
+            X1_test[cols_to_norm1] = scaler1.transform(X1_test[cols_to_norm1])
+            X1_test['h'] = X1_test[ cols_to_norm1 ].values.tolist()
 
-    print("nb Test instances : ", len(X1_test.values))
-    X1_test = encoder1.transform(X1_test)
-    X1_test[cols_to_norm1] = scaler1.transform(X1_test[cols_to_norm1])
-    X1_test['h'] = X1_test[ cols_to_norm1 ].values.tolist()
+            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            # Before training the data :
+            # We need to delete all the attributes (cols_to_norm1) to have the {Source IP, Destination IP, label, h} representation
+            X1_test.drop(columns = cols_to_norm1, inplace = True)
 
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # Before training the data :
-    # We need to delete all the attributes (cols_to_norm1) to have the {Source IP, Destination IP, label, h} representation
-    X1_test.drop(columns = cols_to_norm1, inplace = True)
+            # Then we need to Swap {label, h} Columns to have the {Source IP, Destination IP, h, label} representation
+            columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
+            X1_test=X1_test.reindex(columns=columns_titles)
+            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-    # Then we need to Swap {label, h} Columns to have the {Source IP, Destination IP, h, label} representation
-    columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
-    X1_test=X1_test.reindex(columns=columns_titles)
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            G1_test = nx.from_pandas_edgelist(X1_test, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
 
-    print(X1_test)
+            # Removing the bidirectional edges
+            G1_test = G1_test.to_directed()
 
-    G1_test = nx.from_pandas_edgelist(X1_test, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
+            G1_test = from_networkx(G1_test,edge_attrs=['h','label'] )
+            actual1 = G1_test.edata.pop('label')
+            G1_test.ndata['feature'] = th.ones(G1_test.num_nodes(), G1.ndata['h'].shape[2])
 
-    # Removing the bidirectional edges
-    G1_test = G1_test.to_directed()
+            G1_test.ndata['feature'] = th.reshape(G1_test.ndata['feature'], (G1_test.ndata['feature'].shape[0], 1, G1_test.ndata['feature'].shape[1]))
+            G1_test.edata['h'] = th.reshape(G1_test.edata['h'], (G1_test.edata['h'].shape[0], 1, G1_test.edata['h'].shape[1]))
+            G1_test = G1_test.to('cuda:0')
 
-    G1_test = from_networkx(G1_test,edge_attrs=['h','label'] )
-    actual1 = G1_test.edata.pop('label')
-    G1_test.ndata['feature'] = th.ones(G1_test.num_nodes(), G1.ndata['h'].shape[2])
+            node_features_test1 = G1_test.ndata['feature']
+            edge_features_test1 = G1_test.edata['h']
 
-    G1_test.ndata['feature'] = th.reshape(G1_test.ndata['feature'], (G1_test.ndata['feature'].shape[0], 1, G1_test.ndata['feature'].shape[1]))
-    G1_test.edata['h'] = th.reshape(G1_test.edata['h'], (G1_test.edata['h'].shape[0], 1, G1_test.edata['h'].shape[1]))
-    G1_test = G1_test.to('cuda:0')
+            # to print
+            pr = True
+            # True if you want to print the embedding vectors
+            # the name of the file where the vectors are printed
+            filename = './models/M1_weights_ZeroDayAttacks.txt'
 
-    node_features_test1 = G1_test.ndata['feature']
-    edge_features_test1 = G1_test.edata['h']
+            test_pred1 = model1(G1_test, node_features_test1, edge_features_test1).cuda()
 
-    # to print
-    pr = True
-    # True if you want to print the embedding vectors
-    # the name of the file where the vectors are printed
-    filename = './models/M1_weights_ZeroDayAttacks.txt'
+            test_pred1 = test_pred1.argmax(1)
+            test_pred1 = th.Tensor.cpu(test_pred1).detach().numpy()
 
-    print("nb instances : ", len(X1_test.values))
+            # actual11 = ["Normal" if i == 0 else "Attack" for i in actual1]
+            # test_pred11 = ["Normal" if i == 0 else "Attack" for i in test_pred1]
 
-    test_pred1 = model1(G1_test, node_features_test1, edge_features_test1).cuda()
+            c = confusion_matrix(actual1, test_pred1)
+            c[0][0]= c[0][0]/2
+            c[1][0]= c[1][0]/2
+            c[0][1]= c[0][1]/2
+            c[1][1]= c[1][1]/2
 
+            print('Metrics : ')
+            print("Accuracy : ", sklearn.metrics.accuracy_score(actual1, test_pred1))
+            print("Precision : ", sklearn.metrics.precision_score(actual1, test_pred1, labels = [0,1]))
+            print("Recall : ", sklearn.metrics.recall_score(actual1, test_pred1, labels = [0,1]))
+            print("f1_score : ", sklearn.metrics.f1_score(actual1, test_pred1, labels = [0,1]))
 
-    test_pred1 = test_pred1.argmax(1)
-    test_pred1 = th.Tensor.cpu(test_pred1).detach().numpy()
-
-    # actual11 = ["Normal" if i == 0 else "Attack" for i in actual1]
-    # test_pred11 = ["Normal" if i == 0 else "Attack" for i in test_pred1]
-
-    print("Confusion matrix : ")
-    c = confusion_matrix(actual1, test_pred1)
-    print(c)
-    c[0][0]= c[0][0]/2
-    c[1][0]= c[1][0]/2
-    c[0][1]= c[0][1]/2
-    c[1][1]= c[1][1]/2
-    print(c)
-
-    print('Metrics : ')
-    print("Accuracy : ", sklearn.metrics.accuracy_score(actual1, test_pred1))
-    print("Precision : ", sklearn.metrics.precision_score(actual1, test_pred1, labels = [0,1]))
-    print("Recall : ", sklearn.metrics.recall_score(actual1, test_pred1, labels = [0,1]))
-    print("f1_score : ", sklearn.metrics.f1_score(actual1, test_pred1, labels = [0,1]))
-
-    print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+            print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
