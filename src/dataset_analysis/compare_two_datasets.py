@@ -155,5 +155,3 @@ print("sizeh2 = ", sizeh2)
 
 
 print(data2)
-
-print(desttt)
