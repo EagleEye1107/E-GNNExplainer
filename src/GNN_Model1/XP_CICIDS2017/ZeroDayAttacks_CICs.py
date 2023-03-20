@@ -421,22 +421,23 @@ for nb_files in range(file_count):
     print(len(X1_test.columns))
 
     X1_test.rename(columns={"Label": "label"},inplace = True)
-    label1 = X1_test.label
+    label2 = X1_test.label
     X1_test.drop(columns=['label'],inplace = True)
 
     # ******** At this step X1_test contains only the data without label column
     # ******** The label column is stored in the label variale 
 
     # split train and test
-    X1_test =  pd.concat([X1_test, label1], axis=1) # ??????? WHY ?
+    X1_test =  pd.concat([X1_test, label2], axis=1) # ??????? WHY ?
 
     encoder2 = ce.TargetEncoder(cols=[' Protocol',  'Fwd PSH Flags', ' Fwd URG Flags', ' Bwd PSH Flags', ' Bwd URG Flags'])
+    encoder2.fit(X1_test, label2)
     scaler2 = StandardScaler()
     cols_to_norm2 = list(set(list(X1_test.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])) )
 
     print("nb Test instances : ", len(X1_test.values))
     X1_test = encoder2.transform(X1_test)
-    X1_test[cols_to_norm2] = scaler2.transform(X1_test[cols_to_norm2])
+    X1_test[cols_to_norm2] = scaler2.fit_transform(X1_test[cols_to_norm2])
     X1_test['h'] = X1_test[ cols_to_norm2 ].values.tolist()
 
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
