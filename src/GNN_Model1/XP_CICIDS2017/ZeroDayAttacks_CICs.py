@@ -433,9 +433,8 @@ for nb_files in range(file_count):
     encoder2 = ce.TargetEncoder(cols=[' Protocol',  'Fwd PSH Flags', ' Fwd URG Flags', ' Bwd PSH Flags', ' Bwd URG Flags'])
     scaler2 = StandardScaler()
 
-    print(X1_test['Pkt Size Avg'])
-
     cols_to_norm2 = list(set(list(X1_test.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])) )
+    X1_test.info()
     X1_test[cols_to_norm2] = scaler2.fit_transform(X1_test[cols_to_norm2])
 
     ## Create the h attribute that will contain the content of our flows
