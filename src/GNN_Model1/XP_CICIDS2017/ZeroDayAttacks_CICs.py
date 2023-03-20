@@ -437,6 +437,7 @@ for nb_files in range(file_count):
 
     print("nb Test instances : ", len(X1_test.values))
     X1_test = encoder2.transform(X1_test)
+    X1_test[cols_to_norm2] = X1_test[cols_to_norm2].apply(str)
     X1_test[cols_to_norm2] = scaler2.fit_transform(X1_test[cols_to_norm2])
     X1_test['h'] = X1_test[ cols_to_norm2 ].values.tolist()
 
