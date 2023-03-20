@@ -352,6 +352,7 @@ for nb_files in range(file_count):
     print("Recall : ", sklearn.metrics.recall_score(edge_label1, pred1, labels=[0,1]))
     print("f1_score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels=[0,1]))
     print()
+    print("++++++++++++++++++++++++++++++++++++++++++++ Test +++++++++++++++++++++++++++++++++++++++++")
 
 
     # ------------------------------------------------ Test ---------------------------------------------------------------------
@@ -393,7 +394,6 @@ for nb_files in range(file_count):
                 X1_test[' Label'].replace(nom[i], 1,inplace = True)
             
             ##################### LABELS FREQ #######################################
-            print()
             print("labels freq after changing labels to binary")
             counts = list(X1_test[' Label'].value_counts().to_dict().items())
             for j, x in enumerate(counts):
