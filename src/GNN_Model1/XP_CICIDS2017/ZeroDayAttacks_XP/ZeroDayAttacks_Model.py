@@ -21,6 +21,8 @@ from sklearn.metrics import confusion_matrix
 
 import os
 
+from focal_loss.focal_loss import FocalLoss
+
 # Confusion Matrix ------------------------------------------------------------
 def plot_confusion_matrix(cm,
                           target_names,
@@ -302,7 +304,8 @@ for nb_files in range(file_count):
                                                     classes = np.unique(G1.edata['label'].cpu().numpy()),
                                                     y = G1.edata['label'].cpu().numpy())
     class_weights1 = th.FloatTensor(class_weights1).cuda()
-    criterion1 = nn.CrossEntropyLoss(weight=class_weights1)
+    # criterion1 = nn.CrossEntropyLoss(weight=class_weights1)
+    criterion1 = FocalLoss(gamma=0.7, weights=class_weights1)
     G1 = G1.to('cuda:0')
 
     node_features1 = G1.ndata['h']

@@ -325,12 +325,18 @@ for nb_files in range(file_count):
     class_weights1 = class_weight.compute_class_weight(class_weight = 'balanced',
                                                     classes = np.unique(G1.edata['label'].cpu().numpy()),
                                                     y = G1.edata['label'].cpu().numpy())
+    ''' 
+        Using class weights, you make the classifier aware of how to treat the various classes in the loss function.
+        In this process, you give higher weights to certain classes & lower weights to other classes.
+        Example : [ 0.51600999 16.11525117] 
+        Basically : 
+            - For classes with small number of training images, you give it more weight
+            so that the network will be punished more if it makes mistakes predicting the label of these classes. 
+            - For classes with large numbers of images, you give it small weight
+    '''
     class_weights1 = th.FloatTensor(class_weights1).cuda()
     criterion1 = nn.CrossEntropyLoss(weight=class_weights1)
     G1 = G1.to('cuda:0')
-    #print(G1.device)
-    #print(G1.ndata['h'].device)
-    #print(G1.edata['h'].device)
 
     node_features1 = G1.ndata['h']
     edge_features1 = G1.edata['h']
