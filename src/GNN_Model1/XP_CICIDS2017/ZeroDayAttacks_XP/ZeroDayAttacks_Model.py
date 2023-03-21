@@ -325,14 +325,20 @@ for nb_files in range(file_count):
     model1 = Model(G1.ndata['h'].shape[2], size_embedding, G1.ndata['h'].shape[2], F.relu, 0.2).cuda()
     opt = th.optim.Adam(model1.parameters())
 
+    m = nn.Sigmoid()
     for epoch in range(1,1000):
         pred = model1(G1, node_features1, edge_features1).cuda()
-        loss = criterion1(pred[train_mask1], edge_label1[train_mask1])
-        opt.zero_grad()
-        loss.backward()
-        opt.step()
-        if epoch % 100 == 0:
-            print('Training acc:', compute_accuracy(pred[train_mask1], edge_label1[train_mask1]), loss)
+        print(pred[train_mask1])
+        print("***********")
+        print(epoch)
+        npp = pred[train_mask1].cpu().detach().numpy()
+        if not np.isnan(npp).any() :
+            loss = criterion1(m(pred[train_mask1]), edge_label1[train_mask1])
+            opt.zero_grad()
+            loss.backward()
+            opt.step()
+            if epoch % 100 == 0:
+                print('Training acc:', compute_accuracy(pred[train_mask1], edge_label1[train_mask1]), loss)
 
     pred1 = model1(G1, node_features1, edge_features1).cuda()
     pred1 = pred1.argmax(1)
