@@ -298,6 +298,9 @@ for nb_files in range(file_count):
     class_weights1 = class_weight.compute_class_weight(class_weight = 'balanced',
                                                     classes = np.unique(G1.edata['label'].cpu().numpy()),
                                                     y = G1.edata['label'].cpu().numpy())
+    print("****** Class Weights ******")
+    print(class_weights1)
+    print(ddddddddd)
     class_weights1 = th.FloatTensor(class_weights1).cuda()
     criterion1 = nn.CrossEntropyLoss(weight=class_weights1)
     G1 = G1.to('cuda:0')
