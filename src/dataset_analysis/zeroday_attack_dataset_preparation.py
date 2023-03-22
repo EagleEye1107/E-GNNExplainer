@@ -11,15 +11,14 @@ X_Test = pd.DataFrame()
 
 for i in range(file_count):
     data1 = pd.read_csv(f'{path}{files[i]}', encoding="ISO-8859–1", dtype = str)
-    if ("Tuesday" in files[i]) :
-        # or ("Wednesday" in files[i])
+    if ("Tuesday" in files[i]) or ("Wednesday" in files[i]) :
         X_Train = pd.concat([X_Train, data1], ignore_index = True)
     else :
         X_Test = pd.concat([X_Test, data1], ignore_index = True)
 
 # Add Monday to the train set
-data1 = pd.read_csv(f'{monday_file}', encoding="ISO-8859–1", dtype = str)
-X_Train = pd.concat([X_Train, data1], ignore_index = True)
+# data1 = pd.read_csv(f'{monday_file}', encoding="ISO-8859–1", dtype = str)
+# X_Train = pd.concat([X_Train, data1], ignore_index = True)
 
 print("Conacat DONE -> Now shuffle the rows of both Train and Test sets")
 

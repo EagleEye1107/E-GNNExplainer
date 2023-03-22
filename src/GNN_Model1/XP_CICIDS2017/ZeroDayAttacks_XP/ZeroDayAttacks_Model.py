@@ -305,7 +305,7 @@ for nb_files in range(file_count):
                                                     y = G1.edata['label'].cpu().numpy())
     class_weights1 = th.FloatTensor(class_weights1).cuda()
     # criterion1 = nn.CrossEntropyLoss(weight=class_weights1)
-    criterion1 = FocalLoss(gamma=5, weights=class_weights1)
+    criterion1 = FocalLoss(gamma = 5, weights = class_weights1)
     G1 = G1.to('cuda:0')
 
     node_features1 = G1.ndata['h']
@@ -328,9 +328,9 @@ for nb_files in range(file_count):
     m = nn.Sigmoid()
     for epoch in range(1,1000):
         pred = model1(G1, node_features1, edge_features1).cuda()
-        print(pred[train_mask1])
-        print("***********")
-        print(epoch)
+        # print(pred[train_mask1])
+        # print("***********")
+        # print(epoch)
         # npp = pred[train_mask1].cpu().detach().numpy()
         # if not np.isnan(npp).any() :
         loss = criterion1(m(pred[train_mask1]), edge_label1[train_mask1])
