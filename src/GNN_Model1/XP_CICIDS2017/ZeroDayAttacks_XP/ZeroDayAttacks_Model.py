@@ -305,7 +305,7 @@ for nb_files in range(file_count):
                                                     y = G1.edata['label'].cpu().numpy())
     class_weights1 = th.FloatTensor(class_weights1).cuda()
     # criterion1 = nn.CrossEntropyLoss(weight=class_weights1)
-    criterion1 = FocalLoss(gamma=0.7, weights=class_weights1)
+    criterion1 = FocalLoss(gamma=5, weights=class_weights1)
     G1 = G1.to('cuda:0')
 
     node_features1 = G1.ndata['h']
