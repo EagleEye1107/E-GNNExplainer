@@ -333,8 +333,7 @@ for nb_files in range(file_count):
         print(epoch)
         # npp = pred[train_mask1].cpu().detach().numpy()
         # if not np.isnan(npp).any() :
-        # loss = criterion1(m(pred[train_mask1]), edge_label1[train_mask1])
-        loss = criterion1(pred[train_mask1], edge_label1[train_mask1])
+        loss = criterion1(m(pred[train_mask1]), edge_label1[train_mask1])
         opt.zero_grad()
         loss.backward()
         opt.step()
