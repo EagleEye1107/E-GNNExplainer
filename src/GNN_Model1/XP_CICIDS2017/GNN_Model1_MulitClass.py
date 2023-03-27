@@ -72,7 +72,7 @@ def plot_confusion_matrix(cm,
 # -----------------------------------------------------------------------------
 
 #constante
-size_embedding = 20
+size_embedding = 152
 
 # Accuracy --------------------------------------------------------------------
 def compute_accuracy(pred, labels):
@@ -227,7 +227,7 @@ for nb_files in range(file_count):
         x = list(x)
         x[1] = x[1] / len(data1)
         counts[j] = x
-    print({f'{files[nb_files]}' : counts})
+    # print({f'{files[nb_files]}' : counts})
     ##############################################################################
 
     data1.rename(columns={" Label": "label"},inplace = True)
@@ -394,11 +394,15 @@ for nb_files in range(file_count):
     c[1][1]= c[1][1]/2
     # print(c)
 
-    print('metrics :')
-    print("Accuracy : ", sklearn.metrics.accuracy_score(edge_label1, pred1))
+    print('Train metrics :')
+    print(clss_mpping)
+    # print("Accuracy : ", sklearn.metrics.accuracy_score(edge_label1, pred1))
     # print("Precision : ", sklearn.metrics.precision_score(edge_label1, pred1, labels=[0,1]))
     # print("Recall : ", sklearn.metrics.recall_score(edge_label1, pred1, labels=[0,1]))
-    # print("f1_score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels = list(range(15)), average = None))
+    # print("macro-averaged f1-score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels = list(range(15)), average = None))
+    # print("weighted-average f1-score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels = list(range(15)), average = None))
+    # print("weighted-average f1-score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels = list(range(15)), average = None))
+    print(sklearn.metrics.classification_report(edge_label1, pred1, digits=4))
     # print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
     # ------------------------------------------------ Test ---------------------------------------------------------------------
@@ -457,11 +461,13 @@ for nb_files in range(file_count):
     c[1][1]= c[1][1]/2
     # print(c)
 
-    print('Metrics : ')
-    print("Accuracy : ", sklearn.metrics.accuracy_score(actual1, test_pred1))
+    print('Test metrics : ')
+    print(clss_mpping)
+    # print("Accuracy : ", sklearn.metrics.accuracy_score(actual1, test_pred1))
     # print("Precision : ", sklearn.metrics.precision_score(actual1, test_pred1, labels = [0,1]))
     # print("Recall : ", sklearn.metrics.recall_score(actual1, test_pred1, labels = [0,1]))
-    # print("f1_score : ", sklearn.metrics.f1_score(actual1, test_pred1, labels = list(range(15)), average = None))
+    # print("macro-averaged f1-score : ", sklearn.metrics.f1_score(actual1, test_pred1, labels = list(range(15)), average = None))
+    print(sklearn.metrics.classification_report(actual1, test_pred1, digits=4))
 
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 

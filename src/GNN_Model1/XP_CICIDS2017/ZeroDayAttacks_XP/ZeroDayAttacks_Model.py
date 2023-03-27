@@ -73,7 +73,7 @@ def plot_confusion_matrix(cm,
 # -----------------------------------------------------------------------------
 
 #constante
-size_embedding = 20
+size_embedding = 128
 
 # Accuracy --------------------------------------------------------------------
 def compute_accuracy(pred, labels):
