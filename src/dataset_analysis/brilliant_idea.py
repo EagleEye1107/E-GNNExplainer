@@ -10,10 +10,10 @@ X_Test = pd.DataFrame()
 
 for i in range(file_count):
     data1 = pd.read_csv(f'{path}{files[i]}', encoding="ISO-8859–1", dtype = str)
-    if ("Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv" in files[i]) or ("Friday-WorkingHours-Morning.pcap_ISCX.csv" in files[i]) or ("Thursday-WorkingHours-Afternoon-Infilteration.pcap_ISCX.csv" in files[i]) :
-        X_Train = pd.concat([X_Train, data1], ignore_index = True)
-    else :
+    if ("Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv" in files[i]) or ("Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv" in files[i]) or ("Wednesday-workingHours.pcap_ISCX.csv" in files[i]) :
         X_Test = pd.concat([X_Test, data1], ignore_index = True)
+    else :
+        X_Train = pd.concat([X_Train, data1], ignore_index = True)
 
 
 

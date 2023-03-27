@@ -166,7 +166,7 @@ class Model(nn.Module):
 # --------------------------------------------------- MAIN -----------------------------------------------------------
 
 #Data
-nbclasses =  2
+nbclasses =  15
 
 # path, dirs, files = next(os.walk("./input/Dataset/TrafficLabelling/"))
 path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
@@ -346,7 +346,7 @@ for nb_files in range(file_count):
             - For classes with large numbers of images, you give it small weight
     '''
     class_weights1 = th.FloatTensor(class_weights1).cuda()
-    criterion1 = nn.CrossEntropyLoss(weight=class_weights1)
+    criterion1 = nn.CrossEntropyLoss(weight = class_weights1)
     G1 = G1.to('cuda:0')
 
     node_features1 = G1.ndata['h']
@@ -385,20 +385,20 @@ for nb_files in range(file_count):
     print("pred1 : ", len(pred1))
     print("edge_label1 : ", len(edge_label1))
 
-    print('confusion matrix :')
+    # print('confusion matrix :')
     c = confusion_matrix(edge_label1, pred1)
-    print(c)
+    # print(c)
     c[0][0]= c[0][0]/2
     c[1][0]= c[1][0]/2
     c[0][1]= c[0][1]/2
     c[1][1]= c[1][1]/2
-    print(c)
+    # print(c)
 
     print('metrics :')
     print("Accuracy : ", sklearn.metrics.accuracy_score(edge_label1, pred1))
-    print("Precision : ", sklearn.metrics.precision_score(edge_label1, pred1, labels=[0,1]))
-    print("Recall : ", sklearn.metrics.recall_score(edge_label1, pred1, labels=[0,1]))
-    print("f1_score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels=[0,1]))
+    # print("Precision : ", sklearn.metrics.precision_score(edge_label1, pred1, labels=[0,1]))
+    # print("Recall : ", sklearn.metrics.recall_score(edge_label1, pred1, labels=[0,1]))
+    # print("f1_score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels = list(range(15)), average = None))
     # print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
     # ------------------------------------------------ Test ---------------------------------------------------------------------
@@ -418,7 +418,6 @@ for nb_files in range(file_count):
     X1_test=X1_test.reindex(columns=columns_titles)
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-    print(X1_test)
 
     G1_test = nx.from_pandas_edgelist(X1_test, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
 
@@ -449,20 +448,20 @@ for nb_files in range(file_count):
     test_pred1 = test_pred1.argmax(1)
     test_pred1 = th.Tensor.cpu(test_pred1).detach().numpy()
 
-    print("Confusion matrix : ")
+    # print("Confusion matrix : ")
     c = confusion_matrix(actual1, test_pred1)
-    print(c)
+    # print(c)
     c[0][0]= c[0][0]/2
     c[1][0]= c[1][0]/2
     c[0][1]= c[0][1]/2
     c[1][1]= c[1][1]/2
-    print(c)
+    # print(c)
 
     print('Metrics : ')
     print("Accuracy : ", sklearn.metrics.accuracy_score(actual1, test_pred1))
-    print("Precision : ", sklearn.metrics.precision_score(actual1, test_pred1, labels = [0,1]))
-    print("Recall : ", sklearn.metrics.recall_score(actual1, test_pred1, labels = [0,1]))
-    print("f1_score : ", sklearn.metrics.f1_score(actual1, test_pred1, labels = [0,1]))
+    # print("Precision : ", sklearn.metrics.precision_score(actual1, test_pred1, labels = [0,1]))
+    # print("Recall : ", sklearn.metrics.recall_score(actual1, test_pred1, labels = [0,1]))
+    # print("f1_score : ", sklearn.metrics.f1_score(actual1, test_pred1, labels = list(range(15)), average = None))
 
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
