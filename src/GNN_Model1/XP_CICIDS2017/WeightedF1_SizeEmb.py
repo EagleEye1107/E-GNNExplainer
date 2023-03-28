@@ -24,6 +24,10 @@ import matplotlib.pyplot as plt
 
 # os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:<4000>"
 
+# Force Torch to use CPU instead of GPU because of CUDA Out of Memory Error Caused by the Low GPU Memory 8GB
+th.cuda.is_available = lambda : False
+device = th.device('cuda' if th.cuda.is_available() else 'cpu')
+
 # Confusion Matrix ------------------------------------------------------------
 def plot_confusion_matrix(cm,
                           target_names,

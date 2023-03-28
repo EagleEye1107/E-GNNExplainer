@@ -60,10 +60,8 @@ for nb_files in range(file_count):
         test_re[x] = cpt
         cpt +=1
 
-    print(data1)
     data1 = data1.replace({' Source IP': test_re})
     data1 = data1.replace({' Destination IP': test_re})
-    print(data1)
 
     print()
     # ***********************************************************************************
@@ -95,12 +93,10 @@ for nb_files in range(file_count):
     # ******** At this step data1 contains only the data without label column
     # ******** The label column is stored in the label variale 
 
-    # split train and test
-    data1 =  pd.concat([data1, label1], axis=1) # ??????? WHY ?
+    print(data1[' Source IP'])
 
     # Splitting the dataset to train and test sets
     X1_train, X1_test, y1_train, y1_test = train_test_split(data1, label1, test_size=0.3, random_state=123, stratify= label1)
-
 
     # for non numerical attributes (categorical data)
     # Since we have a binary classification, the category values willl be replaced with the posterior probability (p(target = Ti | category = Cj))
