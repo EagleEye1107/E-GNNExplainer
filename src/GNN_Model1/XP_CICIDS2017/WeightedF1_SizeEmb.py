@@ -190,6 +190,8 @@ weighted_f1_mean = 0
 
 # Model
 for size_embedding in range(177, 180):
+    print("size_embedding = ", size_embedding)
+    print()
     # Model ------------------------------------------------------------------------------------------------
     for nb_files in range(file_count):
         data1 = pd.read_csv(f'{path}{files[nb_files]}', encoding="ISO-8859–1", dtype = str)
@@ -466,6 +468,7 @@ for size_embedding in range(177, 180):
 
         # ---------------------------------------------------------------------------------------------------------------------------
     # ----- ------------------------------------------------------------------------------------------------
+    th.cuda.empty_cache()
     size_embedding_axis.append(size_embedding)
     weighted_f1_axis.append(weighted_f1_mean / file_count)
 
