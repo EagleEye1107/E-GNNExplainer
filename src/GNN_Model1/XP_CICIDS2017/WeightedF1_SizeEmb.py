@@ -19,7 +19,10 @@ import numpy as np
 from sklearn.metrics import confusion_matrix
 
 import os
+import gc
 import matplotlib.pyplot as plt
+
+# os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:<4000>"
 
 # Confusion Matrix ------------------------------------------------------------
 def plot_confusion_matrix(cm,
@@ -468,6 +471,14 @@ for size_embedding in range(177, 180):
 
         # ---------------------------------------------------------------------------------------------------------------------------
     # ----- ------------------------------------------------------------------------------------------------
+    del pred
+    del test_pred1
+    del G1
+    del G1_test
+    del X1_test
+    del X1_train
+    del model1
+    gc.collect()
     th.cuda.empty_cache()
     size_embedding_axis.append(size_embedding)
     weighted_f1_axis.append(weighted_f1_mean / file_count)
