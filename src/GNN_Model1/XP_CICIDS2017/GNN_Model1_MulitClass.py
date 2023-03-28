@@ -72,7 +72,7 @@ def plot_confusion_matrix(cm,
 # -----------------------------------------------------------------------------
 
 #constante
-size_embedding = 152
+size_embedding = 183
 
 # Accuracy --------------------------------------------------------------------
 def compute_accuracy(pred, labels):
@@ -401,7 +401,7 @@ for nb_files in range(file_count):
     # print("Recall : ", sklearn.metrics.recall_score(edge_label1, pred1, labels=[0,1]))
     # print("macro-averaged f1-score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels = list(range(15)), average = None))
     # print("weighted-average f1-score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels = list(range(15)), average = None))
-    # print("weighted-average f1-score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels = list(range(15)), average = None))
+    # print("weighted-average f1-score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels = list(range(15)), average = 'weighted'))
     print(sklearn.metrics.classification_report(edge_label1, pred1, digits=4))
     # print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
@@ -466,7 +466,7 @@ for nb_files in range(file_count):
     # print("Accuracy : ", sklearn.metrics.accuracy_score(actual1, test_pred1))
     # print("Precision : ", sklearn.metrics.precision_score(actual1, test_pred1, labels = [0,1]))
     # print("Recall : ", sklearn.metrics.recall_score(actual1, test_pred1, labels = [0,1]))
-    # print("macro-averaged f1-score : ", sklearn.metrics.f1_score(actual1, test_pred1, labels = list(range(15)), average = None))
+    # print("weighted f1-score : ", sklearn.metrics.f1_score(actual1, test_pred1, labels = list(range(15)), average = 'weighted'))
     print(sklearn.metrics.classification_report(actual1, test_pred1, digits=4))
 
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
