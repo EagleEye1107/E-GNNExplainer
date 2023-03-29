@@ -216,13 +216,13 @@ data1 = data1.replace({' Label': clss_mpping})
 
 ##################### LABELS FREQ #######################################
 print()
-print("labels freq after changing labels to binary")
+print("labels freq after mapping labels")
 counts = list(data1[' Label'].value_counts().to_dict().items())
 for j, x in enumerate(counts):
     x = list(x)
     x[1] = x[1] / len(data1)
     counts[j] = x
-# print({f'{files[nb_files]}' : counts})
+print({'data1' : counts})
 ##############################################################################
 
 data1.rename(columns={" Label": "label"},inplace = True)
