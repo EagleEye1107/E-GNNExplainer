@@ -93,32 +93,30 @@ for nb_files in range(file_count):
     # ******** At this step data1 contains only the data without label column
     # ******** The label column is stored in the label variale 
 
-    print(data1[' Source IP'])
-
     # Splitting the dataset to train and test sets
     X1_train, X1_test, y1_train, y1_test = train_test_split(data1, label1, test_size=0.3, random_state=123, stratify= label1)
 
     # for non numerical attributes (categorical data)
     # Since we have a binary classification, the category values willl be replaced with the posterior probability (p(target = Ti | category = Cj))
     # TargetEncoding is also called MeanEncoding, cuz it simply replace each value with (target_i_count_on_category_j) / (total_occurences_of_category_j)
-    encoder1 = ce.TargetEncoder(cols=[' Protocol',  'Fwd PSH Flags', ' Fwd URG Flags', ' Bwd PSH Flags', ' Bwd URG Flags'])
-    encoder1.fit(X1_train, y1_train)
-    X1_train = encoder1.transform(X1_train)
+    # encoder1 = ce.TargetEncoder(cols=[' Protocol',  'Fwd PSH Flags', ' Fwd URG Flags', ' Bwd PSH Flags', ' Bwd URG Flags'])
+    # encoder1.fit(X1_train, y1_train)
+    # X1_train = encoder1.transform(X1_train)
 
-    # scaler (normalization)
-    scaler1 = StandardScaler()
+    # # scaler (normalization)
+    # scaler1 = StandardScaler()
 
-    # Manipulate flow content (all columns except : label, Source IP & Destination IP)
-    cols_to_norm1 = list(set(list(X1_train.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])) )
-    X1_train[cols_to_norm1] = scaler1.fit_transform(X1_train[cols_to_norm1])
+    # # Manipulate flow content (all columns except : label, Source IP & Destination IP)
+    # cols_to_norm1 = list(set(list(X1_train.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])) )
+    # X1_train[cols_to_norm1] = scaler1.fit_transform(X1_train[cols_to_norm1])
 
     # Random Forest Model Training
     print("Model Training")
     rf.fit(X1_train, y1_train)
 
     # Test *******************************************************
-    X1_test = encoder1.transform(X1_test)
-    X1_test[cols_to_norm1] = scaler1.transform(X1_test[cols_to_norm1])
+    # X1_test = encoder1.transform(X1_test)
+    # X1_test[cols_to_norm1] = scaler1.transform(X1_test[cols_to_norm1])
 
     # Model Testing
     print("Model Testing")

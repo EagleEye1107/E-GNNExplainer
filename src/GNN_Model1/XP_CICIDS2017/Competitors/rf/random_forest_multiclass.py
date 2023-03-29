@@ -135,4 +135,5 @@ for nb_files in range(file_count):
     print('Metrics : ')
     print("Accuracy : ", sklearn.metrics.accuracy_score(y1_test, y_pred))
     print("weighted f1-score : ", sklearn.metrics.f1_score(y1_test, y_pred, labels = list(range(15)), average = 'weighted'))
+    print("macro f1-score : ", sklearn.metrics.f1_score(y1_test, y_pred, labels = list(range(15)), average = 'macro'))
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
