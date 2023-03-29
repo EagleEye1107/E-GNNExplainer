@@ -1,8 +1,9 @@
 ''''
-        This version of GNN1 works on ZeroDay Attacks Detection,
-        The idea here is to train our model on some attack days (representing specific attacks, for example Monday and Tuesday) 
-    and test it on other attack days (that will represent completely different attacks => ZeroDay Attacks, the other days)
+    This version of GNN1 is similar to the original,
+    The only difference is that the test will be done after training on each dataset file
+    So we will have 4 test phases (Train1 -> Test1 -> Train2 -> Test2 ...etc.)
 '''
+
 
 
 from dgl import from_networkx
@@ -71,7 +72,7 @@ def plot_confusion_matrix(cm,
 # -----------------------------------------------------------------------------
 
 #constante
-size_embedding = 20
+size_embedding = 152
 
 # Accuracy --------------------------------------------------------------------
 def compute_accuracy(pred, labels):
@@ -160,84 +161,94 @@ class Model(nn.Module):
 
 # -------------------------------------------------------------------------------------------------------------------------------
 
-
-
-# --------------------------------------------------- MAIN -----------------------------------------------------------
-
-#Data
-nbclasses =  2
-
-
 # G1.ndata['h'].shape[2] = sizeh = 76 dans ANIDS
 # model1 = Model(G1.ndata['h'].shape[2], size_embedding, G1.ndata['h'].shape[2], F.relu, 0.2).cuda()
 model1 = Model(76, size_embedding, 76, F.relu, 0.2).cuda()
 opt = th.optim.Adam(model1.parameters())
 
+# --------------------------------------------------- MAIN -----------------------------------------------------------
 
+#Data
+nbclasses =  15
 
-
-print("++++++++++++++++++++++++++++ Train ++++++++++++++++++++++++++++++++")
-path, dirs, files = next(os.walk("./input/Dataset/ZeroDayAttacks_Split/Train/"))
+# path, dirs, files = next(os.walk("./input/Dataset/TrafficLabelling/"))
+path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
+# path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted_With_Monday/"))
 file_count = len(files)
 
+# Classes
+clss = ['BENIGN', 'Web Attack Ã\x82Â\x96 XSS', 'Heartbleed', 'DoS Hulk', 'DDoS', 'PortScan', 'Web Attack Ã\x82Â\x96 Brute Force', 'FTP-Patator', 'Bot', 'DoS slowloris', 'DoS GoldenEye', 'DoS Slowhttptest', 'Web Attack Ã\x82Â\x96 Sql Injection', 'SSH-Patator', 'Infiltration']
+
+# Classes mpping
+clss_mpping = {}
+cpt = 0
+for x in clss:
+    clss_mpping[x] = cpt
+    cpt += 1
+
+print(clss_mpping)
+
+X_Test_Gen = pd.DataFrame()
+
 for nb_files in range(file_count):
-    X1_train = pd.read_csv(f'{path}{files[nb_files]}', encoding="ISO-8859–1", dtype = str)
+    data1 = pd.read_csv(f'{path}{files[nb_files]}', encoding="ISO-8859–1", dtype = str)
 
     print(f'{files[nb_files]} ++++++++++++++++++++++++++++++++++++++++++++++')
-    print("nb total instances in the file : ", len(X1_train.values))
+    print("nb total instances in the file : ", len(data1.values))
+
+    print("++++++++++++++++++++++++++++ Train ++++++++++++++++++++++++++++++++")
     
     # Delete two columns (U and V in the excel)
-    cols = list(set(list(X1_train.columns )) - set(list(['Flow Bytes/s',' Flow Packets/s'])) )
-    X1_train = X1_train[cols]
+    cols = list(set(list(data1.columns )) - set(list(['Flow Bytes/s',' Flow Packets/s'])) )
+    data1 = data1[cols]
 
     # Mise en forme des noeuds
-    X1_train[' Source IP'] = X1_train[' Source IP'].apply(str)
-    X1_train[' Source Port'] = X1_train[' Source Port'].apply(str)
-    X1_train[' Destination IP'] = X1_train[' Destination IP'].apply(str)
-    X1_train[' Destination Port'] = X1_train[' Destination Port'].apply(str)
-    X1_train[' Source IP'] = X1_train[' Source IP'] + ':' + X1_train[' Source Port']
-    X1_train[' Destination IP'] = X1_train[' Destination IP'] + ':' + X1_train[' Destination Port']
+    data1[' Source IP'] = data1[' Source IP'].apply(str)
+    data1[' Source Port'] = data1[' Source Port'].apply(str)
+    data1[' Destination IP'] = data1[' Destination IP'].apply(str)
+    data1[' Destination Port'] = data1[' Destination Port'].apply(str)
+    data1[' Source IP'] = data1[' Source IP'] + ':' + data1[' Source Port']
+    data1[' Destination IP'] = data1[' Destination IP'] + ':' + data1[' Destination Port']
 
-    X1_train.drop(columns=['Flow ID',' Source Port',' Destination Port',' Timestamp'], inplace=True)
+    data1.drop(columns=['Flow ID',' Source Port',' Destination Port',' Timestamp'], inplace=True)
 
     # -------------------- ????????????????????????????????????????? --------------------
-    # simply do : nom = list(X1_train[' Label'].unique())
+    # simply do : nom = list(data1[' Label'].unique())
     nom = []
-    nom = nom + [X1_train[' Label'].unique()[0]]
-    for i in range(1, len(X1_train[' Label'].unique())):
-        nom = nom + [X1_train[' Label'].unique()[i]]
+    nom = nom + [data1[' Label'].unique()[0]]
+    for i in range(1, len(data1[' Label'].unique())):
+        nom = nom + [data1[' Label'].unique()[i]]
     
     nom.insert(0, nom.pop(nom.index('BENIGN')))
 
-    # Naming the two classes BENIGN {0} / Any Intrusion {1}
-    X1_train[' Label'].replace(nom[0], 0,inplace = True)
-    for i in range(1,len(X1_train[' Label'].unique())):
-        X1_train[' Label'].replace(nom[i], 1,inplace = True)
+    # Classes mpping
+    data1 = data1.replace({' Label': clss_mpping})
     
     ##################### LABELS FREQ #######################################
     print()
     print("labels freq after changing labels to binary")
-    counts = list(X1_train[' Label'].value_counts().to_dict().items())
+    counts = list(data1[' Label'].value_counts().to_dict().items())
     for j, x in enumerate(counts):
         x = list(x)
-        x[1] = x[1] / len(X1_train)
+        x[1] = x[1] / len(data1)
         counts[j] = x
-    print({f'{files[nb_files]}' : counts})
+    # print({f'{files[nb_files]}' : counts})
     ##############################################################################
 
-    X1_train.rename(columns={" Label": "label"},inplace = True)
-    label1 = X1_train.label
-    X1_train.drop(columns=['label'],inplace = True)
+    data1.rename(columns={" Label": "label"},inplace = True)
+    label1 = data1.label
+    data1.drop(columns=['label'],inplace = True)
 
-    # ******** At this step X1_train contains only the data without label column
+    # ******** At this step data1 contains only the data without label column
     # ******** The label column is stored in the label variale 
 
     # split train and test
-    X1_train =  pd.concat([X1_train, label1], axis=1) # ??????? WHY ?
+    data1 =  pd.concat([data1, label1], axis=1) # ??????? WHY ?
 
     # -------------------- ????????????????????????????????????????? --------------------
     # X will contain the label column due to the concatination made earlier !!
-    # X1_train, X1_test, y1_train, y1_test = train_test_split(data1, label1, test_size=0.3, random_state=123, stratify= label1)
+    X1_train, X1_test, y1_train, y1_test = train_test_split(data1, label1, test_size=0.3, random_state=123, stratify= label1)
+    X_Test_Gen = pd.concat([X_Test_Gen, X1_test], ignore_index = True)
 
     print("nb Train instances : ", len(X1_train.values))
     # X_test = pd.concat([X_test, X1_test], ignore_index = True)
@@ -246,7 +257,7 @@ for nb_files in range(file_count):
     # Since we have a binary classification, the category values willl be replaced with the posterior probability (p(target = Ti | category = Cj))
     # TargetEncoding is also called MeanEncoding, cuz it simply replace each value with (target_i_count_on_category_j) / (total_occurences_of_category_j)
     encoder1 = ce.TargetEncoder(cols=[' Protocol',  'Fwd PSH Flags', ' Fwd URG Flags', ' Bwd PSH Flags', ' Bwd URG Flags'])
-    encoder1.fit(X1_train, label1)
+    encoder1.fit(X1_train, y1_train)
     X1_train = encoder1.transform(X1_train)
 
     # scaler (normalization)
@@ -274,6 +285,19 @@ for nb_files in range(file_count):
     X1_train=X1_train.reindex(columns=columns_titles)
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+
+
+
+    # ------------------------------------------- Testing with a simple example -----------------------------------------------------------------
+    # sizeh = 3
+    # nbclasses =  2
+
+    # columns=[" Source IP", " Destination IP", 'h','label']
+    # data = [[1,2,[1,2,3],0], [2,3,[1,20,3],1],[1,3,[2,2,3],0],[3,4,[3,2,3],0],[1,2,[1,2,4],0]]
+    # X1_train = pd.DataFrame(data, columns=columns)
+    # ------------------------------------------- ----------------------------- -----------------------------------------------------------------
+
+
     # ------------------------------------------- Creating the Graph Representation -------------------------------------------------------------
     # Create our Multigraph
     G1 = nx.from_pandas_edgelist(X1_train, " Source IP", " Destination IP", ['h','label'], create_using=nx.MultiGraph())
@@ -282,13 +306,19 @@ for nb_files in range(file_count):
 
     # Convert it to a directed Graph
     # NB : IT WILL CREATE A DEFAULT BIDIRECTIONAL RELATIONSHIPS BETWEEN NODES, and not the original relationships ???????????????????????
-    
-    # Removing the bidirectional edges
+
     G1 = G1.to_directed()
 
     print("G1 after todirected : ", G1)
     # Convert the graph from a networkx Graph to a DGL Graph
     G1 = from_networkx(G1,edge_attrs=['h','label'] )
+
+    # Another proof that our model doesn't take in consideration the node IP:Port
+    # The from_networkx DGL function relabel the nodes using consecutive integers
+    # starting from zero if we do not pass the node attribute to it (which is our case)
+    # nxg = to_networkx(G1)
+    # print("G1 nodes visualization : ", nxg.nodes())
+
     print("G1.edata['h'] after converting it to a dgl graph : ", len(G1.edata['h']))
 
     # nodes data // G1.edata['h'].shape[1] : sizeh = number of attributes in a flow
@@ -309,8 +339,20 @@ for nb_files in range(file_count):
     class_weights1 = class_weight.compute_class_weight(class_weight = 'balanced',
                                                     classes = np.unique(G1.edata['label'].cpu().numpy()),
                                                     y = G1.edata['label'].cpu().numpy())
+    # print()
+    # print("*************** Clss weights *******************")
+    # print(class_weights1)
+    ''' 
+        Using class weights, you make the classifier aware of how to treat the various classes in the loss function.
+        In this process, you give higher weights to certain classes & lower weights to other classes.
+        Example : [ 0.51600999 16.11525117] 
+        Basically : 
+            - For classes with small number of training images, you give it more weight
+            so that the network will be punished more if it makes mistakes predicting the label of these classes. 
+            - For classes with large numbers of images, you give it small weight
+    '''
     class_weights1 = th.FloatTensor(class_weights1).cuda()
-    criterion1 = nn.CrossEntropyLoss(weight=class_weights1)
+    criterion1 = nn.CrossEntropyLoss(weight = class_weights1)
     G1 = G1.to('cuda:0')
 
     node_features1 = G1.ndata['h']
@@ -323,7 +365,8 @@ for nb_files in range(file_count):
     pr = True
     # True if you want to print the embedding vectors
     # the name of the file where the vectors are printed
-    filename = './models/M1_weights_ZeroDayAttacks.txt'
+    filename = './models/M1_weights.txt'
+
 
     # Model architecture
     # G1.ndata['h'].shape[2] = sizeh = 76 dans ANIDS
@@ -332,9 +375,6 @@ for nb_files in range(file_count):
 
     for epoch in range(1,1000):
         pred = model1(G1, node_features1, edge_features1).cuda()
-        print(pred[train_mask1])
-        print("***********")
-        print(epoch)
         loss = criterion1(pred[train_mask1], edge_label1[train_mask1])
         opt.zero_grad()
         loss.backward()
@@ -351,148 +391,106 @@ for nb_files in range(file_count):
     print("pred1 : ", len(pred1))
     print("edge_label1 : ", len(edge_label1))
 
-    print('confusion matrix :')
+    # print('confusion matrix :')
     c = confusion_matrix(edge_label1, pred1)
-    print(c)
+    # print(c)
     c[0][0]= c[0][0]/2
     c[1][0]= c[1][0]/2
     c[0][1]= c[0][1]/2
     c[1][1]= c[1][1]/2
-    print(c)
+    # print(c)
 
-    print('metrics :')
-    print("Accuracy : ", sklearn.metrics.accuracy_score(edge_label1, pred1))
-    print("Precision : ", sklearn.metrics.precision_score(edge_label1, pred1, labels=[0,1]))
-    print("Recall : ", sklearn.metrics.recall_score(edge_label1, pred1, labels=[0,1]))
-    print("f1_score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels=[0,1]))
+    print('Train metrics :')
+    print(clss_mpping)
+    # print("Accuracy : ", sklearn.metrics.accuracy_score(edge_label1, pred1))
+    # print("Precision : ", sklearn.metrics.precision_score(edge_label1, pred1, labels=[0,1]))
+    # print("Recall : ", sklearn.metrics.recall_score(edge_label1, pred1, labels=[0,1]))
+    # print("macro-averaged f1-score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels = list(range(15)), average = None))
+    # print("weighted-average f1-score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels = list(range(15)), average = None))
+    # print("weighted-average f1-score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels = list(range(15)), average = 'weighted'))
+    print(sklearn.metrics.classification_report(edge_label1, pred1, digits=4))
     # print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-
-
 
 
 
 
 # ------------------------------------------------ Test ---------------------------------------------------------------------
 print("++++++++++++++++++++++++++++ Test ++++++++++++++++++++++++++++++++")
-path, dirs, files = next(os.walk("./input/Dataset/ZeroDayAttacks_Split/Test/"))
-file_count = len(files)
+print("nb Test instances : ", len(X_Test_Gen.values))
+X_Test_Gen = encoder1.transform(X_Test_Gen)
+X_Test_Gen[cols_to_norm1] = scaler1.transform(X_Test_Gen[cols_to_norm1])
+X_Test_Gen['h'] = X_Test_Gen[ cols_to_norm1 ].values.tolist()
 
-for nb_files in range(file_count):
-    X1_test = pd.read_csv(f'{path}{files[nb_files]}', encoding="ISO-8859–1", dtype = str)
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Before training the data :
+# We need to delete all the attributes (cols_to_norm1) to have the {Source IP, Destination IP, label, h} representation
+X_Test_Gen.drop(columns = cols_to_norm1, inplace = True)
 
-    print(f'{files[nb_files]} ++++++++++++++++++++++++++++++++++++++++++++++')
-    print("nb total instances in the file : ", len(X1_test.values))
-    
-    # Delete two columns (U and V in the excel)
-    cols = list(set(list(X1_test.columns )) - set(list(['Flow Bytes/s',' Flow Packets/s'])) )
-    X1_test = X1_test[cols]
-
-    # Mise en forme des noeuds
-    X1_test[' Source IP'] = X1_test[' Source IP'].apply(str)
-    X1_test[' Source Port'] = X1_test[' Source Port'].apply(str)
-    X1_test[' Destination IP'] = X1_test[' Destination IP'].apply(str)
-    X1_test[' Destination Port'] = X1_test[' Destination Port'].apply(str)
-    X1_test[' Source IP'] = X1_test[' Source IP'] + ':' + X1_test[' Source Port']
-    X1_test[' Destination IP'] = X1_test[' Destination IP'] + ':' + X1_test[' Destination Port']
-
-    X1_test.drop(columns=['Flow ID',' Source Port',' Destination Port',' Timestamp'], inplace=True)
-
-    # -------------------- ????????????????????????????????????????? --------------------
-    # simply do : nom = list(X1_test[' Label'].unique())
-    nom = []
-    nom = nom + [X1_test[' Label'].unique()[0]]
-    for i in range(1, len(X1_test[' Label'].unique())):
-        nom = nom + [X1_test[' Label'].unique()[i]]
-    
-    nom.insert(0, nom.pop(nom.index('BENIGN')))
-
-    # Naming the two classes BENIGN {0} / Any Intrusion {1}
-    X1_test[' Label'].replace(nom[0], 0,inplace = True)
-    for i in range(1,len(X1_test[' Label'].unique())):
-        X1_test[' Label'].replace(nom[i], 1,inplace = True)
-    
-    ##################### LABELS FREQ #######################################
-    print()
-    print("labels freq after changing labels to binary")
-    counts = list(X1_test[' Label'].value_counts().to_dict().items())
-    for j, x in enumerate(counts):
-        x = list(x)
-        x[1] = x[1] / len(X1_test)
-        counts[j] = x
-    print({f'{files[nb_files]}' : counts})
-    ##############################################################################
-
-    X1_test.rename(columns={" Label": "label"},inplace = True)
-    label1 = X1_test.label
-    X1_test.drop(columns=['label'],inplace = True)
-
-    # ******** At this step X1_test contains only the data without label column
-    # ******** The label column is stored in the label variale 
-
-    # split train and test
-    X1_test =  pd.concat([X1_test, label1], axis=1) # ??????? WHY ?
-
-    print("nb Test instances : ", len(X1_test.values))
-    X1_test = encoder1.transform(X1_test)
-    X1_test[cols_to_norm1] = scaler1.transform(X1_test[cols_to_norm1])
-    X1_test['h'] = X1_test[ cols_to_norm1 ].values.tolist()
-
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # Before training the data :
-    # We need to delete all the attributes (cols_to_norm1) to have the {Source IP, Destination IP, label, h} representation
-    X1_test.drop(columns = cols_to_norm1, inplace = True)
-
-    # Then we need to Swap {label, h} Columns to have the {Source IP, Destination IP, h, label} representation
-    columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
-    X1_test=X1_test.reindex(columns=columns_titles)
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    G1_test = nx.from_pandas_edgelist(X1_test, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
-
-    # Removing the bidirectional edges
-    G1_test = G1_test.to_directed()
-
-    G1_test = from_networkx(G1_test,edge_attrs=['h','label'] )
-    actual1 = G1_test.edata.pop('label')
-    G1_test.ndata['feature'] = th.ones(G1_test.num_nodes(), G1.ndata['h'].shape[2])
-
-    G1_test.ndata['feature'] = th.reshape(G1_test.ndata['feature'], (G1_test.ndata['feature'].shape[0], 1, G1_test.ndata['feature'].shape[1]))
-    G1_test.edata['h'] = th.reshape(G1_test.edata['h'], (G1_test.edata['h'].shape[0], 1, G1_test.edata['h'].shape[1]))
-    G1_test = G1_test.to('cuda:0')
-
-    node_features_test1 = G1_test.ndata['feature']
-    edge_features_test1 = G1_test.edata['h']
-
-    # to print
-    pr = True
-    # True if you want to print the embedding vectors
-    # the name of the file where the vectors are printed
-    filename = './models/M1_weights_ZeroDayAttacks.txt'
-
-    print("nb instances : ", len(X1_test.values))
-
-    test_pred1 = model1(G1_test, node_features_test1, edge_features_test1).cuda()
+# Then we need to Swap {label, h} Columns to have the {Source IP, Destination IP, h, label} representation
+columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
+X_Test_Gen=X_Test_Gen.reindex(columns=columns_titles)
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-    test_pred1 = test_pred1.argmax(1)
-    test_pred1 = th.Tensor.cpu(test_pred1).detach().numpy()
+G1_test = nx.from_pandas_edgelist(X_Test_Gen, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
 
-    # actual11 = ["Normal" if i == 0 else "Attack" for i in actual1]
-    # test_pred11 = ["Normal" if i == 0 else "Attack" for i in test_pred1]
+G1_test = G1_test.to_directed()
 
-    print("Confusion matrix : ")
-    c = confusion_matrix(actual1, test_pred1)
-    print(c)
-    c[0][0]= c[0][0]/2
-    c[1][0]= c[1][0]/2
-    c[0][1]= c[0][1]/2
-    c[1][1]= c[1][1]/2
-    print(c)
+G1_test = from_networkx(G1_test,edge_attrs=['h','label'] )
+actual1 = G1_test.edata.pop('label')
+G1_test.ndata['feature'] = th.ones(G1_test.num_nodes(), G1.ndata['h'].shape[2])
 
-    print('Metrics : ')
-    print("Accuracy : ", sklearn.metrics.accuracy_score(actual1, test_pred1))
-    print("Precision : ", sklearn.metrics.precision_score(actual1, test_pred1, labels = [0,1]))
-    print("Recall : ", sklearn.metrics.recall_score(actual1, test_pred1, labels = [0,1]))
-    print("f1_score : ", sklearn.metrics.f1_score(actual1, test_pred1, labels = [0,1]))
+G1_test.ndata['feature'] = th.reshape(G1_test.ndata['feature'], (G1_test.ndata['feature'].shape[0], 1, G1_test.ndata['feature'].shape[1]))
+G1_test.edata['h'] = th.reshape(G1_test.edata['h'], (G1_test.edata['h'].shape[0], 1, G1_test.edata['h'].shape[1]))
+G1_test = G1_test.to('cuda:0')
 
-    print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+node_features_test1 = G1_test.ndata['feature']
+edge_features_test1 = G1_test.edata['h']
+
+# to print
+pr = True
+# True if you want to print the embedding vectors
+# the name of the file where the vectors are printed
+filename = './models/M1_weights.txt'
+
+print("nb instances : ", len(X_Test_Gen.values))
+
+test_pred1 = model1(G1_test, node_features_test1, edge_features_test1).cuda()
+
+
+test_pred1 = test_pred1.argmax(1)
+test_pred1 = th.Tensor.cpu(test_pred1).detach().numpy()
+
+# print("Confusion matrix : ")
+c = confusion_matrix(actual1, test_pred1)
+# print(c)
+c[0][0]= c[0][0]/2
+c[1][0]= c[1][0]/2
+c[0][1]= c[0][1]/2
+c[1][1]= c[1][1]/2
+# print(c)
+
+print('Test metrics : ')
+print(clss_mpping)
+# print("Accuracy : ", sklearn.metrics.accuracy_score(actual1, test_pred1))
+# print("Precision : ", sklearn.metrics.precision_score(actual1, test_pred1, labels = [0,1]))
+# print("Recall : ", sklearn.metrics.recall_score(actual1, test_pred1, labels = [0,1]))
+# print("weighted f1-score : ", sklearn.metrics.f1_score(actual1, test_pred1, labels = list(range(15)), average = 'weighted'))
+print(sklearn.metrics.classification_report(actual1, test_pred1, digits=4))
+
+print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+
+# plot_confusion_matrix(cm = c, #confusion_matrix(actual11, test_pred11), 
+#                      normalize    = False,
+#                      target_names = np.unique(actual1),
+#                      title        = "Confusion Matrix")
+
+# class_labels = ["Normal", "Attack"] 
+# df_cm = pd.DataFrame(c, index = class_labels, columns = class_labels)
+# plt.figure(figsize = (10,7))
+# sns.heatmap(df_cm, cmap="Greens", annot=True, fmt = 'g')
+# plt.show()
+
+# -------------------------------------------- ---------------------------------------- -----------------------------------------------------
+
+# ---------------------------------------------------------------------------------------------------------------------------
