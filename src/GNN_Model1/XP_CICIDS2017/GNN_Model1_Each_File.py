@@ -161,15 +161,22 @@ class Model(nn.Module):
 
 # -------------------------------------------------------------------------------------------------------------------------------
 
-# G1.ndata['h'].shape[2] = sizeh = 76 dans ANIDS
-# model1 = Model(G1.ndata['h'].shape[2], size_embedding, G1.ndata['h'].shape[2], F.relu, 0.2).cuda()
-model1 = Model(76, size_embedding, 76, F.relu, 0.2).cuda()
-opt = th.optim.Adam(model1.parameters())
+
 
 # --------------------------------------------------- MAIN -----------------------------------------------------------
 
 #Data
 nbclasses =  2
+
+
+
+# Model *******************************************************************************************
+# G1.ndata['h'].shape[2] = sizeh = 76 dans ANIDS
+# model1 = Model(G1.ndata['h'].shape[2], size_embedding, G1.ndata['h'].shape[2], F.relu, 0.2).cuda()
+model1 = Model(76, size_embedding, 76, F.relu, 0.2).cuda()
+opt = th.optim.Adam(model1.parameters())
+
+
 
 # path, dirs, files = next(os.walk("./input/Dataset/TrafficLabelling/"))
 path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
