@@ -489,6 +489,10 @@ for size_embedding in range(177, 180):
 
     print()
 
+print(size_embedding_axis)
+print()
+print(weighted_f1_axis)
+
 # plotting
 plt.title(f'''
 E-GraphSAGE
@@ -497,3 +501,4 @@ plt.xlabel("Size Embedding")
 plt.ylabel("Weighted F1 Score")
 plt.plot(size_embedding_axis, weighted_f1_axis, color ="red")
 plt.savefig("./fig.png")
+
