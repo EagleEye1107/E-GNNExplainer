@@ -45,16 +45,9 @@ for nb_files in range(file_count):
     data1 = data1[cols]
 
     # IF We want to use IP Adr and do the mapping of the ip addresses because the random forest doesn't take in consideration
-    '''
     # Mise en forme des noeuds
     data1[' Source IP'] = data1[' Source IP'].apply(str)
-    data1[' Source Port'] = data1[' Source Port'].apply(str)
     data1[' Destination IP'] = data1[' Destination IP'].apply(str)
-    data1[' Destination Port'] = data1[' Destination Port'].apply(str)
-    data1[' Source IP'] = data1[' Source IP'] + ':' + data1[' Source Port']
-    data1[' Destination IP'] = data1[' Destination IP'] + ':' + data1[' Destination Port']
-
-    data1.drop(columns=['Flow ID',' Source Port',' Destination Port',' Timestamp'], inplace=True)
 
     # IP Mapping *************************************************************************
     # We do tha mapping of test set only because its faster and it will generate totally new nodes from the train set
@@ -70,17 +63,14 @@ for nb_files in range(file_count):
         test_re[x] = cpt
         cpt +=1
 
-    print(data1)
     data1 = data1.replace({' Source IP': test_re})
     data1 = data1.replace({' Destination IP': test_re})
-    print(data1)
 
     print()
     # ***********************************************************************************
-    '''
 
     # Delete unnecessary str data
-    data1.drop(columns=['Flow ID',' Source IP',' Destination IP',' Source Port',' Destination Port',' Timestamp'], inplace=True)
+    data1.drop(columns=['Flow ID',' Timestamp'], inplace=True)
 
     # data1 = data1.fillna(0)
 
@@ -109,31 +99,29 @@ for nb_files in range(file_count):
     # for non numerical attributes (categorical data)
     # Since we have a binary classification, the category values willl be replaced with the posterior probability (p(target = Ti | category = Cj))
     # TargetEncoding is also called MeanEncoding, cuz it simply replace each value with (target_i_count_on_category_j) / (total_occurences_of_category_j)
-    encoder1 = ce.TargetEncoder(cols=[' Protocol',  'Fwd PSH Flags', ' Fwd URG Flags', ' Bwd PSH Flags', ' Bwd URG Flags'])
-    encoder1.fit(X1_train, y1_train)
-    X1_train = encoder1.transform(X1_train)
+    # encoder1 = ce.TargetEncoder(cols=[' Protocol',  'Fwd PSH Flags', ' Fwd URG Flags', ' Bwd PSH Flags', ' Bwd URG Flags'])
+    # encoder1.fit(X1_train, y1_train)
+    # X1_train = encoder1.transform(X1_train)
 
-    # scaler (normalization)
-    scaler1 = StandardScaler()
+    # # scaler (normalization)
+    # scaler1 = StandardScaler()
 
-    # Manipulate flow content (all columns except : label, Source IP & Destination IP)
-    cols_to_norm1 = list(set(list(X1_train.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])) )
-    X1_train[cols_to_norm1] = scaler1.fit_transform(X1_train[cols_to_norm1])
+    # # Manipulate flow content (all columns except : label, Source IP & Destination IP)
+    # cols_to_norm1 = list(set(list(X1_train.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])) )
+    # X1_train[cols_to_norm1] = scaler1.fit_transform(X1_train[cols_to_norm1])
 
     # Random Forest Model Training
     print("Model Training")
     rf.fit(X1_train, y1_train)
 
     # Test *******************************************************
-    X1_test = encoder1.transform(X1_test)
-    X1_test[cols_to_norm1] = scaler1.transform(X1_test[cols_to_norm1])
+    # X1_test = encoder1.transform(X1_test)
+    # X1_test[cols_to_norm1] = scaler1.transform(X1_test[cols_to_norm1])
 
     # Model Testing
     print("Model Testing")
     y_pred = rf.predict(X1_test)
 
     print('Metrics : ')
-    print("Accuracy : ", sklearn.metrics.accuracy_score(y1_test, y_pred))
-    print("weighted f1-score : ", sklearn.metrics.f1_score(y1_test, y_pred, labels = list(range(15)), average = 'weighted'))
-    print("macro f1-score : ", sklearn.metrics.f1_score(y1_test, y_pred, labels = list(range(15)), average = 'macro'))
+    print(sklearn.metrics.classification_report(y1_test, y_pred, digits=4))
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")

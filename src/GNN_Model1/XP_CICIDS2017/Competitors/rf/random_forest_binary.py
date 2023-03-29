@@ -35,16 +35,9 @@ for nb_files in range(file_count):
     data1 = data1[cols]
 
     # IF We want to use IP Adr and do the mapping of the ip addresses because the random forest doesn't take in consideration
-    '''
     # Mise en forme des noeuds
     data1[' Source IP'] = data1[' Source IP'].apply(str)
-    data1[' Source Port'] = data1[' Source Port'].apply(str)
     data1[' Destination IP'] = data1[' Destination IP'].apply(str)
-    data1[' Destination Port'] = data1[' Destination Port'].apply(str)
-    data1[' Source IP'] = data1[' Source IP'] + ':' + data1[' Source Port']
-    data1[' Destination IP'] = data1[' Destination IP'] + ':' + data1[' Destination Port']
-
-    data1.drop(columns=['Flow ID',' Source Port',' Destination Port',' Timestamp'], inplace=True)
 
     # IP Mapping *************************************************************************
     # We do tha mapping of test set only because its faster and it will generate totally new nodes from the train set
@@ -65,10 +58,9 @@ for nb_files in range(file_count):
 
     print()
     # ***********************************************************************************
-    '''
 
     # Delete unnecessary str data
-    data1.drop(columns=['Flow ID',' Source IP',' Destination IP',' Source Port',' Destination Port',' Timestamp'], inplace=True)
+    data1.drop(columns=['Flow ID',' Timestamp'], inplace=True)
 
     # data1 = data1.fillna(0)
 
