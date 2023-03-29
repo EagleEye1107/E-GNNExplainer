@@ -21,6 +21,12 @@ import numpy as np
 from sklearn.metrics import confusion_matrix
 
 
+# Force Torch to use CPU instead of GPU because of CUDA Out of Memory Error Caused by the Low GPU Memory 8GB
+th.cuda.is_available = lambda : False
+device = th.device('cuda' if th.cuda.is_available() else 'cpu')
+
+
+
 # Confusion Matrix ------------------------------------------------------------
 def plot_confusion_matrix(cm,
                           target_names,
@@ -344,9 +350,9 @@ class_weights1 = class_weight.compute_class_weight(class_weight = 'balanced',
         so that the network will be punished more if it makes mistakes predicting the label of these classes. 
         - For classes with large numbers of images, you give it small weight
 '''
-class_weights1 = th.FloatTensor(class_weights1).cuda()
+class_weights1 = th.FloatTensor(class_weights1)
 criterion1 = nn.CrossEntropyLoss(weight = class_weights1)
-G1 = G1.to('cuda:0')
+G1 = G1.to(device)
 
 node_features1 = G1.ndata['h']
 edge_features1 = G1.edata['h']
@@ -363,11 +369,11 @@ filename = './models/M1_weights.txt'
 
 # Model architecture
 # G1.ndata['h'].shape[2] = sizeh = 76 dans ANIDS
-model1 = Model(G1.ndata['h'].shape[2], size_embedding, G1.ndata['h'].shape[2], F.relu, 0.2).cuda()
+model1 = Model(G1.ndata['h'].shape[2], size_embedding, G1.ndata['h'].shape[2], F.relu, 0.2)
 opt = th.optim.Adam(model1.parameters())
 
 for epoch in range(1,1000):
-    pred = model1(G1, node_features1, edge_features1).cuda()
+    pred = model1(G1, node_features1, edge_features1)
     loss = criterion1(pred[train_mask1], edge_label1[train_mask1])
     opt.zero_grad()
     loss.backward()
@@ -375,7 +381,7 @@ for epoch in range(1,1000):
     if epoch % 100 == 0:
         print('Training acc:', compute_accuracy(pred[train_mask1], edge_label1[train_mask1]), loss)
 
-pred1 = model1(G1, node_features1, edge_features1).cuda()
+pred1 = model1(G1, node_features1, edge_features1)
 pred1 = pred1.argmax(1)
 pred1 = th.Tensor.cpu(pred1).detach().numpy()
 edge_label1 = th.Tensor.cpu(edge_label1).detach().numpy()
@@ -437,7 +443,7 @@ G1_test.ndata['feature'] = th.ones(G1_test.num_nodes(), G1.ndata['h'].shape[2])
 
 G1_test.ndata['feature'] = th.reshape(G1_test.ndata['feature'], (G1_test.ndata['feature'].shape[0], 1, G1_test.ndata['feature'].shape[1]))
 G1_test.edata['h'] = th.reshape(G1_test.edata['h'], (G1_test.edata['h'].shape[0], 1, G1_test.edata['h'].shape[1]))
-G1_test = G1_test.to('cuda:0')
+G1_test = G1_test.to(device)
 
 node_features_test1 = G1_test.ndata['feature']
 edge_features_test1 = G1_test.edata['h']
@@ -450,7 +456,7 @@ filename = './models/M1_weights.txt'
 
 print("nb instances : ", len(X1_test.values))
 
-test_pred1 = model1(G1_test, node_features_test1, edge_features_test1).cuda()
+test_pred1 = model1(G1_test, node_features_test1, edge_features_test1)
 
 
 test_pred1 = test_pred1.argmax(1)
