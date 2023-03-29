@@ -239,6 +239,8 @@ data1 =  pd.concat([data1, label1], axis=1) # ??????? WHY ?
 # X will contain the label column due to the concatination made earlier !!
 X1_train, X1_test, y1_train, y1_test = train_test_split(data1, label1, test_size=0.3, random_state=123, stratify= label1)
 
+del data1
+
 print("nb Train instances : ", len(X1_train.values))
 # X_test = pd.concat([X_test, X1_test], ignore_index = True)
 
@@ -290,6 +292,8 @@ X1_train=X1_train.reindex(columns=columns_titles)
 # ------------------------------------------- Creating the Graph Representation -------------------------------------------------------------
 # Create our Multigraph
 G1 = nx.from_pandas_edgelist(X1_train, " Source IP", " Destination IP", ['h','label'], create_using=nx.MultiGraph())
+
+del X1_train
 
 print("initial nx multigraph G1 : ", G1)
 
@@ -401,7 +405,7 @@ print(sklearn.metrics.classification_report(edge_label1, pred1, digits=4))
 # print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
 
-
+del G1
 
 # ------------------------------------------------ Test ---------------------------------------------------------------------
 print("++++++++++++++++++++++++++++ Test ++++++++++++++++++++++++++++++++")
@@ -422,6 +426,8 @@ X1_test=X1_test.reindex(columns=columns_titles)
 
 
 G1_test = nx.from_pandas_edgelist(X1_test, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
+
+del X1_test
 
 G1_test = G1_test.to_directed()
 
