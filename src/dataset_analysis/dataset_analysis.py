@@ -2,7 +2,8 @@ import pandas as pd
 import os
 
 # path, dirs, files = next(os.walk("./input/Dataset/MachineLearningCVE/"))
-path, dirs, files = next(os.walk("./input/Dataset/TrafficLabelling/"))
+# path, dirs, files = next(os.walk("./input/Dataset/TrafficLabelling/"))
+path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
 file_count = len(files)
 
 labels = []
@@ -21,7 +22,7 @@ for i in range(file_count):
     label_column = set(df_values[:, -1])
     labels += label_column
 
-    print(df[" Label"].value_counts())
+    # print(df[" Label"].value_counts())
 
     # Attributes count
     att_count = len(df_values[0, :]) - 1
