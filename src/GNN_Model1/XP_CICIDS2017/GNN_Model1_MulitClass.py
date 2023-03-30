@@ -183,7 +183,7 @@ path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
 file_count = len(files)
 
 # Classes
-clss = ['BENIGN', 'Web Attack Ã\x82Â\x96 XSS', 'Heartbleed', 'DoS Hulk', 'DDoS', 'PortScan', 'Web Attack Ã\x82Â\x96 Brute Force', 'FTP-Patator', 'Bot', 'DoS slowloris', 'DoS GoldenEye', 'DoS Slowhttptest', 'Web Attack Ã\x82Â\x96 Sql Injection', 'SSH-Patator', 'Infiltration']
+clss = ['BENIGN', 'Brute Force', 'XSS', 'Sql Injection', 'Heartbleed', 'DoS Hulk', 'DDoS', 'PortScan', 'FTP-Patator', 'Bot', 'DoS slowloris', 'DoS GoldenEye', 'DoS Slowhttptest', 'SSH-Patator', 'Infiltration']
 
 # Classes mpping
 clss_mpping = {}
