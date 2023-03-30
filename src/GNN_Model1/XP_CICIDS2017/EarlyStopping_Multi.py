@@ -352,13 +352,14 @@ for nb_files in range(file_count):
     G1_val = nx.from_pandas_edgelist(X1_val, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
     G1_val = G1_val.to_directed()
     G1_val = from_networkx(G1_val,edge_attrs=['h','label'] )
-    val_actual1 = G1_val.edata.pop('label')
     G1_val.ndata['feature'] = th.ones(G1_val.num_nodes(), G1.ndata['h'].shape[2])
     G1_val.ndata['feature'] = th.reshape(G1_val.ndata['feature'], (G1_val.ndata['feature'].shape[0], 1, G1_val.ndata['feature'].shape[1]))
     G1_val.edata['h'] = th.reshape(G1_val.edata['h'], (G1_val.edata['h'].shape[0], 1, G1_val.edata['h'].shape[1]))
     G1_val = G1_val.to('cuda:0')
     node_features_val = G1_val.ndata['feature']
     edge_features_val = G1_val.edata['h']
+    val_edge_label1 = G1_val.edata['label']
+    val_mask1 = G1_val.edata['train_mask']
     # ------------------------------------------- --------------------------------- -------------------------------------------------------------
 
 
@@ -406,7 +407,7 @@ for nb_files in range(file_count):
 
         # Validation
         validation_pred = model1(G1_val, node_features_val, edge_features_val).cuda()
-        validation_loss = criterion1(validation_pred[train_mask1], val_actual1[train_mask1])
+        validation_loss = criterion1(validation_pred[val_mask1], val_edge_label1[val_mask1])
         if early_stopper.early_stop(validation_loss):
             print(f"Early stop at epoch number {epoch} to avoid overfitting")
             break
