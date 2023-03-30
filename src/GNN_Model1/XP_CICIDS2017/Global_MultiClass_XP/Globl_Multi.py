@@ -1,7 +1,5 @@
 ''''
-    This version of GNN1 is similar to the original,
-    The only difference is that the test will be done after training on each dataset file
-    So we will have 4 test phases (Train1 -> Test1 -> Train2 -> Test2 ...etc.)
+    This version of GNN1 is similar to train on each Datafile and test on the concatenation between all test sets from each Datafile
 '''
 
 

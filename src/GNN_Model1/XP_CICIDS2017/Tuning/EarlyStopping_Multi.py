@@ -349,15 +349,25 @@ for nb_files in range(file_count):
     columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
     X1_val = X1_val.reindex(columns=columns_titles)
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    # Create our Multigraph
     G1_val = nx.from_pandas_edgelist(X1_val, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
     G1_val = G1_val.to_directed()
     G1_val = from_networkx(G1_val,edge_attrs=['h','label'] )
-    G1_val.ndata['feature'] = th.ones(G1_val.num_nodes(), G1.ndata['h'].shape[2])
-    G1_val.ndata['feature'] = th.reshape(G1_val.ndata['feature'], (G1_val.ndata['feature'].shape[0], 1, G1_val.ndata['feature'].shape[1]))
+
+    # nodes data // G1.edata['h'].shape[1] : sizeh = number of attributes in a flow
+    G1_val.ndata['h'] = th.ones(G1_val.num_nodes(), G1_val.edata['h'].shape[1])
+    # edges data // we create a tensor bool array that will represent the train mask
+    G1_val.edata['train_mask'] = th.ones(len(G1_val.edata['h']), dtype=th.bool)
+
+    # Reshape both tensor lists to a single value in each element for both axis
+    G1_val.ndata['h'] = th.reshape(G1_val.ndata['h'], (G1_val.ndata['h'].shape[0], 1, G1_val.ndata['h'].shape[1]))
     G1_val.edata['h'] = th.reshape(G1_val.edata['h'], (G1_val.edata['h'].shape[0], 1, G1_val.edata['h'].shape[1]))
+    print("G1_val.edata['h'] after reshape : ", len(G1_val.edata['h']))
     G1_val = G1_val.to('cuda:0')
-    node_features_val = G1_val.ndata['feature']
+
+    node_features_val = G1_val.ndata['h']
     edge_features_val = G1_val.edata['h']
+
     val_edge_label1 = G1_val.edata['label']
     val_mask1 = G1_val.edata['train_mask']
     # ------------------------------------------- --------------------------------- -------------------------------------------------------------
