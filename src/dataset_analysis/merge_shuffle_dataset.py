@@ -23,14 +23,15 @@ print("Shuffle done -> save csv file")
 
 j = a = b = 0
 # Without Monday dataset file (containing only BENIGN instances) / split dataset into 4 dataset files
-for i in range(len(X_dataset)):
+print("len(X_dataset) = ", len(X_dataset))
+for i in range(len(X_dataset) + 1):
     if i != 0 :
-        if i % int(len(X_dataset)/8) == 0:
-            # print(i)
+        if i % int(len(X_dataset)/5) == 0:
+            print(i)
             a = b
             b = i
-            if b >= ((7/8) * len(X_dataset)) :
-                b = len(X_dataset)
+            # if b >= ((4/5) * len(X_dataset)) :
+            #     b = len(X_dataset)
             print(f"[{a}, {b}]")
             df = X_dataset.iloc[a:b]
             df.to_csv(f'./input/Dataset/GlobalDataset/Splitted/CIC-IDS-2017-Dataset{j}.csv', sep=',', index = False)
