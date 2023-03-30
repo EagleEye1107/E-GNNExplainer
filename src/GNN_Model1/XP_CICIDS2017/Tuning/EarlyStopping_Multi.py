@@ -250,13 +250,13 @@ for nb_files in range(file_count):
     
     ##################### LABELS FREQ #######################################
     print()
-    print("labels freq after changing labels to binary")
+    print("labels freq after multiclass mapping")
     counts = list(data1[' Label'].value_counts().to_dict().items())
     for j, x in enumerate(counts):
         x = list(x)
         x[1] = x[1] / len(data1)
         counts[j] = x
-    # print({f'{files[nb_files]}' : counts})
+    print({f'{files[nb_files]}' : counts})
     ##############################################################################
 
     data1.rename(columns={" Label": "label"},inplace = True)
@@ -407,7 +407,7 @@ for nb_files in range(file_count):
 
 
     # Early Stopping
-    early_stopper = EarlyStopper(patience = 3, min_delta = 0.1)
+    early_stopper = EarlyStopper(patience = 10, min_delta = 10)
 
     epoch = 1
     while True :
@@ -419,7 +419,7 @@ for nb_files in range(file_count):
         validation_pred = model1(G1_val, node_features_val, edge_features_val).cuda()
         validation_loss = criterion1(validation_pred[val_mask1], val_edge_label1[val_mask1])
         if early_stopper.early_stop(validation_loss):
-            print(f"Early stop at epoch number {epoch} to avoid overfitting")
+            print(f"Early stop at epoch number {epoch} to avoid overfitting, train_loss = {train_loss} and validation_loss = {validation_loss}")
             break
         else :
             opt.zero_grad()
