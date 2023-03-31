@@ -415,7 +415,7 @@ for nb_files in range(file_count):
 
 
     # Early Stopping
-    early_stopper = EarlyStopper(patience = 10, min_delta = 10)
+    early_stopper = EarlyStopper(patience = 3, min_delta = 10)
 
     epoch = 1
     while True :
