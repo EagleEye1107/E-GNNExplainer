@@ -21,6 +21,7 @@ import numpy as np
 from sklearn.metrics import confusion_matrix
 
 import os
+from sklearn.utils import shuffle
 
 
 
@@ -277,6 +278,18 @@ for nb_files in range(file_count):
     # split train, val and test
     data1 =  pd.concat([data1, label1], axis=1) # ??????? WHY ?
 
+    # Apply undersampling on the Train set
+    # Shuffle the Dataset.
+    data1 = shuffle(data1)
+    # Put all the ATTACKs class in a separate dataset.
+    attacks_df = data1.loc[data1[' Label'] != 'BENIGN']
+    # Randomly select len(attacks_df) observations from the BENIGN (majority class)
+    benign_df = data1.loc[data1[' Label'] == 'BENIGN'].sample(n=len(attacks_df),random_state=42)
+    # Concatenate both dataframes again
+    data1 = pd.concat([attacks_df, benign_df])
+    label1 = data1.label
+    # At this step we have a balanced Dataset
+
     # -------------------- ????????????????????????????????????????? --------------------
     # X will contain the label column due to the concatination made earlier !!
     X1_train, X1_test, y1_train, y1_test = train_test_split(data1, label1, test_size=0.2, random_state=123, stratify= label1)
@@ -415,7 +428,7 @@ for nb_files in range(file_count):
 
 
     # Early Stopping
-    early_stopper = EarlyStopper(patience = 3, min_delta = 10)
+    early_stopper = EarlyStopper(patience = 10, min_delta = 10)
 
     epoch = 1
     while True :
@@ -434,7 +447,6 @@ for nb_files in range(file_count):
             train_loss.backward()
             opt.step()
             if epoch % 100 == 0:
-                print("validation_loss : ", validation_loss)
                 print(f'Training acc of epoch number {epoch}:', compute_accuracy(train_pred[train_mask1], edge_label1[train_mask1]), train_loss)
         epoch += 1
 
