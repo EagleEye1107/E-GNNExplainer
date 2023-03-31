@@ -22,6 +22,14 @@ from sklearn.metrics import confusion_matrix
 
 import os
 
+
+
+# Force Torch to use CPU instead of GPU because of CUDA Out of Memory Error Caused by the Low GPU Me>
+th.cuda.is_available = lambda : False
+device = th.device('cuda' if th.cuda.is_available() else 'cpu')
+
+
+
 # Confusion Matrix ------------------------------------------------------------
 def plot_confusion_matrix(cm,
                           target_names,
@@ -192,7 +200,7 @@ nbclasses =  15
 # Model *******************************************************************************************
 # G1.ndata['h'].shape[2] = sizeh = 76 dans ANIDS
 # model1 = Model(G1.ndata['h'].shape[2], size_embedding, G1.ndata['h'].shape[2], F.relu, 0.2).cuda()
-model1 = Model(76, size_embedding, 76, F.relu, 0.2).cuda()
+model1 = Model(76, size_embedding, 76, F.relu, 0.2)
 opt = th.optim.Adam(model1.parameters())
 
 
@@ -363,7 +371,7 @@ for nb_files in range(file_count):
     G1_val.ndata['h'] = th.reshape(G1_val.ndata['h'], (G1_val.ndata['h'].shape[0], 1, G1_val.ndata['h'].shape[1]))
     G1_val.edata['h'] = th.reshape(G1_val.edata['h'], (G1_val.edata['h'].shape[0], 1, G1_val.edata['h'].shape[1]))
     print("G1_val.edata['h'] after reshape : ", len(G1_val.edata['h']))
-    G1_val = G1_val.to('cuda:0')
+    G1_val = G1_val.to(device)
 
     node_features_val = G1_val.ndata['h']
     edge_features_val = G1_val.edata['h']
@@ -389,9 +397,9 @@ for nb_files in range(file_count):
             so that the network will be punished more if it makes mistakes predicting the label of these classes. 
             - For classes with large numbers of images, you give it small weight
     '''
-    class_weights1 = th.FloatTensor(class_weights1).cuda()
+    class_weights1 = th.FloatTensor(class_weights1)
     criterion1 = nn.CrossEntropyLoss(weight = class_weights1)
-    G1 = G1.to('cuda:0')
+    G1 = G1.to(device)
 
     node_features1 = G1.ndata['h']
     edge_features1 = G1.edata['h']
@@ -412,11 +420,11 @@ for nb_files in range(file_count):
     epoch = 1
     while True :
         # Training
-        train_pred = model1(G1, node_features1, edge_features1).cuda()
+        train_pred = model1(G1, node_features1, edge_features1)
         train_loss = criterion1(train_pred[train_mask1], edge_label1[train_mask1])
 
         # Validation
-        validation_pred = model1(G1_val, node_features_val, edge_features_val).cuda()
+        validation_pred = model1(G1_val, node_features_val, edge_features_val)
         validation_loss = criterion1(validation_pred[val_mask1], val_edge_label1[val_mask1])
         if early_stopper.early_stop(validation_loss):
             print(f"Early stop at epoch number {epoch} to avoid overfitting, train_loss = {train_loss} and validation_loss = {validation_loss}")
@@ -429,7 +437,7 @@ for nb_files in range(file_count):
                 print(f'Training acc of epoch number {epoch}:', compute_accuracy(train_pred[train_mask1], edge_label1[train_mask1]), train_loss)
         epoch += 1
 
-    pred1 = model1(G1, node_features1, edge_features1).cuda()
+    pred1 = model1(G1, node_features1, edge_features1)
     pred1 = pred1.argmax(1)
     pred1 = th.Tensor.cpu(pred1).detach().numpy()
     edge_label1 = th.Tensor.cpu(edge_label1).detach().numpy()
@@ -470,7 +478,7 @@ for nb_files in range(file_count):
     G1_test.ndata['feature'] = th.ones(G1_test.num_nodes(), G1.ndata['h'].shape[2])
     G1_test.ndata['feature'] = th.reshape(G1_test.ndata['feature'], (G1_test.ndata['feature'].shape[0], 1, G1_test.ndata['feature'].shape[1]))
     G1_test.edata['h'] = th.reshape(G1_test.edata['h'], (G1_test.edata['h'].shape[0], 1, G1_test.edata['h'].shape[1]))
-    G1_test = G1_test.to('cuda:0')
+    G1_test = G1_test.to(device)
     node_features_test1 = G1_test.ndata['feature']
     edge_features_test1 = G1_test.edata['h']
 
@@ -482,7 +490,7 @@ for nb_files in range(file_count):
 
     print("nb instances : ", len(X1_test.values))
 
-    test_pred1 = model1(G1_test, node_features_test1, edge_features_test1).cuda()
+    test_pred1 = model1(G1_test, node_features_test1, edge_features_test1)
     test_pred1 = test_pred1.argmax(1)
     test_pred1 = th.Tensor.cpu(test_pred1).detach().numpy()
 

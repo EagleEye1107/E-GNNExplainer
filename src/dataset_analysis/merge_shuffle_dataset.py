@@ -60,6 +60,7 @@ for i in range(len(X_dataset) + 1):
             j += 1
 
 '''
+
 # Split dataset into 8 dataset files
 for i in range(1, len(X_dataset) + 1):
     if i % int(len(X_dataset)/5) == 0:
@@ -71,7 +72,16 @@ for i in range(1, len(X_dataset) + 1):
         print(f"[{a}, {b}]")
         df = X_dataset.iloc[a:b]
 
-        # print(df[" Label"].value_counts())
+        # Delete Heartbleed instances to add them manually
+        print("j = ", j)
+        if j != 4 :
+            df = df.drop(df.loc[df[' Label'] == 'Heartbleed'].index)
+            inst = X_dataset.loc[X_dataset[' Label'] == 'Heartbleed'].head(2)
+            df = pd.concat([df, inst], ignore_index = True)
+            X_dataset = X_dataset.drop(inst.index)
+            b -= 2
+        print("Added Heartbleed instances")
+        print("nb occ left of Heartbleed in X_dataset = ", len(X_dataset.loc[X_dataset[' Label'] == "Heartbleed"]))
 
         # IF we have a missing class in the datafile
         if len(df[" Label"].value_counts()) < 15 :
@@ -84,16 +94,20 @@ for i in range(1, len(X_dataset) + 1):
                     df = pd.concat([df, inst], ignore_index = True)
                     X_dataset = X_dataset.drop(inst.index)
                     print(f"{cls} added")
+                    print("len(X_dataset) : ", len(X_dataset))
 
         # IF we have a class with less than 2 occurrences
+        least_pop_clss = df[' Label'].value_counts().index[-1]
         if df[" Label"].value_counts()[-1] < 2 :
-            inst = X_dataset.loc[X_dataset[' Label'] == df[" Label"].value_counts().index[-1]].tail(2 - df[" Label"].value_counts()[-1])
+            print(f"{least_pop_clss} occ is < 2")
+            inst = X_dataset.loc[X_dataset[' Label'] == df[" Label"].value_counts().index[-1]].tail(1)
             df = pd.concat([df, inst], ignore_index = True)
             X_dataset = X_dataset.drop(inst.index)
+            print(f"{least_pop_clss} occ completed")
+            print("len(X_dataset) : ", len(X_dataset))
 
         df.to_csv(f'./input/Dataset/GlobalDataset/Splitted/CIC-IDS-2017-Dataset{j}.csv', sep=',', index = False)
         j += 1
 
-# X_dataset.to_csv("./input/Dataset/GlobalDataset/CIC-IDS-2017-Dataset.csv", sep=',', index = False)
 
 print("DONE !")
