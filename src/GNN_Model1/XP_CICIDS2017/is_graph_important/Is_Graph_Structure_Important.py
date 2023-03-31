@@ -28,57 +28,10 @@ from sklearn.metrics import confusion_matrix
 
 import os
 
-# Confusion Matrix ------------------------------------------------------------
-def plot_confusion_matrix(cm,
-                          target_names,
-                          title='Confusion matrix',
-                          cmap=None,
-                          normalize=True):
-    
-    import matplotlib.pyplot as plt
-    import numpy as np
-    import itertools
 
-    accuracy = np.trace(cm) / float(np.sum(cm))
-    misclass = 1 - accuracy
-
-    if cmap is None:
-        cmap = plt.get_cmap('Blues')
-
-    plt.figure(figsize=(12, 12))
-    plt.imshow(cm, interpolation='nearest', cmap=cmap)
-    plt.title(title)
-    plt.colorbar()
-
-    if target_names is not None:
-        tick_marks = np.arange(len(target_names))
-        plt.xticks(tick_marks, target_names, rotation=45)
-        plt.yticks(tick_marks, target_names)
-
-    if normalize:
-        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-
-
-    thresh = cm.max() / 1.5 if normalize else cm.max() / 2
-    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-        if normalize:
-            plt.text(j, i, "{:0.4f}".format(cm[i, j]),
-                     horizontalalignment="center",
-                     color="white" if cm[i, j] > thresh else "black")
-        else:
-            plt.text(j, i, "{:,}".format(cm[i, j]),
-                     horizontalalignment="center",
-                     color="white" if cm[i, j] > thresh else "black")
-
-
-    plt.tight_layout()
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label\naccuracy={:0.4f}; misclass={:0.4f}'.format(accuracy, misclass))
-    plt.show()
-# -----------------------------------------------------------------------------
 
 #constante
-size_embedding = 20
+size_embedding = 152
 
 # Accuracy --------------------------------------------------------------------
 def compute_accuracy(pred, labels):
@@ -174,12 +127,19 @@ class Model(nn.Module):
 #Data
 nbclasses =  2
 
-# path, dirs, files = next(os.walk("./input/Dataset/TrafficLabelling/"))
+
+
+# Model *******************************************************************************************
+# G1.ndata['h'].shape[2] = sizeh = 76 dans ANIDS
+# model1 = Model(G1.ndata['h'].shape[2], size_embedding, G1.ndata['h'].shape[2], F.relu, 0.2).cuda()
+model1 = Model(76, size_embedding, 76, F.relu, 0.2)
+opt = th.optim.Adam(model1.parameters())
+
+
+
 path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
-# path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted_With_Monday/"))
 file_count = len(files)
 
-# X_test = pd.DataFrame()
 
 for nb_files in range(file_count):
     data1 = pd.read_csv(f'{path}{files[nb_files]}', encoding="ISO-8859–1", dtype = str)
@@ -293,18 +253,6 @@ for nb_files in range(file_count):
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-
-
-    # ------------------------------------------- Testing with a simple example -----------------------------------------------------------------
-    # sizeh = 3
-    # nbclasses =  2
-
-    # columns=[" Source IP", " Destination IP", 'h','label']
-    # data = [[1,2,[1,2,3],0], [2,3,[1,20,3],1],[1,3,[2,2,3],0],[3,4,[3,2,3],0],[1,2,[1,2,4],0]]
-    # X1_train = pd.DataFrame(data, columns=columns)
-    # ------------------------------------------- ----------------------------- -----------------------------------------------------------------
-
-
     # ------------------------------------------- Creating the Graph Representation -------------------------------------------------------------
     # Create our Multigraph
     G1 = nx.from_pandas_edgelist(X1_train, " Source IP", " Destination IP", ['h','label'], create_using=nx.MultiGraph())
@@ -340,9 +288,6 @@ for nb_files in range(file_count):
     class_weights1 = th.FloatTensor(class_weights1).cuda()
     criterion1 = nn.CrossEntropyLoss(weight=class_weights1)
     G1 = G1.to('cuda:0')
-    #print(G1.device)
-    #print(G1.ndata['h'].device)
-    #print(G1.edata['h'].device)
 
     node_features1 = G1.ndata['h']
     edge_features1 = G1.edata['h']
@@ -355,12 +300,6 @@ for nb_files in range(file_count):
     # True if you want to print the embedding vectors
     # the name of the file where the vectors are printed
     filename = './models/M1_weights_Test_IP_Mapped.txt'
-
-
-    # Model architecture
-    # G1.ndata['h'].shape[2] = sizeh = 76 dans ANIDS
-    model1 = Model(G1.ndata['h'].shape[2], size_embedding, G1.ndata['h'].shape[2], F.relu, 0.2).cuda()
-    opt = th.optim.Adam(model1.parameters())
 
     for epoch in range(1,1000):
         pred = model1(G1, node_features1, edge_features1).cuda()
@@ -380,21 +319,9 @@ for nb_files in range(file_count):
     print("pred1 : ", len(pred1))
     print("edge_label1 : ", len(edge_label1))
 
-    print('confusion matrix :')
-    c = confusion_matrix(edge_label1, pred1)
-    print(c)
-    c[0][0]= c[0][0]/2
-    c[1][0]= c[1][0]/2
-    c[0][1]= c[0][1]/2
-    c[1][1]= c[1][1]/2
-    print(c)
-
-    print('metrics :')
+    print('Train metrics :')
     print("Accuracy : ", sklearn.metrics.accuracy_score(edge_label1, pred1))
-    print("Precision : ", sklearn.metrics.precision_score(edge_label1, pred1, labels=[0,1]))
-    print("Recall : ", sklearn.metrics.recall_score(edge_label1, pred1, labels=[0,1]))
     print("f1_score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels=[0,1]))
-    # print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
     # ------------------------------------------------ Test ---------------------------------------------------------------------
     print("++++++++++++++++++++++++++++ Test ++++++++++++++++++++++++++++++++")
@@ -443,34 +370,10 @@ for nb_files in range(file_count):
     # actual11 = ["Normal" if i == 0 else "Attack" for i in actual1]
     # test_pred11 = ["Normal" if i == 0 else "Attack" for i in test_pred1]
 
-    print("Confusion matrix : ")
-    c = confusion_matrix(actual1, test_pred1)
-    print(c)
-    c[0][0]= c[0][0]/2
-    c[1][0]= c[1][0]/2
-    c[0][1]= c[0][1]/2
-    c[1][1]= c[1][1]/2
-    print(c)
-
-    print('Metrics : ')
-    print("Accuracy : ", sklearn.metrics.accuracy_score(actual1, test_pred1))
-    print("Precision : ", sklearn.metrics.precision_score(actual1, test_pred1, labels = [0,1]))
-    print("Recall : ", sklearn.metrics.recall_score(actual1, test_pred1, labels = [0,1]))
-    print("f1_score : ", sklearn.metrics.f1_score(actual1, test_pred1, labels = [0,1]))
+    print('Test metrics : ')
+    print("Accuracy : ", sklearn.metrics.accuracy_score(edge_label1, pred1))
+    print("f1_score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels=[0,1]))
 
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-
-    # plot_confusion_matrix(cm = c, #confusion_matrix(actual11, test_pred11), 
-    #                      normalize    = False,
-    #                      target_names = np.unique(actual1),
-    #                      title        = "Confusion Matrix")
-
-    # class_labels = ["Normal", "Attack"] 
-    # df_cm = pd.DataFrame(c, index = class_labels, columns = class_labels)
-    # plt.figure(figsize = (10,7))
-    # sns.heatmap(df_cm, cmap="Greens", annot=True, fmt = 'g')
-    # plt.show()
-
-    # -------------------------------------------- ---------------------------------------- -----------------------------------------------------
 
     # ---------------------------------------------------------------------------------------------------------------------------
