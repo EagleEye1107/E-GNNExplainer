@@ -230,7 +230,8 @@ for nb_files in range(file_count):
             b = len(X1_train)
         # The batch :
         X1_train_batched = X1_train.iloc[a:b]
-        y1_train_batched = y1_train.iloc[a:b]
+        # y1_train_batched = y1_train.iloc[a:b]
+        y1_train_batched = X1_train_batched['label']
 
         # Each batch will contain 64500 instance and all classes are present (The least populated one has > 10 instances)
 
