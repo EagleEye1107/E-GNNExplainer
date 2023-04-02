@@ -224,6 +224,7 @@ for nb_files in range(file_count):
             b = len(X1_train)
         # The batch :
         X1_train_batched = X1_train.iloc[a:b]
+        y1_train_batched = y1_train.iloc[a:b]
 
         # Each batch will contain 64500 instance and all classes are present (The least populated one has > 10 instances)
 
@@ -234,7 +235,7 @@ for nb_files in range(file_count):
         # Since we have a binary classification, the category values willl be replaced with the posterior probability (p(target = Ti | category = Cj))
         # TargetEncoding is also called MeanEncoding, cuz it simply replace each value with (target_i_count_on_category_j) / (total_occurences_of_category_j)
         encoder1 = ce.TargetEncoder(cols=[' Protocol',  'Fwd PSH Flags', ' Fwd URG Flags', ' Bwd PSH Flags', ' Bwd URG Flags'])
-        encoder1.fit(X1_train_batched, y1_train)
+        encoder1.fit(X1_train_batched, y1_train_batched)
         X1_train_batched = encoder1.transform(X1_train_batched)
 
         # scaler (normalization)
