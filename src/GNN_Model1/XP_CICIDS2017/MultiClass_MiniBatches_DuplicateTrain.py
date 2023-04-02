@@ -225,6 +225,8 @@ for nb_files in range(file_count):
         # The batch :
         X1_train_batched = X1_train.iloc[a:b]
 
+        # Each batch will contain 64500 instance and all classes are present (The least populated one has > 10 instances)
+
         print("nb Train instances : ", len(X1_train_batched.values))
         # X_test = pd.concat([X_test, X1_test], ignore_index = True)
 
