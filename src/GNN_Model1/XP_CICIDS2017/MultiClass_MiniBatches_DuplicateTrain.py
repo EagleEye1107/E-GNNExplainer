@@ -203,6 +203,12 @@ for nb_files in range(file_count):
     # X will contain the label column due to the concatination made earlier !!
     X1_train, X1_test, y1_train, y1_test = train_test_split(data1, label1, test_size=0.3, random_state=123, stratify= label1)
 
+    print('len(X1_train) : ', len(X1_train))
+    print('len(y1_train) : ', len(y1_train))
+    print()
+    print(X1_train['label'])
+    print(y1_train)
+
     # Create mini batches on the Train set
     # 1st step : Duplicate instances of least populated classes (nb occ < 100 => x100)
     for indx, x in enumerate(X1_train["label"].value_counts()) :
