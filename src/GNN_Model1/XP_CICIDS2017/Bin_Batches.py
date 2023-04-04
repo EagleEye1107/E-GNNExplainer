@@ -24,7 +24,7 @@ import os
 from sklearn.utils import shuffle
 
 #constante
-size_embedding = 152
+size_embedding = 20
 nb_batch = 5
 
 # Accuracy --------------------------------------------------------------------
@@ -118,7 +118,7 @@ class Model(nn.Module):
 # --------------------------------------------------- MAIN -----------------------------------------------------------
 
 #Data
-nbclasses =  15
+nbclasses =  2
 
 
 # Model *******************************************************************************************
@@ -132,17 +132,6 @@ opt = th.optim.Adam(model1.parameters())
 path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
 file_count = len(files)
 
-# Classes
-clss = ['BENIGN', 'Brute Force', 'XSS', 'Sql Injection', 'Heartbleed', 'DoS Hulk', 'DDoS', 'PortScan', 'FTP-Patator', 'Bot', 'DoS slowloris', 'DoS GoldenEye', 'DoS Slowhttptest', 'SSH-Patator', 'Infiltration']
-
-# Classes mpping
-clss_mpping = {}
-cpt = 0
-for x in clss:
-    clss_mpping[x] = cpt
-    cpt += 1
-
-print(clss_mpping)
 
 for nb_files in range(file_count):
     data1 = pd.read_csv(f'{path}{files[nb_files]}', encoding="ISO-8859–1", dtype = str)
@@ -175,18 +164,20 @@ for nb_files in range(file_count):
     
     nom.insert(0, nom.pop(nom.index('BENIGN')))
 
-    # Classes mpping
-    data1 = data1.replace({' Label': clss_mpping})
+    # Naming the two classes BENIGN {0} / Any Intrusion {1}
+    data1[' Label'].replace(nom[0], 0,inplace = True)
+    for i in range(1,len(data1[' Label'].unique())):
+        data1[' Label'].replace(nom[i], 1,inplace = True)
     
     ##################### LABELS FREQ #######################################
     print()
-    print("labels freq after class mapping")
+    print("labels freq after changing labels to binary")
     counts = list(data1[' Label'].value_counts().to_dict().items())
     for j, x in enumerate(counts):
         x = list(x)
         x[1] = x[1] / len(data1)
         counts[j] = x
-    # print({f'{files[nb_files]}' : counts})
+    print({f'{files[nb_files]}' : counts})
     ##############################################################################
 
     data1.rename(columns={" Label": "label"},inplace = True)
@@ -258,7 +249,7 @@ for nb_files in range(file_count):
 
         # Then we need to Swap {label, h} Columns to have the {Source IP, Destination IP, h, label} representation
         columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
-        X1_train_batched=X1_train_batched.reindex(columns=columns_titles)
+        X1_train_batched = X1_train_batched.reindex(columns=columns_titles)
         # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         # ------------------------------------------- Creating the Graph Representation -------------------------------------------------------------
@@ -316,7 +307,7 @@ for nb_files in range(file_count):
         # the name of the file where the vectors are printed
         filename = './models/M1_weights.txt'
 
-        for epoch in range(1,2000):
+        for epoch in range(1,1000):
             pred = model1(G1, node_features1, edge_features1).cuda()
             loss = criterion1(pred[train_mask1], edge_label1[train_mask1])
             opt.zero_grad()
@@ -331,10 +322,10 @@ for nb_files in range(file_count):
         edge_label1 = th.Tensor.cpu(edge_label1).detach().numpy()
 
         print('Train metrics :')
-        print(clss_mpping)
-        print(sklearn.metrics.classification_report(edge_label1, pred1, digits=4))
-        mean_macro_f1 += sklearn.metrics.f1_score(edge_label1, pred1, labels = list(range(15)), average = 'macro')
-        # print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+        print("Accuracy : ", sklearn.metrics.accuracy_score(edge_label1, pred1))
+        print("Precision : ", sklearn.metrics.precision_score(edge_label1, pred1, labels = [0,1]))
+        print("Recall : ", sklearn.metrics.recall_score(edge_label1, pred1, labels = [0,1]))
+        print("f1_score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels=[0,1]))
 
     # ------------------------------------------------ Test ---------------------------------------------------------------------
     print("++++++++++++++++++++++++++++ Test ++++++++++++++++++++++++++++++++")
@@ -352,19 +343,14 @@ for nb_files in range(file_count):
     columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
     X1_test=X1_test.reindex(columns=columns_titles)
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
     G1_test = nx.from_pandas_edgelist(X1_test, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
-
     G1_test = G1_test.to_directed()
-
     G1_test = from_networkx(G1_test,edge_attrs=['h','label'] )
     actual1 = G1_test.edata.pop('label')
     G1_test.ndata['feature'] = th.ones(G1_test.num_nodes(), G1.ndata['h'].shape[2])
-
     G1_test.ndata['feature'] = th.reshape(G1_test.ndata['feature'], (G1_test.ndata['feature'].shape[0], 1, G1_test.ndata['feature'].shape[1]))
     G1_test.edata['h'] = th.reshape(G1_test.edata['h'], (G1_test.edata['h'].shape[0], 1, G1_test.edata['h'].shape[1]))
     G1_test = G1_test.to('cuda:0')
-
     node_features_test1 = G1_test.ndata['feature']
     edge_features_test1 = G1_test.edata['h']
 
@@ -377,19 +363,13 @@ for nb_files in range(file_count):
     print("nb instances : ", len(X1_test.values))
 
     test_pred1 = model1(G1_test, node_features_test1, edge_features_test1).cuda()
-
     test_pred1 = test_pred1.argmax(1)
     test_pred1 = th.Tensor.cpu(test_pred1).detach().numpy()
 
-    print('Test metrics : ')
-    print(clss_mpping)
-    print(sklearn.metrics.classification_report(actual1, test_pred1, digits=4))
-
-    print("***************")
-    print(f'Summary of Training and Testing on {files[nb_files]} : ')
-    print('Mean Train macro f1 of all batches : ', mean_macro_f1 / nb_batch)
-    print('Mean Test macro f1 of all batches : ', sklearn.metrics.f1_score(actual1, test_pred1, labels = list(range(15)), average = 'macro'))
-    print("***************")
+    print('Metrics : ')
+    print("Accuracy : ", sklearn.metrics.accuracy_score(actual1, test_pred1))
+    print("Precision : ", sklearn.metrics.precision_score(actual1, test_pred1, labels = [0,1]))
+    print("Recall : ", sklearn.metrics.recall_score(actual1, test_pred1, labels = [0,1]))
+    print("f1_score : ", sklearn.metrics.f1_score(actual1, test_pred1, labels = [0,1]))
 
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-    # ---------------------------------------------------------------------------------------------------------------------------
