@@ -220,7 +220,7 @@ for nb_files in range(file_count):
         print(f"+++++++++++++++++ Batch {batch} ++++++++++++++++")
         a = b
         b = int(len(X1_train) / nb_batch) * batch
-        if b >= (((nb_batch - 1)/nb_batch) * len(X1_train)) :
+        if batch == nb_batch :
             b = len(X1_train)
         # The batch :
         X1_train_batched = X1_train.iloc[a:b]
@@ -316,7 +316,7 @@ for nb_files in range(file_count):
         # the name of the file where the vectors are printed
         filename = './models/M1_weights.txt'
 
-        for epoch in range(1,2000):
+        for epoch in range(1,1000):
             pred = model1(G1, node_features1, edge_features1).cuda()
             loss = criterion1(pred[train_mask1], edge_label1[train_mask1])
             opt.zero_grad()
