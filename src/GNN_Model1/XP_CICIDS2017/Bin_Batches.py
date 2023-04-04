@@ -24,7 +24,7 @@ import os
 from sklearn.utils import shuffle
 
 #constante
-size_embedding = 20
+size_embedding = 152
 nb_batch = 5
 
 # Accuracy --------------------------------------------------------------------
