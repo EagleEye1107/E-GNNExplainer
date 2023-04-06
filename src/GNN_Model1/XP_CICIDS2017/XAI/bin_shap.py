@@ -23,6 +23,10 @@ from sklearn.metrics import confusion_matrix
 import os
 from sklearn.utils import shuffle
 
+import shap
+
+from GraphSVX.src.explainers import GraphSVX, GNNExplainer
+
 #constante
 size_embedding = 152
 nb_batch = 5
@@ -376,3 +380,27 @@ for nb_files in range(file_count):
 
 
 th.save(model1.state_dict(), "./models/Bin_Model/")
+
+
+# XAI
+explainer = GraphSVX(G1_test, model1)
+explanations = explainer.explain_graphs()
+
+
+explanations = explainer.explain_graphs(args.indexes,
+                                         args.hops,
+                                         args.num_samples,
+                                         args.info,
+                                         args.multiclass,
+                                         args.fullempty,
+                                         args.S,
+                                         'graph_classification',
+                                         args.feat,
+                                         args.coal,
+                                         args.g,
+                                         args.regu,
+                                         True)
+
+
+shap_values = explainer.shap_values(X_train)
+shap.summary_plot(shap_values, features=X_train, feature_names=X_train.columns)
