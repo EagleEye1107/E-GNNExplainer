@@ -23,6 +23,8 @@ from sklearn.metrics import confusion_matrix
 import os
 from sklearn.utils import shuffle
 
+from dgl.data.utils import save_graphs
+
 #constante
 size_embedding = 152
 nb_batch = 5
@@ -375,4 +377,9 @@ for nb_files in range(file_count):
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
 
+# Save the last Test Graph for XAI after
+graph_labels = {"glabel": th.tensor([0, 1])}
+save_graphs("./data.bin", [G1_test], actual1)
+
+# Save the model
 th.save(model1.state_dict(), "./models/Bin_Model/")
