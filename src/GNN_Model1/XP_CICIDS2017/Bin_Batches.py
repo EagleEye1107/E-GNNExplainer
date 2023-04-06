@@ -379,7 +379,7 @@ for nb_files in range(file_count):
 
 # Save the last Test Graph for XAI after
 graph_labels = {"glabel": th.tensor([0, 1])}
-save_graphs("./data.bin", [G1_test], actual1)
+save_graphs("./notes/DGLGraphs/data.bin", [G1_test], actual1)
 
 # Save the model
 th.save(model1.state_dict(), "./models/Bin_Model/")
