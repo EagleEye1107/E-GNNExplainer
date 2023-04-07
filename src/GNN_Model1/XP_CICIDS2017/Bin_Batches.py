@@ -100,6 +100,8 @@ class MLPPredictor(nn.Module):
     def forward(self, graph, h):
         with graph.local_scope():
             graph.ndata['h'] = h
+            # Update the features of the specified edges by the provided function
+            # DGLGraph.apply_edges(func, edges='__ALL__', etype=None, inplace=False)
             graph.apply_edges(self.apply_edges)
             return graph.edata['score']
 
