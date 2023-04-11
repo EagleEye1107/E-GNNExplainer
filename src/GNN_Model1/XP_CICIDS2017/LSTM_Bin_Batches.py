@@ -29,6 +29,47 @@ from dgl.data.utils import save_graphs
 size_embedding = 152
 nb_batch = 5
 
+
+
+# LSTM Agg --------------------------------------------------------------------
+import torch
+
+class LSTMAggregator(nn.Module):
+    def __init__(self, in_feats, out_feats, activation):
+        super(LSTMAggregator, self).__init__()
+        self.in_feats = in_feats
+        self.out_feats = out_feats
+        self.activation = activation
+        self.lstm = nn.LSTM(input_size=in_feats, hidden_size=out_feats, batch_first=True)
+
+    def forward(self, node_feats, neighbor_feats, neighbor_masks):
+        # node_feats: (batch_size, in_feats)
+        # neighbor_feats: (num_neighbors, in_feats)
+        # neighbor_masks: (num_neighbors,)
+        num_neighbors = neighbor_feats.shape[0]
+        neighbor_feats = neighbor_feats.unsqueeze(0)  # (1, num_neighbors, in_feats)
+        neighbor_masks = neighbor_masks.unsqueeze(-1).float()  # (num_neighbors, 1)
+
+        # Apply LSTM to neighbor features
+        _, (hidden, _) = self.lstm(neighbor_feats)
+        neighbor_feats = hidden.squeeze(0)  # (num_neighbors, out_feats)
+
+        # Mask out the padded neighbors
+        neighbor_feats = neighbor_feats * neighbor_masks
+
+        # Aggregate the neighbor features
+        agg_feats = torch.sum(neighbor_feats, dim=0) / torch.sum(neighbor_masks)
+
+        # Apply activation function
+        if self.activation is not None:
+            agg_feats = self.activation(agg_feats)
+
+        # Concatenate the node features and aggregated features
+        out_feats = torch.cat([node_feats, agg_feats], dim=0)
+
+        return out_feats
+# ------------------------------------------------------------------------------------------
+
 # Accuracy --------------------------------------------------------------------
 def compute_accuracy(pred, labels):
     return (pred.argmax(1) == labels).float().mean().item()
