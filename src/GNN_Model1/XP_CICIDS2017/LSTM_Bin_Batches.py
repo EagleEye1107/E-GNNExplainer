@@ -53,7 +53,7 @@ class SAGELayer(nn.Module):
             g = g_dgl
             g.ndata['h'] = nfeats
             g.edata['h'] = efeats
-            # Line 4 of algorithm 1 : update all because we are using a full neighborhood sampling and not a k-hop neigh sampling
+            # Line 4 of algorithm 1
             g.update_all(self.message_func, fn.mean('m', 'h_neigh'))
             # Line 5 of algorithm 1
             g.ndata['h'] = F.relu(self.W_apply(th.cat([g.ndata['h'], g.ndata['h_neigh']], 2)))
