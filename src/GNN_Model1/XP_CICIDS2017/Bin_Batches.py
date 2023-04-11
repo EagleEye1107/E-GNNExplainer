@@ -65,7 +65,7 @@ class SAGE(nn.Module):
         super(SAGE, self).__init__()
         self.layers = nn.ModuleList()
         self.layers.append(SAGELayer(ndim_in, edim, size_embedding, activation))
-        self.layers.append(SAGELayer(size_embedding, edim, size_embedding, activation)) ##
+        # self.layers.append(SAGELayer(size_embedding, edim, size_embedding, activation)) ##
         self.layers.append(SAGELayer(size_embedding, edim, ndim_out, activation))
         self.dropout = nn.Dropout(p=dropout)
 
