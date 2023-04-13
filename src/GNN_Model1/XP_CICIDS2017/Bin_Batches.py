@@ -65,7 +65,7 @@ class SAGE(nn.Module):
         super(SAGE, self).__init__()
         self.layers = nn.ModuleList()
         self.layers.append(SAGELayer(ndim_in, edim, size_embedding, activation))
-        # self.layers.append(SAGELayer(size_embedding, edim, size_embedding, activation)) ##
+        self.layers.append(SAGELayer(size_embedding, edim, size_embedding, activation)) ##
         self.layers.append(SAGELayer(size_embedding, edim, ndim_out, activation))
         self.dropout = nn.Dropout(p=dropout)
 
@@ -380,8 +380,8 @@ for nb_files in range(file_count):
 
 
 # Save the last Test Graph for XAI after
-graph_labels = {"glabel": th.tensor([0, 1])}
-save_graphs("./notes/DGLGraphs/data.bin", [G1_test], actual1)
+# graph_labels = {"glabel": th.tensor([0, 1])}
+# save_graphs("./notes/DGLGraphs/data.bin", [G1_test], actual1)
 
 # Save the model
-th.save(model1.state_dict(), "./models/Bin_Model/")
+# th.save(model1.state_dict(), "./models/Bin_Model/")

@@ -13,15 +13,13 @@ from scipy.stats import randint
 from sklearn.tree import export_graphviz
 
 import os
-
+from sklearn.utils import shuffle
 
 # RF Model
 rf = RandomForestClassifier()
 
 
-# path, dirs, files = next(os.walk("./input/Dataset/TrafficLabelling/"))
 path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
-# path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted_With_Monday/"))
 file_count = len(files)
 
 # Classes
@@ -90,11 +88,28 @@ for nb_files in range(file_count):
     label1 = data1.label
     data1.drop(columns=['label'],inplace = True)
 
+    # split train and test
+    data1 =  pd.concat([data1, label1], axis=1)
+
     # ******** At this step data1 contains only the data without label column
     # ******** The label column is stored in the label variale 
 
     # Splitting the dataset to train and test sets
-    X1_train, X1_test, y1_train, y1_test = train_test_split(data1, label1, test_size=0.3, random_state=123)
+    X1_train, X1_test, y1_train, y1_test = train_test_split(data1, label1, test_size=0.3, random_state=123, stratify = label1)
+
+
+    # 1st step : Duplicate instances of least populated classes (nb occ < 100 => x100)
+    for indx, x in enumerate(X1_train["label"].value_counts()) :
+        if x < 100 :
+            inst = X1_train.loc[X1_train['label'] == X1_train["label"].value_counts().index[indx]]
+            for i in range(int(100 / x)) :
+                X1_train = pd.concat([X1_train, inst], ignore_index = True)
+    
+    X1_train = shuffle(X1_train)
+    y1_train = X1_train['label']
+
+    X1_train.drop(columns=['label'],inplace = True)
+    X1_test.drop(columns=['label'],inplace = True)
 
     # for non numerical attributes (categorical data)
     # Since we have a binary classification, the category values willl be replaced with the posterior probability (p(target = Ti | category = Cj))

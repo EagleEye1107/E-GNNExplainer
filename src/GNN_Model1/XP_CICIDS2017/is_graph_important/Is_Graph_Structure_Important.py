@@ -24,7 +24,7 @@ import os
 from sklearn.utils import shuffle
 
 #constante
-size_embedding = 20
+size_embedding = 152
 nb_batch = 5
 
 # Accuracy --------------------------------------------------------------------
@@ -227,7 +227,7 @@ for nb_files in range(file_count):
         print(f"+++++++++++++++++ Batch {batch} ++++++++++++++++")
         a = b
         b = int(len(X1_train) / nb_batch) * batch
-        if b >= (((nb_batch - 1)/nb_batch) * len(X1_train)) :
+        if batch == nb_batch :
             b = len(X1_train)
         # The batch :
         X1_train_batched = X1_train.iloc[a:b]
