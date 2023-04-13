@@ -317,10 +317,10 @@ for nb_files in range(file_count):
 
         for epoch in range(1,1000):
             pred = model1(G1, node_features1, edge_features1).cuda()
-            print(pred)
+            print(len(pred))
             print(edge_label1)
             print('------------------')
-            print(pred[train_mask1])
+            print(len(pred[train_mask1]))
             print(edge_label1[train_mask1])
             print(ddddddddd)
             loss = criterion1(pred[train_mask1], edge_label1[train_mask1])
