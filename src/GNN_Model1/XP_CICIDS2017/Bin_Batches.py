@@ -305,6 +305,10 @@ for nb_files in range(file_count):
         edge_label1 = G1.edata['label']
         train_mask1 = G1.edata['train_mask']
 
+        print("Train mask : ")
+        print(train_mask1)
+        print('------------------')
+
         # to print
         pr = True
         # True if you want to print the embedding vectors
@@ -313,6 +317,12 @@ for nb_files in range(file_count):
 
         for epoch in range(1,1000):
             pred = model1(G1, node_features1, edge_features1).cuda()
+            print(pred)
+            print(edge_label1)
+            print('------------------')
+            print(pred[train_mask1])
+            print(edge_label1[train_mask1])
+            print(ddddddddd)
             loss = criterion1(pred[train_mask1], edge_label1[train_mask1])
             opt.zero_grad()
             loss.backward()
