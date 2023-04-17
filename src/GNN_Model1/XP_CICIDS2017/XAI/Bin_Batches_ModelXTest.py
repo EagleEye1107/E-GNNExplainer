@@ -388,4 +388,4 @@ for nb_files in range(file_count):
 gen_xai_testset.to_csv(f'./input/Dataset/XAI/XAI_Test.csv', sep=',', index = False)
 
 # Save the model
-th.save(model1.state_dict(), "./models/Bin_Model/")
+th.save(model1.state_dict(), "./models/Model1/model1.pt")
