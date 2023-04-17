@@ -5,7 +5,6 @@
 
 
 from dgl import from_networkx
-import sklearn
 import torch.nn as nn
 import torch as th
 import torch.nn.functional as F
@@ -13,15 +12,8 @@ import dgl.function as fn
 import networkx as nx
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
 import category_encoders as ce
 import numpy as np
-from sklearn.metrics import confusion_matrix
-
-import os
-from sklearn.utils import shuffle
-
-from dgl.data.utils import save_graphs
 
 #constante
 size_embedding = 152
@@ -144,6 +136,8 @@ columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
 gen_xai_testset = gen_xai_testset.reindex(columns=columns_titles)
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+print(gen_xai_testset["label"].value_counts())
+
 # Create our Multigraph
 XAI_G1 = nx.from_pandas_edgelist(gen_xai_testset, " Source IP", " Destination IP", ['h','label'], create_using=nx.MultiGraph())
 XAI_G1 = XAI_G1.to_directed()
@@ -162,6 +156,8 @@ edge_features1 = XAI_G1.edata['h']
 edge_label1 = XAI_G1.edata['label']
 train_mask1 = XAI_G1.edata['train_mask']
 
+print(XAI_G1)
+
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
@@ -173,9 +169,9 @@ nbclasses =  2
 # Model *******************************************************************************************
 # G1.ndata['h'].shape[2] = sizeh = 76 dans ANIDS
 # model1 = Model(G1.ndata['h'].shape[2], size_embedding, G1.ndata['h'].shape[2], F.relu, 0.2).cuda()
-model1 = Model(76, size_embedding, 76, F.relu, 0.2).cuda()
-model1.load_state_dict(th.load("./models/Model1/model1.pt"))
-model1.eval()
+# model1 = Model(76, size_embedding, 76, F.relu, 0.2).cuda()
+# model1.load_state_dict(th.load("./models/Model1/model1.pt"))
+# model1.eval()
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -184,11 +180,11 @@ model1.eval()
 
 # Testing everything ++++++++++++++++++++++++++
 
-pred1 = model1(XAI_G1, node_features1, edge_features1).cuda()
-print('Train metrics :')
-print("Accuracy : ", sklearn.metrics.accuracy_score(edge_label1, pred1))
-print("Precision : ", sklearn.metrics.precision_score(edge_label1, pred1, labels = [0,1]))
-print("Recall : ", sklearn.metrics.recall_score(edge_label1, pred1, labels = [0,1]))
-print("f1_score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels=[0,1]))
+# pred1 = model1(XAI_G1, node_features1, edge_features1).cuda()
+# print('Train metrics :')
+# print("Accuracy : ", sklearn.metrics.accuracy_score(edge_label1, pred1))
+# print("Precision : ", sklearn.metrics.precision_score(edge_label1, pred1, labels = [0,1]))
+# print("Recall : ", sklearn.metrics.recall_score(edge_label1, pred1, labels = [0,1]))
+# print("f1_score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels=[0,1]))
 
 # +++++++++++++++++++++++++++++++++++++++++++++
