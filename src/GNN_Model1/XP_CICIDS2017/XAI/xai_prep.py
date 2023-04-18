@@ -112,9 +112,14 @@ class Model(nn.Module):
 xai_datafile = "./input/Dataset/XAI/XAI_Test.csv"
 gen_xai_testset = pd.read_csv(xai_datafile, encoding="ISO-8859–1", dtype = str)
 
+print(type(gen_xai_testset.iloc[4]["label"]))
+gen_xai_testset["label"] = gen_xai_testset["label"].apply(lambda x: int(x))
+print(type(gen_xai_testset.iloc[4]["label"]))
+
 labels_column = gen_xai_testset.label
 
 print(gen_xai_testset["label"].value_counts())
+print(gen_xai_testset)
 
 # Create our Multigraph
 XAI_G1 = nx.from_pandas_edgelist(gen_xai_testset, " Source IP", " Destination IP", ['h','label'], create_using=nx.MultiGraph())
