@@ -137,9 +137,7 @@ class GPreprocessing():
         G1.ndata['h'] = th.reshape(G1.ndata['h'], (G1.ndata['h'].shape[0], 1, G1.ndata['h'].shape[1]))
         G1.edata['h'] = th.reshape(G1.edata['h'], (G1.edata['h'].shape[0], 1, G1.edata['h'].shape[1]))
 
-        nfeats = G1.ndata['h']
-        efeats = G1.edata['h']
-        return G1, nfeats, efeats
+        return G1
     
     def test(self, data1):
         data1 = self.encoder1.transform(data1)
@@ -171,7 +169,10 @@ class Model(nn.Module):
         self.pred = MLPPredictor(ndim_out, nbclasses)
     
     def train(self, data1):
-        G1, nfeats, efeats = self.preprocessing.train(data1)
+        G1 = self.preprocessing.train(data1)
+        G1 = G1.to('cuda:0')
+        nfeats = G1.ndata['h']
+        efeats = G1.edata['h']
         h = self.gnn(G1, nfeats, efeats)
         # h = list of node features [[node1_feature1, node1_feature2, ...], [node2_feature1, node2_feature2, ...], ...]
         return self.pred(G1, h)
@@ -182,10 +183,10 @@ class Model(nn.Module):
         # h = list of node features [[node1_feature1, node1_feature2, ...], [node2_feature1, node2_feature2, ...], ...]
         return self.pred(G1, h)
     
-    def forward(self, g, nfeats, efeats):
-        h = self.gnn(g, nfeats, efeats)
-        # h = list of node features [[node1_feature1, node1_feature2, ...], [node2_feature1, node2_feature2, ...], ...]
-        return self.pred(g, h)
+    # def forward(self, g, nfeats, efeats):
+        # h = self.gnn(g, nfeats, efeats)
+        # # h = list of node features [[node1_feature1, node1_feature2, ...], [node2_feature1, node2_feature2, ...], ...]
+        # return self.pred(g, h)
 
 # -------------------------------------------------------------------------------------------------------------------------------
 
@@ -287,7 +288,7 @@ for nb_files in range(file_count):
         y1_train_batched = X1_train_batched['label']
 
         # Each batch will contain 64500 instance and all classes are present (The least populated one has > 10 instances)
-        G1, nfeats, efeats = preprocessor1.train(X1_train_batched)
+        G1 = preprocessor1.train(X1_train_batched)
 
         # ------------------------------------------- Model -----------------------------------------------------------------------------------------
         ## use of model
@@ -306,7 +307,6 @@ for nb_files in range(file_count):
         '''
         class_weights1 = th.FloatTensor(class_weights1).cuda()
         criterion1 = nn.CrossEntropyLoss(weight = class_weights1)
-        G1 = G1.to('cuda:0')
 
         edge_label1 = G1.edata['label']
         train_mask1 = G1.edata['train_mask']
