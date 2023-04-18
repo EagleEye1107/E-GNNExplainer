@@ -154,7 +154,10 @@ edge_features1 = XAI_G1.edata['h']
 edge_label1 = XAI_G1.edata['label']
 train_mask1 = XAI_G1.edata['train_mask']
 
-print(XAI_G1)
+print(type(XAI_G1))
+
+print(type(edge_features1))
+print(type(node_features1))
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

@@ -7,6 +7,8 @@ model = xgboost.XGBRegressor().fit(X, y)
 
 # explain the model's predictions using SHAP
 # (same syntax works for LightGBM, CatBoost, scikit-learn, transformers, Spark, etc.)
+print(X)
+print(y)
 explainer = shap.Explainer(model)
 shap_values = explainer(X)
 
