@@ -158,6 +158,7 @@ edge_label1 = XAI_G1.edata['label']
 train_mask1 = XAI_G1.edata['train_mask']
 
 print(XAI_G1)
+print(edge_features1)
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -185,7 +186,8 @@ print("start XAI")
 # explain the model's predictions using SHAP
 # (same syntax works for LightGBM, CatBoost, scikit-learn, transformers, Spark, etc.)
 explainer = shap.Explainer(model1)
-shap_values = explainer(gen_xai_testset)
+shap_values = explainer(edge_features1)
+# shap_values = explainer(gen_xai_testset)
 
 # visualize the first prediction's explanation
 shap.plots.waterfall(shap_values[0], show = False)
