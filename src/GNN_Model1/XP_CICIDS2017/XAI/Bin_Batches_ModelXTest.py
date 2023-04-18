@@ -136,8 +136,6 @@ opt = th.optim.Adam(model1.parameters())
 path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
 file_count = len(files)
 
-gen_xai_testset = pd.DataFrame()
-
 for nb_files in range(file_count):
     data1 = pd.read_csv(f'{path}{files[nb_files]}', encoding="ISO-8859–1", dtype = str)
 
@@ -198,9 +196,6 @@ for nb_files in range(file_count):
     # -------------------- ????????????????????????????????????????? --------------------
     # X will contain the label column due to the concatination made earlier !!
     X1_train, X1_test, y1_train, y1_test = train_test_split(data1, label1, test_size=0.3, random_state=123, stratify= label1)
-
-    # Concat each X1_test to generate a global X1_test for XAI
-    gen_xai_testset = pd.concat([gen_xai_testset, X1_test], ignore_index = True)
 
     # Create mini batches on the Train set
     # 1st step : Duplicate instances of least populated classes (nb occ < 100 => x100)
@@ -384,8 +379,9 @@ for nb_files in range(file_count):
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
 
-# Save the gen_xai_testset which is the final global X1_test set
-gen_xai_testset.to_csv(f'./input/Dataset/XAI/XAI_Test.csv', sep=',', index = False)
+# Save the gen_xai_trainset (background dataset) gen_xai_testset which is the final global X1_test set
+X1_train_batched.to_csv(f'./input/Dataset/XAI/XAI_Train.csv', sep=',', index = False)
+X1_test.to_csv(f'./input/Dataset/XAI/XAI_Test.csv', sep=',', index = False)
 
 # Save the model
 th.save(model1.state_dict(), "./models/Model1/model1.pt")
