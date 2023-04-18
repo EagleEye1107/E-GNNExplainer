@@ -114,28 +114,6 @@ gen_xai_testset = pd.read_csv(xai_datafile, encoding="ISO-8859–1", dtype = str
 
 labels_column = gen_xai_testset.label
 
-# Construction of the Graph ****************
-# encoder1
-encoder1 = ce.TargetEncoder(cols=[' Protocol',  'Fwd PSH Flags', ' Fwd URG Flags', ' Bwd PSH Flags', ' Bwd URG Flags'])
-encoder1.fit(gen_xai_testset, labels_column)
-gen_xai_testset = encoder1.transform(gen_xai_testset)
-
-# scaler (normalization)
-scaler1 = StandardScaler()
-cols_to_norm1 = list(set(list(gen_xai_testset.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])) )
-gen_xai_testset[cols_to_norm1] = scaler1.fit_transform(gen_xai_testset[cols_to_norm1])
-gen_xai_testset['h'] = gen_xai_testset[ cols_to_norm1 ].values.tolist()
-
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# Before training the data :
-# We need to delete all the attributes (cols_to_norm1) to have the {Source IP, Destination IP, label, h} representation
-gen_xai_testset.drop(columns = cols_to_norm1, inplace = True)
-
-# Then we need to Swap {label, h} Columns to have the {Source IP, Destination IP, h, label} representation
-columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
-gen_xai_testset = gen_xai_testset.reindex(columns=columns_titles)
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 print(gen_xai_testset["label"].value_counts())
 
 # Create our Multigraph
