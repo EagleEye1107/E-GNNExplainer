@@ -156,4 +156,4 @@ for nb_files in range(file_count):
         X1_train_batched = X1_train_batched.reindex(columns=columns_titles)
         # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         print(type(X1_train_batched.iloc[4]["label"]))
-        print(type(X1_train_batched.iloc[4]["h"]))
+        print(type(X1_train_batched.iloc[4]["h"][0]))
