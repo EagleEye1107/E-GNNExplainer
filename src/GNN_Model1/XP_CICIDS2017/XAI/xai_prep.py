@@ -114,6 +114,11 @@ gen_xai_testset = pd.read_csv(xai_datafile, encoding="ISO-8859–1", dtype = str
 
 labels_column = gen_xai_testset.label
 
+print(gen_xai_testset["label"].value_counts())
+print(len(labels_column))
+print(gen_xai_testset.columns.values)
+print(len(gen_xai_testset.columns.values))
+
 # Construction of the Graph ****************
 # encoder1
 encoder1 = ce.TargetEncoder(cols=[' Protocol',  'Fwd PSH Flags', ' Fwd URG Flags', ' Bwd PSH Flags', ' Bwd URG Flags'])
