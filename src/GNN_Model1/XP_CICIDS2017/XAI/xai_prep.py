@@ -5,6 +5,7 @@
 
 
 from dgl import from_networkx
+import sklearn
 import torch.nn as nn
 import torch as th
 import torch.nn.functional as F
@@ -14,6 +15,8 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 import category_encoders as ce
 import numpy as np
+
+import sklearn.metrics
 
 #constante
 size_embedding = 152
@@ -112,9 +115,26 @@ class Model(nn.Module):
 xai_datafile = "./input/Dataset/XAI/XAI_Test.csv"
 gen_xai_testset = pd.read_csv(xai_datafile, encoding="ISO-8859–1", dtype = str)
 
+# Label column is str dtype so we convert it to numpy.int64 dtype
+gen_xai_testset["label"] = gen_xai_testset["label"].apply(lambda x: int(x))
+
+# Same thing with h attr, need to be converted to a list
+for index, row in gen_xai_testset.iterrows():
+    # print(row['h'])
+    # Remove brackets from the str
+    row['h'] = row['h'].replace("[", "")
+    row['h'] = row['h'].replace("]", "")
+    # Split depending on the seperator to have a list of str
+    row['h'] = row['h'].split(',')
+    # Convert str to float
+    row['h'] = [float(i) for i in row['h']]
+    gen_xai_testset.at[index,'h'] = row['h']
+    # print(type(row['h'][0]))
+
 labels_column = gen_xai_testset.label
 
 print(gen_xai_testset["label"].value_counts())
+print(gen_xai_testset)
 
 # Create our Multigraph
 XAI_G1 = nx.from_pandas_edgelist(gen_xai_testset, " Source IP", " Destination IP", ['h','label'], create_using=nx.MultiGraph())
@@ -147,9 +167,9 @@ nbclasses =  2
 # Model *******************************************************************************************
 # G1.ndata['h'].shape[2] = sizeh = 76 dans ANIDS
 # model1 = Model(G1.ndata['h'].shape[2], size_embedding, G1.ndata['h'].shape[2], F.relu, 0.2).cuda()
-# model1 = Model(76, size_embedding, 76, F.relu, 0.2).cuda()
-# model1.load_state_dict(th.load("./models/Model1/model1.pt"))
-# model1.eval()
+model1 = Model(76, size_embedding, 76, F.relu, 0.2).cuda()
+model1.load_state_dict(th.load("./models/Model1/model1.pt"))
+model1.eval()
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -158,11 +178,15 @@ nbclasses =  2
 
 # Testing everything ++++++++++++++++++++++++++
 
-# pred1 = model1(XAI_G1, node_features1, edge_features1).cuda()
-# print('Train metrics :')
-# print("Accuracy : ", sklearn.metrics.accuracy_score(edge_label1, pred1))
-# print("Precision : ", sklearn.metrics.precision_score(edge_label1, pred1, labels = [0,1]))
-# print("Recall : ", sklearn.metrics.recall_score(edge_label1, pred1, labels = [0,1]))
-# print("f1_score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels=[0,1]))
+pred1 = model1(XAI_G1, node_features1, edge_features1).cuda()
+pred1 = pred1.argmax(1)
+pred1 = th.Tensor.cpu(pred1).detach().numpy()
+edge_label1 = th.Tensor.cpu(edge_label1).detach().numpy()
+
+print('Train metrics :')
+print("Accuracy : ", sklearn.metrics.accuracy_score(edge_label1, pred1))
+print("Precision : ", sklearn.metrics.precision_score(edge_label1, pred1, labels = [0,1]))
+print("Recall : ", sklearn.metrics.recall_score(edge_label1, pred1, labels = [0,1]))
+print("f1_score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels=[0,1]))
 
 # +++++++++++++++++++++++++++++++++++++++++++++
