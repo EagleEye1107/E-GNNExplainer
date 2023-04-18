@@ -137,6 +137,8 @@ class GPreprocessing():
         G1.ndata['h'] = th.reshape(G1.ndata['h'], (G1.ndata['h'].shape[0], 1, G1.ndata['h'].shape[1]))
         G1.edata['h'] = th.reshape(G1.edata['h'], (G1.edata['h'].shape[0], 1, G1.edata['h'].shape[1]))
 
+        G1 = G1.to('cuda:0')
+
         return G1
     
     def test(self, data1):
@@ -170,7 +172,6 @@ class Model(nn.Module):
     
     def train(self, data1):
         G1 = self.preprocessing.train(data1)
-        G1 = G1.to('cuda:0')
         nfeats = G1.ndata['h']
         efeats = G1.edata['h']
         h = self.gnn(G1, nfeats, efeats)
