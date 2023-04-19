@@ -30,7 +30,7 @@ import matplotlib.pyplot as plt
 
 #constante
 size_embedding = 152
-nb_batch = 5
+nb_batch = 1
 # to print
 pr = True
 filename = './models/M1_weights.txt'
@@ -315,7 +315,7 @@ for nb_files in range(file_count):
         # y1_train_batched = y1_train.iloc[a:b]
         y1_train_batched = X1_train_batched['label']
 
-        pred1, edge_label1 = model1.train(X1_train_batched, 10)
+        pred1, edge_label1 = model1.train(X1_train_batched, 1)
         pred1 = pred1.argmax(1)
         pred1 = th.Tensor.cpu(pred1).detach().numpy()
         edge_label1 = th.Tensor.cpu(edge_label1).detach().numpy()
@@ -352,6 +352,8 @@ for nb_files in range(file_count):
 # # Save the model
 # th.save(model1.state_dict(), "./models/Model1/model1_pre.pt")
 
+print(X1_test)
+print(list(set(list(X1_test.columns))))
 
 # XAI ######################
 explainer = shap.KernelExplainer(model1.predict, X1_test)
