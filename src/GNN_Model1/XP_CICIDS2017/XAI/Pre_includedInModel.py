@@ -191,8 +191,8 @@ class Model(nn.Module):
             opt.zero_grad()
             loss.backward()
             opt.step()
-            if epoch % 10 == 0:
-                print('Training acc:', compute_accuracy(pred1[train_mask1], edge_label1[train_mask1]), loss)
+            # if epoch % 10 == 0:
+            #     print('Training acc:', compute_accuracy(pred1[train_mask1], edge_label1[train_mask1]), loss)
 
         h = self.gnn(G1, nfeats, efeats).cuda()
         pred1 = self.pred(G1, h).cuda()
@@ -347,4 +347,4 @@ X1_train_batched.to_csv(f'./input/Dataset/XAI/XAI_Train.csv', sep=',', index = F
 X1_test.to_csv(f'./input/Dataset/XAI/XAI_Test.csv', sep=',', index = False)
 
 # Save the model
-th.save(model1.state_dict(), "./models/Model1/model1.pt")
+th.save(model1.state_dict(), "./models/Model1/model1_pre.pt")
