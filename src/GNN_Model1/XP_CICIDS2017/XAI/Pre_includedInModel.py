@@ -345,15 +345,32 @@ for nb_files in range(1):
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
 
-# # Save the gen_xai_trainset (background dataset) gen_xai_testset which is the final global X1_test set
-# X1_train_batched.to_csv(f'./input/Dataset/XAI/XAI_Train.csv', sep=',', index = False)
-# X1_test.to_csv(f'./input/Dataset/XAI/XAI_Test.csv', sep=',', index = False)
-
-# # Save the model
-# th.save(model1.state_dict(), "./models/Model1/model1_pre.pt")
-
 print(X1_test)
 print(list(set(list(X1_test.columns))))
+
+# IP Mapping *************************************************************************
+# We do tha mapping of test set only because its faster and it will generate totally new nodes from the train set
+test_res = set()
+for x in list(X1_test[' Source IP']) :
+    test_res.add(x)
+for x in list(X1_test[' Destination IP']) :
+    test_res.add(x)
+
+test_re = {}
+cpt = 0
+for x in test_res:
+    test_re[x] = cpt
+    cpt +=1
+
+print()
+
+print(X1_test)
+X1_test = X1_test.replace({' Source IP': test_re})
+X1_test = X1_test.replace({' Destination IP': test_re})
+print(X1_test)
+
+print()
+# ***********************************************************************************
 
 cols_to_norm1 = list(set(list(data1.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])))
 
