@@ -28,6 +28,9 @@ from dgl.data.utils import save_graphs
 #constante
 size_embedding = 152
 nb_batch = 5
+# to print
+pr = True
+filename = './models/M1_weights.txt'
 
 # Accuracy --------------------------------------------------------------------
 def compute_accuracy(pred, labels):
@@ -168,14 +171,41 @@ class Model(nn.Module):
         self.gnn = SAGE(ndim_in, ndim_out, edim, activation, dropout)
         self.pred = MLPPredictor(ndim_out, nbclasses)
     
-    def train(self, data1):
+    def train(self, data1, epochs):
         G1 = self.preprocessing.train(data1)
         G1 = G1.to('cuda:0')
+        from sklearn.utils import class_weight
+        class_weights1 = class_weight.compute_class_weight(class_weight = 'balanced',
+                                                        classes = np.unique(G1.edata['label'].cpu().numpy()),
+                                                        y = G1.edata['label'].cpu().numpy())
+        class_weights1 = th.FloatTensor(class_weights1).cuda()
+        criterion1 = nn.CrossEntropyLoss(weight = class_weights1)
+
         nfeats = G1.ndata['h']
         efeats = G1.edata['h']
+
+        edge_label1 = G1.edata['label']
+        train_mask1 = G1.edata['train_mask']
+
+        for epoch in range(1, epochs):
+            h = self.gnn(G1, nfeats, efeats)
+            pred = self.pred(G1, h)
+            loss = criterion1(pred[train_mask1], edge_label1[train_mask1])
+            opt.zero_grad()
+            loss.backward()
+            opt.step()
+            if epoch % 10 == 0:
+                print('Training acc:', compute_accuracy(pred[train_mask1], edge_label1[train_mask1]), loss)
+
         h = self.gnn(G1, nfeats, efeats)
+        pred = self.pred(G1, h)
+        # pred1 = pred1.argmax(1)
+        # pred1 = th.Tensor.cpu(pred1).detach().numpy()
+        # edge_label1 = th.Tensor.cpu(edge_label1).detach().numpy()
+
+        # h = self.gnn(G1, nfeats, efeats)
         # h = list of node features [[node1_feature1, node1_feature2, ...], [node2_feature1, node2_feature2, ...], ...]
-        return self.pred(G1, h)
+        return pred, edge_label1
     
     def predict(self, data1):
         G1, nfeats, efeats = self.preprocessing.test(data1)
@@ -287,48 +317,7 @@ for nb_files in range(file_count):
         # y1_train_batched = y1_train.iloc[a:b]
         y1_train_batched = X1_train_batched['label']
 
-        # Each batch will contain 64500 instance and all classes are present (The least populated one has > 10 instances)
-        G1 = preprocessor1.train(X1_train_batched)
-        G1 = G1.to('cuda:0')
-
-        # ------------------------------------------- Model -----------------------------------------------------------------------------------------
-        ## use of model
-        from sklearn.utils import class_weight
-        class_weights1 = class_weight.compute_class_weight(class_weight = 'balanced',
-                                                        classes = np.unique(G1.edata['label'].cpu().numpy()),
-                                                        y = G1.edata['label'].cpu().numpy())
-        ''' 
-            Using class weights, you make the classifier aware of how to treat the various classes in the loss function.
-            In this process, you give higher weights to certain classes & lower weights to other classes.
-            Example : [ 0.51600999 16.11525117] 
-            Basically : 
-                - For classes with small number of training images, you give it more weight
-                so that the network will be punished more if it makes mistakes predicting the label of these classes. 
-                - For classes with large numbers of images, you give it small weight
-        '''
-        class_weights1 = th.FloatTensor(class_weights1).cuda()
-        criterion1 = nn.CrossEntropyLoss(weight = class_weights1)
-
-        edge_label1 = G1.edata['label']
-        train_mask1 = G1.edata['train_mask']
-
-        # to print
-        pr = True
-        filename = './models/M1_weights.txt'
-
-        for epoch in range(1,1000):
-            pred = model1.train(X1_train_batched).cuda()
-            loss = criterion1(pred[train_mask1], edge_label1[train_mask1])
-            opt.zero_grad()
-            loss.backward()
-            opt.step()
-            if epoch % 100 == 0:
-                print('Training acc:', compute_accuracy(pred[train_mask1], edge_label1[train_mask1]), loss)
-
-        pred1 = model1.train(X1_train_batched).cuda()
-        pred1 = pred1.argmax(1)
-        pred1 = th.Tensor.cpu(pred1).detach().numpy()
-        edge_label1 = th.Tensor.cpu(edge_label1).detach().numpy()
+        pred1, edge_label1 = model1.train(X1_train_batched, 10).cuda()
 
         print('Train metrics :')
         print("Accuracy : ", sklearn.metrics.accuracy_score(edge_label1, pred1))
