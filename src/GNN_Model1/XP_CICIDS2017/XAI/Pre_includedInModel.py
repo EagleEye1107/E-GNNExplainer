@@ -318,6 +318,8 @@ for nb_files in range(file_count):
         y1_train_batched = X1_train_batched['label']
 
         pred1, edge_label1 = model1.train(X1_train_batched, 10)
+        pred1 = th.Tensor.cpu(pred1).detach().numpy()
+        edge_label1 = th.Tensor.cpu(edge_label1).detach().numpy()
 
         print('Train metrics :')
         print("Accuracy : ", sklearn.metrics.accuracy_score(edge_label1, pred1))
