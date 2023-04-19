@@ -228,6 +228,9 @@ for nb_files in range(file_count):
 
         print("nb Train instances : ", len(X1_train_batched.values))
 
+        print(X1_test.dtypes)
+        print(X1_train_batched.dtypes)
+
         # for non numerical attributes (categorical data)
         # Since we have a binary classification, the category values willl be replaced with the posterior probability (p(target = Ti | category = Cj))
         # TargetEncoding is also called MeanEncoding, cuz it simply replace each value with (target_i_count_on_category_j) / (total_occurences_of_category_j)

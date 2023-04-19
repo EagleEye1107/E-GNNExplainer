@@ -239,7 +239,7 @@ preprocessor1 = GPreprocessing()
 path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
 file_count = len(files)
 
-for nb_files in range(file_count):
+for nb_files in range(1):
     data1 = pd.read_csv(f'{path}{files[nb_files]}', encoding="ISO-8859–1", dtype = str)
 
     print(f'{files[nb_files]} ++++++++++++++++++++++++++++++++++++++++++++++')
@@ -355,9 +355,18 @@ for nb_files in range(file_count):
 print(X1_test)
 print(list(set(list(X1_test.columns))))
 
+cols_to_norm1 = list(set(list(data1.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])))
+
+X1_train_batched[cols_to_norm1] = X1_train_batched[cols_to_norm1].apply(pd.to_numeric)
+X1_test[cols_to_norm1] = X1_test[cols_to_norm1].apply(pd.to_numeric)
+
+print()
+print(X1_test.dtypes)
+print(X1_train_batched.dtypes)
+
 # XAI ######################
-explainer = shap.Explainer(model1.predict)
-shap_values = explainer(X1_test)
+explainer = shap.Explainer(model1.predict, X1_train_batched[cols_to_norm1])
+shap_values = explainer(X1_test[cols_to_norm1])
 
 # visualize the first prediction's explanation
 shap.plots.waterfall(shap_values[0], show = False)
