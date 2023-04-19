@@ -188,8 +188,8 @@ class Model(nn.Module):
         train_mask1 = G1.edata['train_mask']
 
         for epoch in range(1, epochs):
-            h = self.gnn(G1, nfeats, efeats)
-            pred = self.pred(G1, h)
+            h = self.gnn(G1, nfeats, efeats).cuda()
+            pred = self.pred(G1, h).cuda()
             loss = criterion1(pred[train_mask1], edge_label1[train_mask1])
             opt.zero_grad()
             loss.backward()
@@ -197,8 +197,8 @@ class Model(nn.Module):
             if epoch % 10 == 0:
                 print('Training acc:', compute_accuracy(pred[train_mask1], edge_label1[train_mask1]), loss)
 
-        h = self.gnn(G1, nfeats, efeats)
-        pred = self.pred(G1, h)
+        h = self.gnn(G1, nfeats, efeats).cuda()
+        pred = self.pred(G1, h).cuda()
         # pred1 = pred1.argmax(1)
         # pred1 = th.Tensor.cpu(pred1).detach().numpy()
         # edge_label1 = th.Tensor.cpu(edge_label1).detach().numpy()
@@ -317,7 +317,7 @@ for nb_files in range(file_count):
         # y1_train_batched = y1_train.iloc[a:b]
         y1_train_batched = X1_train_batched['label']
 
-        pred1, edge_label1 = model1.train(X1_train_batched, 10).cuda()
+        pred1, edge_label1 = model1.train(X1_train_batched, 10)
 
         print('Train metrics :')
         print("Accuracy : ", sklearn.metrics.accuracy_score(edge_label1, pred1))
