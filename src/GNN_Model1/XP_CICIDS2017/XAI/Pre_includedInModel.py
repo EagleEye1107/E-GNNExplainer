@@ -25,6 +25,9 @@ from sklearn.utils import shuffle
 
 from dgl.data.utils import save_graphs
 
+import shap
+import matplotlib.pyplot as plt
+
 #constante
 size_embedding = 152
 nb_batch = 5
@@ -312,7 +315,7 @@ for nb_files in range(file_count):
         # y1_train_batched = y1_train.iloc[a:b]
         y1_train_batched = X1_train_batched['label']
 
-        pred1, edge_label1 = model1.train(X1_train_batched, 100)
+        pred1, edge_label1 = model1.train(X1_train_batched, 10)
         pred1 = pred1.argmax(1)
         pred1 = th.Tensor.cpu(pred1).detach().numpy()
         edge_label1 = th.Tensor.cpu(edge_label1).detach().numpy()
@@ -342,9 +345,18 @@ for nb_files in range(file_count):
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
 
-# Save the gen_xai_trainset (background dataset) gen_xai_testset which is the final global X1_test set
-X1_train_batched.to_csv(f'./input/Dataset/XAI/XAI_Train.csv', sep=',', index = False)
-X1_test.to_csv(f'./input/Dataset/XAI/XAI_Test.csv', sep=',', index = False)
+# # Save the gen_xai_trainset (background dataset) gen_xai_testset which is the final global X1_test set
+# X1_train_batched.to_csv(f'./input/Dataset/XAI/XAI_Train.csv', sep=',', index = False)
+# X1_test.to_csv(f'./input/Dataset/XAI/XAI_Test.csv', sep=',', index = False)
 
-# Save the model
-th.save(model1.state_dict(), "./models/Model1/model1_pre.pt")
+# # Save the model
+# th.save(model1.state_dict(), "./models/Model1/model1_pre.pt")
+
+
+# XAI ######################
+explainer = shap.KernelExplainer(model1.predict, X1_test)
+shap_values = explainer.shap_values(X1_test)
+
+# visualize the first prediction's explanation
+shap.plots.waterfall(shap_values[0], show = False)
+plt.savefig('./notes/SHAP/grafic.png')
