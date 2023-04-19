@@ -139,7 +139,6 @@ class GPreprocessing():
         G1.edata['train_mask'] = th.ones(len(G1.edata['h']), dtype=th.bool)
         G1.ndata['h'] = th.reshape(G1.ndata['h'], (G1.ndata['h'].shape[0], 1, G1.ndata['h'].shape[1]))
         G1.edata['h'] = th.reshape(G1.edata['h'], (G1.edata['h'].shape[0], 1, G1.edata['h'].shape[1]))
-
         return G1
     
     def test(self, data1):
@@ -155,13 +154,11 @@ class GPreprocessing():
         G1_test = nx.from_pandas_edgelist(data1, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
         G1_test = G1_test.to_directed()
         G1_test = from_networkx(G1_test,edge_attrs=['h','label'] )
-        actual1 = G1_test.edata.pop('label')
-        G1_test.ndata['feature'] = th.ones(G1_test.num_nodes(), G1.ndata['h'].shape[2])
+        # G1.ndata['h'].shape[2] = sizeh = 76
+        G1_test.ndata['feature'] = th.ones(G1_test.num_nodes(), 76)
         G1_test.ndata['feature'] = th.reshape(G1_test.ndata['feature'], (G1_test.ndata['feature'].shape[0], 1, G1_test.ndata['feature'].shape[1]))
         G1_test.edata['h'] = th.reshape(G1_test.edata['h'], (G1_test.edata['h'].shape[0], 1, G1_test.edata['h'].shape[1]))
-        G1_test = G1_test.to('cuda:0')
-        node_features_test1 = G1_test.ndata['feature']
-        edge_features_test1 = G1_test.edata['h']
+        return G1_test
 
 
 class Model(nn.Module):
@@ -189,29 +186,27 @@ class Model(nn.Module):
 
         for epoch in range(1, epochs):
             h = self.gnn(G1, nfeats, efeats).cuda()
-            pred = self.pred(G1, h).cuda()
-            loss = criterion1(pred[train_mask1], edge_label1[train_mask1])
+            pred1 = self.pred(G1, h).cuda()
+            loss = criterion1(pred1[train_mask1], edge_label1[train_mask1])
             opt.zero_grad()
             loss.backward()
             opt.step()
             if epoch % 10 == 0:
-                print('Training acc:', compute_accuracy(pred[train_mask1], edge_label1[train_mask1]), loss)
+                print('Training acc:', compute_accuracy(pred1[train_mask1], edge_label1[train_mask1]), loss)
 
         h = self.gnn(G1, nfeats, efeats).cuda()
-        pred = self.pred(G1, h).cuda()
-        # pred1 = pred1.argmax(1)
-        # pred1 = th.Tensor.cpu(pred1).detach().numpy()
-        # edge_label1 = th.Tensor.cpu(edge_label1).detach().numpy()
-
-        # h = self.gnn(G1, nfeats, efeats)
-        # h = list of node features [[node1_feature1, node1_feature2, ...], [node2_feature1, node2_feature2, ...], ...]
-        return pred, edge_label1
+        pred1 = self.pred(G1, h).cuda()
+        return pred1, edge_label1
     
     def predict(self, data1):
-        G1, nfeats, efeats = self.preprocessing.test(data1)
-        h = self.gnn(G1, nfeats, efeats)
-        # h = list of node features [[node1_feature1, node1_feature2, ...], [node2_feature1, node2_feature2, ...], ...]
-        return self.pred(G1, h)
+        G1_test = self.preprocessing.test(data1)
+        G1_test = G1_test.to('cuda:0')
+        actual1 = G1_test.edata.pop('label')
+        node_features_test1 = G1_test.ndata['feature']
+        edge_features_test1 = G1_test.edata['h']
+        h = self.gnn(G1_test, node_features_test1, edge_features_test1)
+        pred2 = self.pred(G1_test, h)
+        return pred2, actual1
     
     # def forward(self, g, nfeats, efeats):
         # h = self.gnn(g, nfeats, efeats)
@@ -331,41 +326,12 @@ for nb_files in range(file_count):
     # ------------------------------------------------ Test ---------------------------------------------------------------------
     print("++++++++++++++++++++++++++++ Test ++++++++++++++++++++++++++++++++")
     print("nb Test instances : ", len(X1_test.values))
-    X1_test = encoder1.transform(X1_test)
-    X1_test[cols_to_norm1] = scaler1.transform(X1_test[cols_to_norm1])
-    X1_test['h'] = X1_test[ cols_to_norm1 ].values.tolist()
 
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # Before training the data :
-    # We need to delete all the attributes (cols_to_norm1) to have the {Source IP, Destination IP, label, h} representation
-    X1_test.drop(columns = cols_to_norm1, inplace = True)
-
-    # Then we need to Swap {label, h} Columns to have the {Source IP, Destination IP, h, label} representation
-    columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
-    X1_test=X1_test.reindex(columns=columns_titles)
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    G1_test = nx.from_pandas_edgelist(X1_test, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiGraph())
-    G1_test = G1_test.to_directed()
-    G1_test = from_networkx(G1_test,edge_attrs=['h','label'] )
-    actual1 = G1_test.edata.pop('label')
-    G1_test.ndata['feature'] = th.ones(G1_test.num_nodes(), G1.ndata['h'].shape[2])
-    G1_test.ndata['feature'] = th.reshape(G1_test.ndata['feature'], (G1_test.ndata['feature'].shape[0], 1, G1_test.ndata['feature'].shape[1]))
-    G1_test.edata['h'] = th.reshape(G1_test.edata['h'], (G1_test.edata['h'].shape[0], 1, G1_test.edata['h'].shape[1]))
-    G1_test = G1_test.to('cuda:0')
-    node_features_test1 = G1_test.ndata['feature']
-    edge_features_test1 = G1_test.edata['h']
-
-    # to print
-    pr = True
-    # True if you want to print the embedding vectors
-    # the name of the file where the vectors are printed
-    filename = './models/M1_weights.txt'
-
-    print("nb instances : ", len(X1_test.values))
-
-    test_pred1 = model1(G1_test, node_features_test1, edge_features_test1).cuda()
+    test_pred1, actual1 = model1.predict(X1_test)
+    
     test_pred1 = test_pred1.argmax(1)
     test_pred1 = th.Tensor.cpu(test_pred1).detach().numpy()
+    actual1 = th.Tensor.cpu(actual1).detach().numpy()
 
     print('Metrics : ')
     print("Accuracy : ", sklearn.metrics.accuracy_score(actual1, test_pred1))
