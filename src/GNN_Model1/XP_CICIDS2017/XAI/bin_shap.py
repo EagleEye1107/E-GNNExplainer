@@ -172,7 +172,7 @@ nbclasses =  2
 # G1.ndata['h'].shape[2] = sizeh = 76 dans ANIDS
 # model1 = Model(G1.ndata['h'].shape[2], size_embedding, G1.ndata['h'].shape[2], F.relu, 0.2).cuda()
 model1 = Model(76, size_embedding, 76, F.relu, 0.2).cuda()
-model1.load_state_dict(th.load("./models/Model1/model1.pt"))
+model1.load_state_dict(th.load("./models/Model1/model1_pre.pt"))
 model1.eval()
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -185,9 +185,9 @@ model1.eval()
 print("start XAI")
 # explain the model's predictions using SHAP
 # (same syntax works for LightGBM, CatBoost, scikit-learn, transformers, Spark, etc.)
-explainer = shap.Explainer(model1)
-shap_values = explainer(edge_features1)
-# shap_values = explainer(gen_xai_testset)
+explainer = shap.Explainer(model1.predict)
+# shap_values = explainer(edge_features1)
+shap_values = explainer(gen_xai_testset)
 
 # visualize the first prediction's explanation
 shap.plots.waterfall(shap_values[0], show = False)
