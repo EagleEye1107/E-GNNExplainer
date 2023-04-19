@@ -113,7 +113,7 @@ class MLPPredictor(nn.Module):
 
 class GPreprocessing():
     def __init__(self):
-        self.encoder1 = ce.TargetEncoder(cols=[' Protocol',  'Fwd PSH Flags', ' Fwd URG Flags', ' Bwd PSH Flags', ' Bwd URG Flags'])
+        self.encoder1 = ce.TargetEncoder(cols=['Fwd PSH Flags', ' Protocol', ' Fwd URG Flags', ' Bwd PSH Flags', ' Bwd URG Flags'])
         self.scaler1 = StandardScaler()
         super().__init__()
     
@@ -356,8 +356,8 @@ print(X1_test)
 print(list(set(list(X1_test.columns))))
 
 # XAI ######################
-explainer = shap.KernelExplainer(model1.predict, data = X1_test)
-shap_values = explainer.shap_values(X1_test)
+explainer = shap.Explainer(model1.predict)
+shap_values = explainer(X1_test)
 
 # visualize the first prediction's explanation
 shap.plots.waterfall(shap_values[0], show = False)
