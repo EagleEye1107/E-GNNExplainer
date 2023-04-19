@@ -356,7 +356,7 @@ print(X1_test)
 print(list(set(list(X1_test.columns))))
 
 # XAI ######################
-explainer = shap.KernelExplainer(model1.predict, X1_test)
+explainer = shap.KernelExplainer(model1.predict, data = X1_test)
 shap_values = explainer.shap_values(X1_test)
 
 # visualize the first prediction's explanation
