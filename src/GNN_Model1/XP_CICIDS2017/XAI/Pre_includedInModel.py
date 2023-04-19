@@ -329,7 +329,7 @@ for nb_files in range(file_count):
     # ------------------------------------------------ Test ---------------------------------------------------------------------
     print("++++++++++++++++++++++++++++ Test ++++++++++++++++++++++++++++++++")
     print("nb Test instances : ", len(X1_test.values))
-
+    
     test_pred1, actual1 = model1.predict(X1_test)
     
     test_pred1 = test_pred1.argmax(1)
