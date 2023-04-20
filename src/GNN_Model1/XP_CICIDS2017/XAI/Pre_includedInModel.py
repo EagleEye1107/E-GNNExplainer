@@ -202,14 +202,20 @@ class Model(nn.Module):
         return pred1, edge_label1
     
     def predict(self, data1):
-        G1_test = self.preprocessing.test(data1)
-        G1_test = G1_test.to('cuda:0')
-        actual1 = G1_test.edata.pop('label')
-        node_features_test1 = G1_test.ndata['feature']
-        edge_features_test1 = G1_test.edata['h']
-        h = self.gnn(G1_test, node_features_test1, edge_features_test1)
-        pred2 = self.pred(G1_test, h)
-        return pred2, actual1
+        # The IF below is for the XAI
+        if (' Source IP' in list(set(list(data1.columns))) ) and (' Destination IP' in list(set(list(data1.columns))) ):
+            G1_test = self.preprocessing.test(data1)
+            G1_test = G1_test.to('cuda:0')
+            actual1 = G1_test.edata.pop('label')
+            node_features_test1 = G1_test.ndata['feature']
+            edge_features_test1 = G1_test.edata['h']
+            h = self.gnn(G1_test, node_features_test1, edge_features_test1)
+            pred2 = self.pred(G1_test, h)
+            return pred2, actual1
+        else :
+            predd = th.ones(len(data1['label']))
+            actuall = th.zeros(len(data1['label']))
+            return predd, actuall
     
     # def forward(self, g, nfeats, efeats):
         # h = self.gnn(g, nfeats, efeats)
@@ -374,7 +380,7 @@ print(X1_test)
 print()
 # ***********************************************************************************
 
-# cols_to_norm1 = list(set(list(data1.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])))
+cols_to_norm1 = list(set(list(data1.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])))
 
 X1_train_batched[cols_to_norm1] = X1_train_batched[cols_to_norm1].apply(pd.to_numeric)
 X1_test[cols_to_norm1] = X1_test[cols_to_norm1].apply(pd.to_numeric)
