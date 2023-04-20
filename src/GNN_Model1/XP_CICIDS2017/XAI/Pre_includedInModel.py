@@ -380,10 +380,13 @@ print(X1_test)
 print()
 # ***********************************************************************************
 
-cols_to_norm1 = list(set(list(data1.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])))
+cols_to_norm1 = list(set(list(data1.iloc[:, :].columns )) - set(list([' Source IP', ' Destination IP'])))
 
 X1_train_batched[cols_to_norm1] = X1_train_batched[cols_to_norm1].apply(pd.to_numeric)
 X1_test[cols_to_norm1] = X1_test[cols_to_norm1].apply(pd.to_numeric)
+
+X1_train_batched[cols_to_norm1] = X1_train_batched[cols_to_norm1].astype(float)
+X1_test[cols_to_norm1] = X1_test[cols_to_norm1].astype(float)
 
 print()
 print(X1_test.dtypes)
