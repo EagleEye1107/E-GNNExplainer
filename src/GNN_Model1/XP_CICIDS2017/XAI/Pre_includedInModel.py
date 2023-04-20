@@ -366,13 +366,15 @@ print()
 
 print(X1_test)
 X1_test = X1_test.replace({' Source IP': test_re})
+print("Source IP mapped")
 X1_test = X1_test.replace({' Destination IP': test_re})
+print("Destination IP mapped")
 print(X1_test)
 
 print()
 # ***********************************************************************************
 
-cols_to_norm1 = list(set(list(data1.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])))
+# cols_to_norm1 = list(set(list(data1.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])))
 
 X1_train_batched[cols_to_norm1] = X1_train_batched[cols_to_norm1].apply(pd.to_numeric)
 X1_test[cols_to_norm1] = X1_test[cols_to_norm1].apply(pd.to_numeric)
@@ -382,8 +384,8 @@ print(X1_test.dtypes)
 print(X1_train_batched.dtypes)
 
 # XAI ######################
-explainer = shap.Explainer(model1.predict, X1_train_batched[cols_to_norm1])
-shap_values = explainer(X1_test[cols_to_norm1])
+explainer = shap.Explainer(model1.predict, X1_train_batched)
+shap_values = explainer(X1_test)
 
 # visualize the first prediction's explanation
 shap.plots.waterfall(shap_values[0], show = False)
