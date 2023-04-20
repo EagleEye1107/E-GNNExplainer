@@ -203,7 +203,7 @@ class Model(nn.Module):
     
     def predict(self, data1):
         # The IF below is for the XAI
-        if (' Source IP' in list(set(list(data1.columns))) ) and (' Destination IP' in list(set(list(data1.columns))) ):
+        if (' Source IP' in list(set(list(data1.columns))) ) and (' Destination IP' in list(set(list(data1.columns))) ) and ('label' in list(set(list(data1.columns))) ):
             G1_test = self.preprocessing.test(data1)
             G1_test = G1_test.to('cuda:0')
             actual1 = G1_test.edata.pop('label')
@@ -363,11 +363,13 @@ for x in list(X1_test[' Destination IP']) :
     test_res.add(x)
 
 test_re = {}
-cpt = 0
+cpt = 0.0
+print("type(cpt)", type(cpt))
 for x in test_res:
     test_re[x] = cpt
-    cpt +=1
+    cpt += 1.0
 
+print("LAST type(cpt)", type(cpt))
 print()
 
 print(X1_test)
@@ -391,6 +393,10 @@ X1_test[cols_to_norm1] = X1_test[cols_to_norm1].astype(float)
 print()
 print(X1_test.dtypes)
 print(X1_train_batched.dtypes)
+
+print()
+print(X1_test.dtypes.to_string())
+print(X1_train_batched.dtypes.to_string())
 
 # XAI ######################
 explainer = shap.Explainer(model1.predict, X1_train_batched)
