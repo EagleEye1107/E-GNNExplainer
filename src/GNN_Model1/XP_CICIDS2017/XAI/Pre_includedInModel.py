@@ -199,24 +199,38 @@ class Model(nn.Module):
 
         h = self.gnn(G1, nfeats, efeats).cuda()
         pred1 = self.pred(G1, h).cuda()
+
+        pred1 = pred1.argmax(1)
+        pred1 = th.Tensor.cpu(pred1).detach().numpy()
+        edge_label1 = th.Tensor.cpu(edge_label1).detach().numpy()
         return pred1, edge_label1
     
     def predict(self, data1):
-        # The IF below is for the XAI
-        if (' Source IP' in list(set(list(data1.columns))) ) and (' Destination IP' in list(set(list(data1.columns))) ) and ('label' in list(set(list(data1.columns))) ):
-            G1_test = self.preprocessing.test(data1)
-            G1_test = G1_test.to('cuda:0')
-            actual1 = G1_test.edata.pop('label')
-            node_features_test1 = G1_test.ndata['feature']
-            edge_features_test1 = G1_test.edata['h']
-            h = self.gnn(G1_test, node_features_test1, edge_features_test1)
-            pred2 = self.pred(G1_test, h)
-            return pred2, actual1
-        else :
-            predd = th.ones(len(data1['label']))
-            actuall = th.zeros(len(data1['label']))
-            return predd, actuall
+        G1_test = self.preprocessing.test(data1)
+        G1_test = G1_test.to('cuda:0')
+        actual1 = G1_test.edata.pop('label')
+        node_features_test1 = G1_test.ndata['feature']
+        edge_features_test1 = G1_test.edata['h']
+        h = self.gnn(G1_test, node_features_test1, edge_features_test1).cuda()
+        test_pred1 = self.pred(G1_test, h)
+
+        test_pred1 = test_pred1.argmax(1)
+        test_pred1 = th.Tensor.cpu(test_pred1).detach().numpy()
+        actual1 = th.Tensor.cpu(actual1).detach().numpy()
+        return test_pred1, actual1
     
+    def xai_predict(self, data1):
+        G1_test = self.preprocessing.test(data1)
+        G1_test = G1_test.to('cuda:0')
+        node_features_test1 = G1_test.ndata['feature']
+        edge_features_test1 = G1_test.edata['h']
+        h = self.gnn(G1_test, node_features_test1, edge_features_test1).cuda()
+        test_pred1 = self.pred(G1_test, h)
+
+        test_pred1 = test_pred1.argmax(1)
+        test_pred1 = th.Tensor.cpu(test_pred1).detach().numpy()
+        return test_pred1
+
     # def forward(self, g, nfeats, efeats):
         # h = self.gnn(g, nfeats, efeats)
         # # h = list of node features [[node1_feature1, node1_feature2, ...], [node2_feature1, node2_feature2, ...], ...]
@@ -237,9 +251,6 @@ nbclasses =  2
 # model1 = Model(G1.ndata['h'].shape[2], size_embedding, G1.ndata['h'].shape[2], F.relu, 0.2).cuda()
 model1 = Model(76, size_embedding, 76, F.relu, 0.2).cuda()
 opt = th.optim.Adam(model1.parameters())
-
-
-preprocessor1 = GPreprocessing()
 
 
 path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
@@ -322,9 +333,6 @@ for nb_files in range(1):
         y1_train_batched = X1_train_batched['label']
 
         pred1, edge_label1 = model1.train(X1_train_batched, 1)
-        pred1 = pred1.argmax(1)
-        pred1 = th.Tensor.cpu(pred1).detach().numpy()
-        edge_label1 = th.Tensor.cpu(edge_label1).detach().numpy()
 
         print('Train metrics :')
         print("Accuracy : ", sklearn.metrics.accuracy_score(edge_label1, pred1))
@@ -335,12 +343,11 @@ for nb_files in range(1):
     # ------------------------------------------------ Test ---------------------------------------------------------------------
     print("++++++++++++++++++++++++++++ Test ++++++++++++++++++++++++++++++++")
     print("nb Test instances : ", len(X1_test.values))
-    
+
     test_pred1, actual1 = model1.predict(X1_test)
-    
-    test_pred1 = test_pred1.argmax(1)
-    test_pred1 = th.Tensor.cpu(test_pred1).detach().numpy()
-    actual1 = th.Tensor.cpu(actual1).detach().numpy()
+    print(test_pred1)
+    print(len(test_pred1))
+    print(len(actual1))
 
     print('Metrics : ')
     print("Accuracy : ", sklearn.metrics.accuracy_score(actual1, test_pred1))
@@ -348,8 +355,20 @@ for nb_files in range(1):
     print("Recall : ", sklearn.metrics.recall_score(actual1, test_pred1, labels = [0,1]))
     print("f1_score : ", sklearn.metrics.f1_score(actual1, test_pred1, labels = [0,1]))
 
+    test_predd = model1.xai_predict(X1_test)
+
+    print('Metrics : ')
+    print("Accuracy : ", sklearn.metrics.accuracy_score(actual1, test_predd))
+    print("Precision : ", sklearn.metrics.precision_score(actual1, test_predd, labels = [0,1]))
+    print("Recall : ", sklearn.metrics.recall_score(actual1, test_predd, labels = [0,1]))
+    print("f1_score : ", sklearn.metrics.f1_score(actual1, test_predd, labels = [0,1]))
+
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
+
+
+X1_test = X1_test.iloc[4:7]
+X1_train_batched = X1_train_batched.iloc[4:7]
 
 print(X1_test)
 print(list(set(list(X1_test.columns))))
@@ -357,9 +376,15 @@ print(list(set(list(X1_test.columns))))
 # IP Mapping *************************************************************************
 # We do tha mapping of test set only because its faster and it will generate totally new nodes from the train set
 test_res = set()
+
 for x in list(X1_test[' Source IP']) :
     test_res.add(x)
 for x in list(X1_test[' Destination IP']) :
+    test_res.add(x)
+
+for x in list(X1_train_batched[' Source IP']) :
+    test_res.add(x)
+for x in list(X1_train_batched[' Destination IP']) :
     test_res.add(x)
 
 test_re = {}
@@ -372,13 +397,20 @@ for x in test_res:
 print("LAST type(cpt)", type(cpt))
 print()
 
+print(X1_train_batched)
+X1_train_batched = X1_train_batched.replace({' Source IP': test_re})
+print("X1_train_batched Source IP mapped")
+X1_train_batched = X1_train_batched.replace({' Destination IP': test_re})
+print("X1_train_batched Destination IP mapped")
+print(X1_train_batched)
+print()
+
 print(X1_test)
 X1_test = X1_test.replace({' Source IP': test_re})
-print("Source IP mapped")
+print("X1_test Source IP mapped")
 X1_test = X1_test.replace({' Destination IP': test_re})
-print("Destination IP mapped")
+print("X1_test Destination IP mapped")
 print(X1_test)
-
 print()
 # ***********************************************************************************
 
@@ -398,8 +430,11 @@ print()
 print(X1_test.dtypes.to_string())
 print(X1_train_batched.dtypes.to_string())
 
+print("----------")
+print(len(X1_test))
+
 # XAI ######################
-explainer = shap.Explainer(model1.predict, X1_train_batched)
+explainer = shap.Explainer(model1.xai_predict, X1_test)
 shap_values = explainer(X1_test)
 
 # visualize the first prediction's explanation
