@@ -263,8 +263,8 @@ for nb_files in range(file_count):
 
         # Convert it to a directed Graph
         # NB : IT WILL CREATE A DEFAULT BIDIRECTIONAL RELATIONSHIPS BETWEEN NODES, and not the original relationships ???????????????????????
-        G1 = G1.to_directed()
-        print("G1 after todirected : ", G1)
+        # G1 = G1.to_directed()
+        # print("G1 after todirected : ", G1)
         # Convert the graph from a networkx Graph to a DGL Graph
         G1 = from_networkx(G1,edge_attrs=['h','label'] )
         print("G1.edata['h'] after converting it to a dgl graph : ", len(G1.edata['h']))
@@ -349,7 +349,7 @@ for nb_files in range(file_count):
     X1_test=X1_test.reindex(columns=columns_titles)
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     G1_test = nx.from_pandas_edgelist(X1_test, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiDiGraph())
-    G1_test = G1_test.to_directed()
+    # G1_test = G1_test.to_directed()
     G1_test = from_networkx(G1_test,edge_attrs=['h','label'] )
     actual1 = G1_test.edata.pop('label')
     G1_test.ndata['feature'] = th.ones(G1_test.num_nodes(), G1.ndata['h'].shape[2])
