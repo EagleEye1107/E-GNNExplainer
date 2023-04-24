@@ -118,9 +118,15 @@ print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 # Create our Multigraph
 G1 = nx.from_pandas_edgelist(X1_train, " Source IP", " Destination IP", ['h','label'], create_using=nx.MultiGraph())
 
+print(G1)
+edge_attss = nx.get_edge_attributes(G1,'label')
+print(edge_attss)
+print("========")
+
 # Convert it to a directed Graph
 # NB : IT WILL CREATE A DEFAULT BIDIRECTIONAL RELATIONSHIPS BETWEEN NODES, and not the original relationships ???????????????????????
 G1 = G1.to_directed()
+print(G1)
 # Convert the graph from a networkx Graph to a DGL Graph
 G1 = from_networkx(G1,edge_attrs=['h','label'] )
 
@@ -135,9 +141,10 @@ G1.edata['h'] = th.reshape(G1.edata['h'], (G1.edata['h'].shape[0], 1, G1.edata['
 # ------------------------------------------- --------------------------------- -------------------------------------------------------------
 
 
-G = to_networkx(G1)
-nx.draw(G)
-plt.show()
+print(G1)
+print(len(X1_train))
+print(len(G1.edata['label']))
+
 
 
 
