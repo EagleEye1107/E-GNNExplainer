@@ -136,7 +136,7 @@ class GPreprocessing():
 
         # Graph construction #################################################
         G1 = nx.from_pandas_edgelist(data1, " Source IP", " Destination IP", ['h','label'], create_using=nx.MultiDiGraph())
-        G1 = G1.to_directed()
+        # G1 = G1.to_directed()
         G1 = from_networkx(G1,edge_attrs=['h','label'] )
         G1.ndata['h'] = th.ones(G1.num_nodes(), G1.edata['h'].shape[1])
         G1.edata['train_mask'] = th.ones(len(G1.edata['h']), dtype=th.bool)
@@ -155,7 +155,7 @@ class GPreprocessing():
 
         # Graph construction #################################################
         G1_test = nx.from_pandas_edgelist(data1, " Source IP", " Destination IP", ['h','label'], create_using=nx.MultiDiGraph())
-        G1_test = G1_test.to_directed()
+        # G1_test = G1_test.to_directed()
         G1_test = from_networkx(G1_test,edge_attrs=['h','label'] )
         # G1.ndata['h'].shape[2] = sizeh = 76
         G1_test.ndata['feature'] = th.ones(G1_test.num_nodes(), 76)
