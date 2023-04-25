@@ -385,4 +385,4 @@ for nb_files in range(file_count):
 # save_graphs("./notes/DGLGraphs/data.bin", [G1_test], actual1)
 
 # Save the model
-# th.save(model1.state_dict(), "./models/Bin_Model/")
+th.save(model1.state_dict(), "./models/Final_Model/model1.pt")
