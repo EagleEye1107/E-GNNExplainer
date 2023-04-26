@@ -1,5 +1,6 @@
 import xgboost
 import shap
+import matplotlib.pyplot as plt
 
 # train an XGBoost model
 X, y = shap.datasets.boston()
@@ -12,5 +13,5 @@ print(y)
 explainer = shap.Explainer(model)
 shap_values = explainer(X)
 
-# visualize the first prediction's explanation
-shap.plots.waterfall(shap_values[0])
+shap.summary_plot(shap_values, X, show = False, max_display=X.shape[1])
+plt.savefig('./notes/SHAP/graficcccc.png')

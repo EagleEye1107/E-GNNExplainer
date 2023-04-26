@@ -112,19 +112,13 @@ class Model(nn.Module):
 
 
 # Loading data +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-xai_datafile = "./input/Dataset/XAI/XAI_Test.csv"
+xai_datafile = "./input/Dataset/XAI/X_test3.csv"
 gen_xai_testset = pd.read_csv(xai_datafile, encoding="ISO-8859–1", dtype = str)
 
-
 # print(gen_xai_testset.dtypes.to_string())
-# len(gen_xai_testset.columns) = 79, and label is in object datatype => need converting
-# cols_to_norm1 = list(set(list(gen_xai_testset.iloc[:, :].columns )) - set(list([' Source IP', ' Destination IP'])))
-gen_xai_testset['label'] = gen_xai_testset['label'].apply(pd.to_numeric)
-# print(gen_xai_testset.dtypes.to_string())
-
-# Label column is str dtype so we convert it to numpy.int64 dtype
-gen_xai_testset["label"] = gen_xai_testset["label"].apply(lambda x: int(x))
-
+cols_to_norm1 = list(set(list(gen_xai_testset.iloc[:, :].columns )) - set(list([' Source IP', ' Destination IP'])) )
+gen_xai_testset[cols_to_norm1] = gen_xai_testset[cols_to_norm1].apply(pd.to_numeric)
+print(gen_xai_testset.dtypes.to_string())
 
 #######################################################################
 # # Same thing with h attr, need to be converted to a list
@@ -141,38 +135,21 @@ gen_xai_testset["label"] = gen_xai_testset["label"].apply(lambda x: int(x))
 #     # print(type(row['h'][0]))
 #######################################################################
 
-
-
-
 labels_column = gen_xai_testset.label
-
-print(gen_xai_testset["label"].value_counts())
-print(gen_xai_testset)
 
 
 # Preprocessing
-encoder1 = ce.TargetEncoder(cols=[' Protocol',  'Fwd PSH Flags', ' Fwd URG Flags', ' Bwd PSH Flags', ' Bwd URG Flags'])
-encoder1.fit(gen_xai_testset, labels_column)
-gen_xai_testset = encoder1.transform(gen_xai_testset)
-
-scaler1 = StandardScaler()
 cols_to_norm1 = list(set(list(gen_xai_testset.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])) )
-gen_xai_testset[cols_to_norm1] = scaler1.fit_transform(gen_xai_testset[cols_to_norm1])
-
 gen_xai_testset['h'] = gen_xai_testset[ cols_to_norm1 ].values.tolist()
-
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# Before training the data :
-# We need to delete all the attributes (cols_to_norm1) to have the {Source IP, Destination IP, label, h} representation
 gen_xai_testset.drop(columns = cols_to_norm1, inplace = True)
-
-# Then we need to Swap {label, h} Columns to have the {Source IP, Destination IP, h, label} representation
+#   Then we need to Swap {label, h} Columns to have the {Source IP, Destination IP, h, label} representation
 columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
 gen_xai_testset = gen_xai_testset.reindex(columns=columns_titles)
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 # Until here EVERYTHING IS GOOD !
 
+print(gen_xai_testset["label"].value_counts())
+print(gen_xai_testset)
 
 # Create our Multigraph
 XAI_G1 = nx.from_pandas_edgelist(gen_xai_testset, " Source IP", " Destination IP", ['h','label'], create_using=nx.MultiDiGraph())
@@ -209,7 +186,7 @@ nbclasses =  2
 # G1.ndata['h'].shape[2] = sizeh = 76 dans ANIDS
 # model1 = Model(G1.ndata['h'].shape[2], size_embedding, G1.ndata['h'].shape[2], F.relu, 0.2).cuda()
 model1 = Model(76, size_embedding, 76, F.relu, 0.2)
-model1.load_state_dict(th.load("./models/Final_Model/model1.pt"))
+model1.load_state_dict(th.load("./models/Final_Model/modelF.pt"))
 model1.eval()
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
