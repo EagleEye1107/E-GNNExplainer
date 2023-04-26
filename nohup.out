@@ -1,0 +1,271 @@
+CIC-IDS-2017-Dataset4.csv ++++++++++++++++++++++++++++++++++++++++++++++
+nb total instances in the file :  460167
+++++++++++++++++++++++++++++ Train ++++++++++++++++++++++++++++++++
+
+labels freq after changing labels to binary
+{'CIC-IDS-2017-Dataset4.csv': [[0, 0.7582073464633492], [1, 0.24179265353665083]]}
++++++++++++++++++ Batch 1 ++++++++++++++++
+Train metrics :
+Accuracy :  0.5061996299469756
+Precision :  0.004964020002439322
+Recall :  0.005225653206650831
+f1_score :  0.00509147771696638
+++++++++++++++++++++++++++++ Test ++++++++++++++++++++++++++++++++
+nb Test instances :  138051
+[1 1 1 ... 1 1 1]
+138051
+138051
+Metrics : 
+Accuracy :  0.3893343764261034
+Precision :  0.004996403367225927
+Recall :  0.007699221090473337
+f1_score :  0.006060105875001474
+Metrics : 
+Accuracy :  0.5469935024012865
+Precision :  0.007099871526134289
+Recall :  0.006291192330736968
+f1_score :  0.006671114076050701
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+       Subflow Fwd Packets  Bwd Packet Length Min  ...  Fwd IAT Std label
+238094                   1                    288  ...            0     0
+230927                   1                    140  ...            0     0
+450047                   1                     93  ...            0     0
+
+[3 rows x 79 columns]
+['Subflow Fwd Packets', ' Fwd Header Length', ' Bwd IAT Min', ' Total Length of Bwd Packets', ' CWE Flag Count', 'Bwd IAT Total', ' Active Max', ' Fwd Header Length.1', ' SYN Flag Count', ' Subflow Bwd Bytes', 'Active Mean', ' Bwd IAT Std', 'Fwd Avg Bytes/Bulk', ' Idle Min', 'Idle Mean', ' Bwd Header Length', ' Fwd Packet Length Std', ' min_seg_size_forward', ' PSH Flag Count', ' Bwd Packet Length Mean', ' Max Packet Length', ' Protocol', ' Fwd IAT Mean', ' Flow IAT Std', 'Fwd PSH Flags', ' Fwd Avg Packets/Bulk', ' Flow Duration', 'FIN Flag Count', ' Packet Length Mean', ' Total Backward Packets', ' Subflow Fwd Bytes', ' Min Packet Length', ' Avg Fwd Segment Size', ' Active Min', ' Flow IAT Mean', ' Source IP', ' URG Flag Count', 'Total Length of Fwd Packets', ' Fwd Packet Length Max', ' Bwd Packet Length Std', ' Fwd IAT Std', ' Bwd Packet Length Min', ' Fwd Packet Length Mean', ' Bwd Packets/s', ' act_data_pkt_fwd', ' Fwd Packet Length Min', 'label', ' Bwd PSH Flags', 'Fwd IAT Total', ' Active Std', ' Fwd Avg Bulk Rate', ' Fwd IAT Min', 'Bwd Avg Bulk Rate', ' Down/Up Ratio', 'Bwd Packet Length Max', ' Flow IAT Min', ' Fwd URG Flags', ' ACK Flag Count', ' Fwd IAT Max', ' Idle Max', ' Packet Length Std', ' Bwd IAT Max', ' Bwd IAT Mean', ' ECE Flag Count', ' RST Flag Count', ' Subflow Bwd Packets', ' Packet Length Variance', ' Total Fwd Packets', 'Fwd Packets/s', ' Destination IP', 'Init_Win_bytes_forward', ' Init_Win_bytes_backward', ' Idle Std', ' Bwd Avg Bytes/Bulk', ' Bwd Avg Packets/Bulk', ' Bwd URG Flags', ' Avg Bwd Segment Size', ' Flow IAT Max', ' Average Packet Size']
+type(cpt) <class 'float'>
+LAST type(cpt) <class 'float'>
+
+       Subflow Fwd Packets  Bwd Packet Length Min  ...  Fwd IAT Std label
+361566                   2                      0  ...            0     1
+163864                   8                      0  ...     3.78E+07     1
+242388                   2                      0  ...            0     0
+
+[3 rows x 79 columns]
+X1_train_batched Source IP mapped
+X1_train_batched Destination IP mapped
+       Subflow Fwd Packets  Bwd Packet Length Min  ...  Fwd IAT Std label
+361566                   2                      0  ...            0     1
+163864                   8                      0  ...     3.78E+07     1
+242388                   2                      0  ...            0     0
+
+[3 rows x 79 columns]
+
+       Subflow Fwd Packets  Bwd Packet Length Min  ...  Fwd IAT Std label
+238094                   1                    288  ...            0     0
+230927                   1                    140  ...            0     0
+450047                   1                     93  ...            0     0
+
+[3 rows x 79 columns]
+X1_test Source IP mapped
+X1_test Destination IP mapped
+       Subflow Fwd Packets  Bwd Packet Length Min  ...  Fwd IAT Std label
+238094                   1                    288  ...            0     0
+230927                   1                    140  ...            0     0
+450047                   1                     93  ...            0     0
+
+[3 rows x 79 columns]
+
+
+Subflow Fwd Packets        float64
+ Bwd Packet Length Min     float64
+ Fwd Header Length         float64
+ Fwd Packet Length Mean    float64
+ Bwd Packets/s             float64
+                            ...   
+ Fwd Packet Length Max     float64
+ Bwd Packet Length Std     float64
+ Average Packet Size       float64
+ Fwd IAT Std               float64
+label                      float64
+Length: 79, dtype: object
+Subflow Fwd Packets        float64
+ Bwd Packet Length Min     float64
+ Fwd Header Length         float64
+ Fwd Packet Length Mean    float64
+ Bwd Packets/s             float64
+                            ...   
+ Fwd Packet Length Max     float64
+ Bwd Packet Length Std     float64
+ Average Packet Size       float64
+ Fwd IAT Std               float64
+label                      float64
+Length: 79, dtype: object
+
+Subflow Fwd Packets             float64
+ Bwd Packet Length Min          float64
+ Fwd Header Length              float64
+ Fwd Packet Length Mean         float64
+ Bwd Packets/s                  float64
+ act_data_pkt_fwd               float64
+ Total Length of Bwd Packets    float64
+ Bwd IAT Min                    float64
+ CWE Flag Count                 float64
+ Fwd Packet Length Min          float64
+Bwd IAT Total                   float64
+ Active Max                     float64
+ Fwd Header Length.1            float64
+ Bwd PSH Flags                  float64
+Fwd IAT Total                   float64
+ Active Std                     float64
+ SYN Flag Count                 float64
+ Fwd Avg Bulk Rate              float64
+ Fwd IAT Min                    float64
+ Subflow Bwd Bytes              float64
+Active Mean                     float64
+Bwd Avg Bulk Rate               float64
+ Down/Up Ratio                  float64
+Bwd Packet Length Max           float64
+ Flow IAT Min                   float64
+ Fwd URG Flags                  float64
+ Bwd IAT Std                    float64
+ ACK Flag Count                 float64
+Fwd Avg Bytes/Bulk              float64
+ Idle Min                       float64
+ Bwd Header Length              float64
+ Fwd Packet Length Std          float64
+Idle Mean                       float64
+ Fwd IAT Max                    float64
+ Packet Length Std              float64
+ Idle Max                       float64
+ min_seg_size_forward           float64
+ Bwd IAT Max                    float64
+ Bwd IAT Mean                   float64
+ ECE Flag Count                 float64
+ PSH Flag Count                 float64
+ Bwd Packet Length Mean         float64
+ RST Flag Count                 float64
+ Max Packet Length              float64
+ Subflow Bwd Packets            float64
+ Protocol                       float64
+ Fwd IAT Mean                   float64
+ Packet Length Variance         float64
+ Flow IAT Std                   float64
+ Total Fwd Packets              float64
+Fwd PSH Flags                   float64
+ Fwd Avg Packets/Bulk           float64
+ Flow Duration                  float64
+FIN Flag Count                  float64
+ Packet Length Mean             float64
+Fwd Packets/s                   float64
+ Destination IP                 float64
+Init_Win_bytes_forward          float64
+ Init_Win_bytes_backward        float64
+ Idle Std                       float64
+ Total Backward Packets         float64
+ Subflow Fwd Bytes              float64
+ Min Packet Length              float64
+ Avg Fwd Segment Size           float64
+ Bwd Avg Bytes/Bulk             float64
+ Active Min                     float64
+ Bwd Avg Packets/Bulk           float64
+ Flow IAT Mean                  float64
+ Source IP                      float64
+ Bwd URG Flags                  float64
+ Avg Bwd Segment Size           float64
+ URG Flag Count                 float64
+Total Length of Fwd Packets     float64
+ Flow IAT Max                   float64
+ Fwd Packet Length Max          float64
+ Bwd Packet Length Std          float64
+ Average Packet Size            float64
+ Fwd IAT Std                    float64
+label                           float64No data for colormapping provided via 'c'. Parameters 'vmin', 'vmax' will be ignored
+
+Subflow Fwd Packets             float64
+ Bwd Packet Length Min          float64
+ Fwd Header Length              float64
+ Fwd Packet Length Mean         float64
+ Bwd Packets/s                  float64
+ act_data_pkt_fwd               float64
+ Total Length of Bwd Packets    float64
+ Bwd IAT Min                    float64
+ CWE Flag Count                 float64
+ Fwd Packet Length Min          float64
+Bwd IAT Total                   float64
+ Active Max                     float64
+ Fwd Header Length.1            float64
+ Bwd PSH Flags                  float64
+Fwd IAT Total                   float64
+ Active Std                     float64
+ SYN Flag Count                 float64
+ Fwd Avg Bulk Rate              float64
+ Fwd IAT Min                    float64
+ Subflow Bwd Bytes              float64
+Active Mean                     float64
+Bwd Avg Bulk Rate               float64
+ Down/Up Ratio                  float64
+Bwd Packet Length Max           float64
+ Flow IAT Min                   float64
+ Fwd URG Flags                  float64
+ Bwd IAT Std                    float64
+ ACK Flag Count                 float64
+Fwd Avg Bytes/Bulk              float64
+ Idle Min                       float64
+ Bwd Header Length              float64
+ Fwd Packet Length Std          float64
+Idle Mean                       float64
+ Fwd IAT Max                    float64
+ Packet Length Std              float64
+ Idle Max                       float64
+ min_seg_size_forward           float64
+ Bwd IAT Max                    float64
+ Bwd IAT Mean                   float64
+ ECE Flag Count                 float64
+ PSH Flag Count                 float64
+ Bwd Packet Length Mean         float64
+ RST Flag Count                 float64
+ Max Packet Length              float64
+ Subflow Bwd Packets            float64
+ Protocol                       float64
+ Fwd IAT Mean                   float64
+ Packet Length Variance         float64
+ Flow IAT Std                   float64
+ Total Fwd Packets              float64
+Fwd PSH Flags                   float64
+ Fwd Avg Packets/Bulk           float64
+ Flow Duration                  float64
+FIN Flag Count                  float64
+ Packet Length Mean             float64
+Fwd Packets/s                   float64
+ Destination IP                 float64
+Init_Win_bytes_forward          float64
+ Init_Win_bytes_backward        float64
+ Idle Std                       float64
+ Total Backward Packets         float64
+ Subflow Fwd Bytes              float64
+ Min Packet Length              float64
+ Avg Fwd Segment Size           float64
+ Bwd Avg Bytes/Bulk             float64
+ Active Min                     float64
+ Bwd Avg Packets/Bulk           float64
+ Flow IAT Mean                  float64
+ Source IP                      float64
+ Bwd URG Flags                  float64
+ Avg Bwd Segment Size           float64
+ URG Flag Count                 float64
+Total Length of Fwd Packets     float64
+ Flow IAT Max                   float64
+ Fwd Packet Length Max          float64
+ Bwd Packet Length Std          float64
+ Average Packet Size            float64
+ Fwd IAT Std                    float64
+label                           float64
+----------
+3
+Traceback (most recent call last):
+  File "/home/ahmed/GNN-Based-ANIDS/GNN-Based-ANIDS/src/GNN_Model1/XP_CICIDS2017/XAI/Pre_includedInModel.py", line 18, in <module>
+    from sklearn.model_selection import train_test_split
+  File "/home/ahmed/.local/lib/python3.9/site-packages/sklearn/model_selection/__init__.py", line 23, in <module>
+    from ._validation import cross_val_score
+  File "/home/ahmed/.local/lib/python3.9/site-packages/sklearn/model_selection/_validation.py", line 32, in <module>
+    from ..metrics import check_scoring
+  File "/home/ahmed/.local/lib/python3.9/site-packages/sklearn/metrics/__init__.py", line 68, in <module>
+    from ._regression import explained_variance_score
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 986, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 786, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 881, in get_code
+  File "<frozen importlib._bootstrap_external>", line 980, in get_data
+KeyboardInterrupt

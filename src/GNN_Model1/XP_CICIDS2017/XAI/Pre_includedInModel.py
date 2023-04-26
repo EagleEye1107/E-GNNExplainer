@@ -30,7 +30,7 @@ import matplotlib.pyplot as plt
 
 #constante
 size_embedding = 152
-nb_batch = 1
+nb_batch = 5
 # to print
 pr = True
 filename = './models/M1_weights.txt'
@@ -256,7 +256,7 @@ opt = th.optim.Adam(model1.parameters())
 path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
 file_count = len(files)
 
-for nb_files in range(1):
+for nb_files in range(file_count):
     data1 = pd.read_csv(f'{path}{files[nb_files]}', encoding="ISO-8859–1", dtype = str)
 
     print(f'{files[nb_files]} ++++++++++++++++++++++++++++++++++++++++++++++')
@@ -332,7 +332,7 @@ for nb_files in range(1):
         # y1_train_batched = y1_train.iloc[a:b]
         y1_train_batched = X1_train_batched['label']
 
-        pred1, edge_label1 = model1.train(X1_train_batched, 1)
+        pred1, edge_label1 = model1.train(X1_train_batched, 1000)
 
         print('Train metrics :')
         print("Accuracy : ", sklearn.metrics.accuracy_score(edge_label1, pred1))
@@ -367,8 +367,8 @@ for nb_files in range(1):
 
 
 
-X1_test = X1_test.iloc[4:7]
-X1_train_batched = X1_train_batched.iloc[4:7]
+# X1_test = X1_test.iloc[4:7]
+# X1_train_batched = X1_train_batched.iloc[4:7]
 
 print(X1_test)
 print(list(set(list(X1_test.columns))))
@@ -440,4 +440,4 @@ shap_values = explainer(X1_test)
 # visualize the first prediction's explanation
 # shap.plots.waterfall(shap_values[0], show = False)
 shap.summary_plot(shap_values, X1_test, show = False, max_display=X1_test.shape[1])
-plt.savefig('./notes/SHAP/grafic.png')
+plt.savefig('./notes/SHAP/grafic1.png')

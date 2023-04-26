@@ -337,6 +337,10 @@ for nb_files in range(file_count):
     print("nb Test instances : ", len(X1_test.values))
     X1_test = encoder1.transform(X1_test)
     X1_test[cols_to_norm1] = scaler1.transform(X1_test[cols_to_norm1])
+
+    # Save X1_test for XAI
+    X1_test.to_csv(f'./input/Dataset/XAI/X_test{nb_files}.csv', sep=',', index = False)
+
     X1_test['h'] = X1_test[ cols_to_norm1 ].values.tolist()
 
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -385,4 +389,4 @@ for nb_files in range(file_count):
 # save_graphs("./notes/DGLGraphs/data.bin", [G1_test], actual1)
 
 # Save the model
-th.save(model1.state_dict(), "./models/Final_Model/model1.pt")
+th.save(model1.state_dict(), "./models/Final_Model/modelF.pt")
