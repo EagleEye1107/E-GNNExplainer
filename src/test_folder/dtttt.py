@@ -25,12 +25,11 @@ from sklearn.utils import shuffle
 
 from dgl.data.utils import save_graphs
 
+import torch_geometric.utils as pyg_utils
+
 #constante
 size_embedding = 152
 nb_batch = 5
-# to print
-pr = True
-filename = './models/M11111111_weights.txt'
 
 # Accuracy --------------------------------------------------------------------
 def compute_accuracy(pred, labels):
@@ -139,7 +138,6 @@ opt = th.optim.Adam(model1.parameters())
 path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
 file_count = len(files)
 
-X_test_gen = pd.DataFrame()
 
 for nb_files in range(file_count):
     data1 = pd.read_csv(f'{path}{files[nb_files]}', encoding="ISO-8859–1", dtype = str)
@@ -270,139 +268,8 @@ for nb_files in range(file_count):
         # G1 = G1.to_directed()
         # print("G1 after todirected : ", G1)
         # Convert the graph from a networkx Graph to a DGL Graph
-        G1 = from_networkx(G1,edge_attrs=['h','label'] )
-        print("G1.edata['h'] after converting it to a dgl graph : ", len(G1.edata['h']))
+        # G1 = from_networkx(G1,edge_attrs=['h','label'] )
+        G_data = pyg_utils.from_networkx(G1)
 
-        # nodes data // G1.edata['h'].shape[1] : sizeh = number of attributes in a flow
-        G1.ndata['h'] = th.ones(G1.num_nodes(), G1.edata['h'].shape[1])
-        # edges data // we create a tensor bool array that will represent the train mask
-        G1.edata['train_mask'] = th.ones(len(G1.edata['h']), dtype=th.bool)
-
-        # Reshape both tensor lists to a single value in each element for both axis
-        G1.ndata['h'] = th.reshape(G1.ndata['h'], (G1.ndata['h'].shape[0], 1, G1.ndata['h'].shape[1]))
-        G1.edata['h'] = th.reshape(G1.edata['h'], (G1.edata['h'].shape[0], 1, G1.edata['h'].shape[1]))
-        print("G1.edata['h'] after reshape : ", len(G1.edata['h']))
-        # ------------------------------------------- --------------------------------- -------------------------------------------------------------
-
-        # ------------------------------------------- Model -----------------------------------------------------------------------------------------
-        ## use of model
-        from sklearn.utils import class_weight
-        class_weights1 = class_weight.compute_class_weight(class_weight = 'balanced',
-                                                        classes = np.unique(G1.edata['label'].cpu().numpy()),
-                                                        y = G1.edata['label'].cpu().numpy())
-        ''' 
-            Using class weights, you make the classifier aware of how to treat the various classes in the loss function.
-            In this process, you give higher weights to certain classes & lower weights to other classes.
-            Example : [ 0.51600999 16.11525117] 
-            Basically : 
-                - For classes with small number of training images, you give it more weight
-                so that the network will be punished more if it makes mistakes predicting the label of these classes. 
-                - For classes with large numbers of images, you give it small weight
-        '''
-        class_weights1 = th.FloatTensor(class_weights1).cuda()
-        criterion1 = nn.CrossEntropyLoss(weight = class_weights1)
-        G1 = G1.to('cuda:0')
-
-        node_features1 = G1.ndata['h']
-        edge_features1 = G1.edata['h']
-
-        edge_label1 = G1.edata['label']
-        train_mask1 = G1.edata['train_mask']
-
-        for epoch in range(1,1000):
-            pred = model1(G1, node_features1, edge_features1).cuda()
-            loss = criterion1(pred[train_mask1], edge_label1[train_mask1])
-            opt.zero_grad()
-            loss.backward()
-            opt.step()
-            if epoch % 100 == 0:
-                print('Training acc:', compute_accuracy(pred[train_mask1], edge_label1[train_mask1]), loss)
-
-        pred1 = model1(G1, node_features1, edge_features1).cuda()
-        pred1 = pred1.argmax(1)
-        pred1 = th.Tensor.cpu(pred1).detach().numpy()
-        edge_label1 = th.Tensor.cpu(edge_label1).detach().numpy()
-
-        print('Train metrics :')
-        print("Accuracy : ", sklearn.metrics.accuracy_score(edge_label1, pred1))
-        print("Precision : ", sklearn.metrics.precision_score(edge_label1, pred1, labels = [0,1]))
-        print("Recall : ", sklearn.metrics.recall_score(edge_label1, pred1, labels = [0,1]))
-        print("f1_score : ", sklearn.metrics.f1_score(edge_label1, pred1, labels=[0,1]))
-
-    # ------------------------------------------------ Test ---------------------------------------------------------------------
-    print("++++++++++++++++++++++++++++ Test ++++++++++++++++++++++++++++++++")
-    print("nb Test instances : ", len(X1_test.values))
-    X1_test = encoder1.transform(X1_test)
-    X1_test[cols_to_norm1] = scaler1.transform(X1_test[cols_to_norm1])
-
-    # Save X1_test for XAI
-    # X1_test.to_csv(f'./input/Dataset/XAI/X_test{nb_files}.csv', sep=',', index = False)
-
-    X1_test['h'] = X1_test[ cols_to_norm1 ].values.tolist()
-
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # Before training the data :
-    # We need to delete all the attributes (cols_to_norm1) to have the {Source IP, Destination IP, label, h} representation
-    X1_test.drop(columns = cols_to_norm1, inplace = True)
-
-    # Then we need to Swap {label, h} Columns to have the {Source IP, Destination IP, h, label} representation
-    columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
-    X1_test=X1_test.reindex(columns=columns_titles)
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    X_test_gen = pd.concat([X_test_gen, X1_test], ignore_index = True)
-
-    G1_test = nx.from_pandas_edgelist(X1_test, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiDiGraph())
-    # G1_test = G1_test.to_directed()
-    G1_test = from_networkx(G1_test,edge_attrs=['h','label'] )
-    actual1 = G1_test.edata.pop('label')
-    G1_test.ndata['feature'] = th.ones(G1_test.num_nodes(), G1.ndata['h'].shape[2])
-    G1_test.ndata['feature'] = th.reshape(G1_test.ndata['feature'], (G1_test.ndata['feature'].shape[0], 1, G1_test.ndata['feature'].shape[1]))
-    G1_test.edata['h'] = th.reshape(G1_test.edata['h'], (G1_test.edata['h'].shape[0], 1, G1_test.edata['h'].shape[1]))
-    G1_test = G1_test.to('cuda:0')
-    node_features_test1 = G1_test.ndata['feature']
-    edge_features_test1 = G1_test.edata['h']
-
-    print("nb instances : ", len(X1_test.values))
-
-    test_pred1 = model1(G1_test, node_features_test1, edge_features_test1).cuda()
-    test_pred1 = test_pred1.argmax(1)
-    test_pred1 = th.Tensor.cpu(test_pred1).detach().numpy()
-
-    print('Metrics : ')
-    print("Accuracy : ", sklearn.metrics.accuracy_score(actual1, test_pred1))
-    print("Precision : ", sklearn.metrics.precision_score(actual1, test_pred1, labels = [0,1]))
-    print("Recall : ", sklearn.metrics.recall_score(actual1, test_pred1, labels = [0,1]))
-    print("f1_score : ", sklearn.metrics.f1_score(actual1, test_pred1, labels = [0,1]))
-
-    print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-
-
-
-# Global Test
-
-X_test_gen = shuffle(X_test_gen)
-X_test_gen = X_test_gen.iloc[0: len(X_test_gen)/2]
-
-G1_test = nx.from_pandas_edgelist(X_test_gen, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiDiGraph())
-# G1_test = G1_test.to_directed()
-G1_test = from_networkx(G1_test,edge_attrs=['h','label'] )
-actual1 = G1_test.edata.pop('label')
-G1_test.ndata['feature'] = th.ones(G1_test.num_nodes(), G1.ndata['h'].shape[2])
-G1_test.ndata['feature'] = th.reshape(G1_test.ndata['feature'], (G1_test.ndata['feature'].shape[0], 1, G1_test.ndata['feature'].shape[1]))
-G1_test.edata['h'] = th.reshape(G1_test.edata['h'], (G1_test.edata['h'].shape[0], 1, G1_test.edata['h'].shape[1]))
-G1_test = G1_test.to('cuda:0')
-node_features_test1 = G1_test.ndata['feature']
-edge_features_test1 = G1_test.edata['h']
-
-print("nb instances : ", len(X_test_gen.values))
-
-test_pred1 = model1(G1_test, node_features_test1, edge_features_test1).cuda()
-test_pred1 = test_pred1.argmax(1)
-test_pred1 = th.Tensor.cpu(test_pred1).detach().numpy()
-
-print('Metrics : ')
-print("Accuracy : ", sklearn.metrics.accuracy_score(actual1, test_pred1))
-print("Precision : ", sklearn.metrics.precision_score(actual1, test_pred1, labels = [0,1]))
-print("Recall : ", sklearn.metrics.recall_score(actual1, test_pred1, labels = [0,1]))
-print("f1_score : ", sklearn.metrics.f1_score(actual1, test_pred1, labels = [0,1]))
+        print(G_data)
+        print(dddddd)
