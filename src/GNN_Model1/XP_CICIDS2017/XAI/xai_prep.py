@@ -115,30 +115,68 @@ class Model(nn.Module):
 xai_datafile = "./input/Dataset/XAI/XAI_Test.csv"
 gen_xai_testset = pd.read_csv(xai_datafile, encoding="ISO-8859–1", dtype = str)
 
+
+# print(gen_xai_testset.dtypes.to_string())
+# len(gen_xai_testset.columns) = 79, and label is in object datatype => need converting
+# cols_to_norm1 = list(set(list(gen_xai_testset.iloc[:, :].columns )) - set(list([' Source IP', ' Destination IP'])))
+gen_xai_testset['label'] = gen_xai_testset['label'].apply(pd.to_numeric)
+# print(gen_xai_testset.dtypes.to_string())
+
 # Label column is str dtype so we convert it to numpy.int64 dtype
 gen_xai_testset["label"] = gen_xai_testset["label"].apply(lambda x: int(x))
 
-# Same thing with h attr, need to be converted to a list
-for index, row in gen_xai_testset.iterrows():
-    # print(row['h'])
-    # Remove brackets from the str
-    row['h'] = row['h'].replace("[", "")
-    row['h'] = row['h'].replace("]", "")
-    # Split depending on the seperator to have a list of str
-    row['h'] = row['h'].split(',')
-    # Convert str to float
-    row['h'] = [float(i) for i in row['h']]
-    gen_xai_testset.at[index,'h'] = row['h']
-    # print(type(row['h'][0]))
+
+#######################################################################
+# # Same thing with h attr, need to be converted to a list
+# for index, row in gen_xai_testset.iterrows():
+#     # print(row['h'])
+#     # Remove brackets from the str
+#     row['h'] = row['h'].replace("[", "")
+#     row['h'] = row['h'].replace("]", "")
+#     # Split depending on the seperator to have a list of str
+#     row['h'] = row['h'].split(',')
+#     # Convert str to float
+#     row['h'] = [float(i) for i in row['h']]
+#     gen_xai_testset.at[index,'h'] = row['h']
+#     # print(type(row['h'][0]))
+#######################################################################
+
+
+
 
 labels_column = gen_xai_testset.label
 
 print(gen_xai_testset["label"].value_counts())
 print(gen_xai_testset)
 
+
+# Preprocessing
+encoder1 = ce.TargetEncoder(cols=[' Protocol',  'Fwd PSH Flags', ' Fwd URG Flags', ' Bwd PSH Flags', ' Bwd URG Flags'])
+encoder1.fit(gen_xai_testset, labels_column)
+gen_xai_testset = encoder1.transform(gen_xai_testset)
+
+scaler1 = StandardScaler()
+cols_to_norm1 = list(set(list(gen_xai_testset.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])) )
+gen_xai_testset[cols_to_norm1] = scaler1.fit_transform(gen_xai_testset[cols_to_norm1])
+
+gen_xai_testset['h'] = gen_xai_testset[ cols_to_norm1 ].values.tolist()
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Before training the data :
+# We need to delete all the attributes (cols_to_norm1) to have the {Source IP, Destination IP, label, h} representation
+gen_xai_testset.drop(columns = cols_to_norm1, inplace = True)
+
+# Then we need to Swap {label, h} Columns to have the {Source IP, Destination IP, h, label} representation
+columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
+gen_xai_testset = gen_xai_testset.reindex(columns=columns_titles)
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+# Until here EVERYTHING IS GOOD !
+
+
 # Create our Multigraph
-XAI_G1 = nx.from_pandas_edgelist(gen_xai_testset, " Source IP", " Destination IP", ['h','label'], create_using=nx.MultiGraph())
-XAI_G1 = XAI_G1.to_directed()
+XAI_G1 = nx.from_pandas_edgelist(gen_xai_testset, " Source IP", " Destination IP", ['h','label'], create_using=nx.MultiDiGraph())
+# XAI_G1 = XAI_G1.to_directed()
 XAI_G1 = from_networkx(XAI_G1, edge_attrs=['h','label'] )
 
 XAI_G1.ndata['h'] = th.ones(XAI_G1.num_nodes(), XAI_G1.edata['h'].shape[1])
@@ -147,7 +185,7 @@ XAI_G1.edata['train_mask'] = th.ones(len(XAI_G1.edata['h']), dtype=th.bool)
 XAI_G1.ndata['h'] = th.reshape(XAI_G1.ndata['h'], (XAI_G1.ndata['h'].shape[0], 1, XAI_G1.ndata['h'].shape[1]))
 XAI_G1.edata['h'] = th.reshape(XAI_G1.edata['h'], (XAI_G1.edata['h'].shape[0], 1, XAI_G1.edata['h'].shape[1]))
 
-XAI_G1 = XAI_G1.to('cuda:0')
+# XAI_G1 = XAI_G1.to('cuda:0')
 
 node_features1 = XAI_G1.ndata['h']
 edge_features1 = XAI_G1.edata['h']
@@ -170,8 +208,8 @@ nbclasses =  2
 # Model *******************************************************************************************
 # G1.ndata['h'].shape[2] = sizeh = 76 dans ANIDS
 # model1 = Model(G1.ndata['h'].shape[2], size_embedding, G1.ndata['h'].shape[2], F.relu, 0.2).cuda()
-model1 = Model(76, size_embedding, 76, F.relu, 0.2).cuda()
-model1.load_state_dict(th.load("./models/Model1/model1.pt"))
+model1 = Model(76, size_embedding, 76, F.relu, 0.2)
+model1.load_state_dict(th.load("./models/Final_Model/model1.pt"))
 model1.eval()
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -181,7 +219,7 @@ model1.eval()
 
 # Testing everything ++++++++++++++++++++++++++
 
-pred1 = model1(XAI_G1, node_features1, edge_features1).cuda()
+pred1 = model1(XAI_G1, node_features1, edge_features1)
 pred1 = pred1.argmax(1)
 pred1 = th.Tensor.cpu(pred1).detach().numpy()
 edge_label1 = th.Tensor.cpu(edge_label1).detach().numpy()

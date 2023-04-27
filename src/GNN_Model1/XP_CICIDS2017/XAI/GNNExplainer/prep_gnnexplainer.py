@@ -28,9 +28,6 @@ from dgl.data.utils import save_graphs
 #constante
 size_embedding = 152
 nb_batch = 5
-# to print
-pr = True
-filename = './models/M11111111_weights.txt'
 
 # Accuracy --------------------------------------------------------------------
 def compute_accuracy(pred, labels):
@@ -309,6 +306,13 @@ for nb_files in range(file_count):
         edge_label1 = G1.edata['label']
         train_mask1 = G1.edata['train_mask']
 
+
+        # to print
+        pr = True
+        # True if you want to print the embedding vectors
+        # the name of the file where the vectors are printed
+        filename = './models/M1_weights.txt'
+
         for epoch in range(1,1000):
             pred = model1(G1, node_features1, edge_features1).cuda()
             loss = criterion1(pred[train_mask1], edge_label1[train_mask1])
@@ -363,6 +367,12 @@ for nb_files in range(file_count):
     node_features_test1 = G1_test.ndata['feature']
     edge_features_test1 = G1_test.edata['h']
 
+    # to print
+    pr = True
+    # True if you want to print the embedding vectors
+    # the name of the file where the vectors are printed
+    filename = './models/M1_weights.txt'
+
     print("nb instances : ", len(X1_test.values))
 
     test_pred1 = model1(G1_test, node_features_test1, edge_features_test1).cuda()
@@ -382,7 +392,7 @@ for nb_files in range(file_count):
 # Global Test
 
 X_test_gen = shuffle(X_test_gen)
-# X_test_gen = X_test_gen.iloc[0: len(X_test_gen)/2]
+X_test_gen = X_test_gen.iloc[0: len(X_test_gen)/2]
 
 G1_test = nx.from_pandas_edgelist(X_test_gen, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiDiGraph())
 # G1_test = G1_test.to_directed()
@@ -395,7 +405,13 @@ G1_test = G1_test.to('cuda:0')
 node_features_test1 = G1_test.ndata['feature']
 edge_features_test1 = G1_test.edata['h']
 
-print("nb instances : ", len(X_test_gen.values))
+# to print
+pr = True
+# True if you want to print the embedding vectors
+# the name of the file where the vectors are printed
+filename = './models/M1_weights.txt'
+
+print("nb instances : ", len(X1_test.values))
 
 test_pred1 = model1(G1_test, node_features_test1, edge_features_test1).cuda()
 test_pred1 = test_pred1.argmax(1)

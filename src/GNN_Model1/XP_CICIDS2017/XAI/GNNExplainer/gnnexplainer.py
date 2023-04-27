@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ''''
     This version of GNN1 is similar to the original,
     The only difference is that the test will be done after training on each dataset file
