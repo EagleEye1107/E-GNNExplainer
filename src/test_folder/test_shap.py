@@ -86,4 +86,4 @@ load_shap_values = pickle.load(open(filename, 'rb'))
 print(load_shap_values)
 
 shap.summary_plot(load_shap_values, X, show = False, max_display=X.shape[1])
-plt.savefig('./notes/SHAP/grafic_saved.png')
+plt.savefig('./notes/SHAP/graficccc_saved.png')
