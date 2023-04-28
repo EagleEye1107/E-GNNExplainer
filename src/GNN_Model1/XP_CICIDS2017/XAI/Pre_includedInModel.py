@@ -441,3 +441,12 @@ shap_values = explainer(X1_test)
 # shap.plots.waterfall(shap_values[0], show = False)
 shap.summary_plot(shap_values, X1_test, show = False, max_display=X1_test.shape[1])
 plt.savefig('./notes/SHAP/grafic1.png')
+
+
+import pickle
+filename_expl = './src/GNN_Model1/XP_CICIDS2017/XAI/SHAP_SAVED/GNN_SHAP_explainer.sav'
+pickle.dump(explainer, open(filename_expl, 'wb'))
+filename = './src/GNN_Model1/XP_CICIDS2017/XAI/SHAP_SAVED/GNN_SHAP_shapvalues.sav'
+pickle.dump(shap_values, open(filename, 'wb'))
+
+print("explainer saved with pickle successfully")

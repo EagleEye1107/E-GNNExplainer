@@ -2,10 +2,8 @@ import xgboost
 import shap
 import matplotlib.pyplot as plt
 
-from sklearn.ensemble import IsolationForest
-
 # train an XGBoost model
-X, y = shap.datasets.boston()
+X, y = shap.datasets.diabetes()
 model = xgboost.XGBRegressor().fit(X, y)
 
 # explain the model's predictions using SHAP
@@ -34,4 +32,4 @@ load_shap_values = pickle.load(open(filename, 'rb'))
 print(load_shap_values)
 
 shap.summary_plot(load_shap_values, X, show = False, max_display=X.shape[1])
-plt.savefig('./notes/SHAP/grafic_saved.png')
+plt.savefig('./notes/SHAP/graficccc_saved.png')
