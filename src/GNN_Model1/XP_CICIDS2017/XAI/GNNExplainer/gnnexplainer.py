@@ -4,8 +4,6 @@
     So we will have 4 test phases (Train1 -> Test1 -> Train2 -> Test2 ...etc.)
 '''
 
-
-
 from dgl import from_networkx
 import sklearn
 import torch.nn as nn
@@ -416,8 +414,10 @@ print("Recall : ", sklearn.metrics.recall_score(actual1, test_pred1, labels = [0
 print("f1_score : ", sklearn.metrics.f1_score(actual1, test_pred1, labels = [0,1]))
 
 
+print("+++++++++++++++++++")
 G_data = pyg_utils.from_networkx(G1_test_nx)
 print(G_data)
+print("+++++++++++++++++++")
 
 # Explainer args
 edge_index = G_data.edge_index
@@ -446,8 +446,6 @@ explainer = Explainer(
 explanation = explainer(
     x = x_data,
     edge_index = edge_index,
-    g = G1_test,
-    nfeats = node_features_test1,
     efeats = edge_features_test1
 )
 print(f'Generated model explanations in {explanation.available_explanations}')

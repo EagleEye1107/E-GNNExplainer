@@ -2,6 +2,8 @@ import xgboost
 import shap
 import matplotlib.pyplot as plt
 
+from sklearn.ensemble import IsolationForest
+
 # train an XGBoost model
 X, y = shap.datasets.boston()
 model = xgboost.XGBRegressor().fit(X, y)
@@ -13,5 +15,23 @@ print(y)
 explainer = shap.Explainer(model)
 shap_values = explainer(X)
 
-shap.summary_plot(shap_values, X, show = False, max_display=X.shape[1])
-plt.savefig('./notes/SHAP/graficcccc.png')
+# shap.summary_plot(shap_values, X, show = False, max_display=X.shape[1])
+# plt.savefig('./notes/SHAP/graficcccc.png')
+
+
+
+import pickle
+filename_expl = './src/GNN_Model1/XP_CICIDS2017/XAI/SHAP_SAVED/SHAP_explainer.sav'
+pickle.dump(explainer, open(filename_expl, 'wb'))
+filename = './src/GNN_Model1/XP_CICIDS2017/XAI/SHAP_SAVED/SHAP_shapvalues.sav'
+pickle.dump(shap_values, open(filename, 'wb'))
+
+
+
+load_explainer = pickle.load(open(filename_expl, 'rb'))
+print(load_explainer)
+load_shap_values = pickle.load(open(filename, 'rb'))
+print(load_shap_values)
+
+shap.summary_plot(load_shap_values, X, show = False, max_display=X.shape[1])
+plt.savefig('./notes/SHAP/grafic_saved.png')
