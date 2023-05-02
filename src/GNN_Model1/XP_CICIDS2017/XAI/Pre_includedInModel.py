@@ -367,8 +367,8 @@ for nb_files in range(file_count):
 
 
 
-# X1_test = X1_test.iloc[4:7]
-# X1_train_batched = X1_train_batched.iloc[4:7]
+X1_test = X1_test.iloc[0:10000]
+X1_train_batched = X1_train_batched.iloc[0:10000]
 
 print(X1_test)
 print(list(set(list(X1_test.columns))))
@@ -433,6 +433,11 @@ print(X1_train_batched.dtypes.to_string())
 print("----------")
 print(len(X1_test))
 
+
+X1_train_batched.to_csv(f'./src/GNN_Model1/XP_CICIDS2017/XAI/SHAP_SAVED/Train10000.csv', sep=',', index = False)
+X1_test.to_csv(f'./src/GNN_Model1/XP_CICIDS2017/XAI/SHAP_SAVED/Test10000.csv', sep=',', index = False)
+
+
 # XAI ######################
 explainer = shap.Explainer(model1.xai_predict, X1_test)
 shap_values = explainer(X1_test)
@@ -444,9 +449,9 @@ plt.savefig('./notes/SHAP/grafic1.png')
 
 
 import pickle
-filename_expl = './src/GNN_Model1/XP_CICIDS2017/XAI/SHAP_SAVED/GNN_SHAP_explainer.sav'
+filename_expl = './src/GNN_Model1/XP_CICIDS2017/XAI/SHAP_SAVED/GNN_SHAP_explainer10000.sav'
 pickle.dump(explainer, open(filename_expl, 'wb'))
-filename = './src/GNN_Model1/XP_CICIDS2017/XAI/SHAP_SAVED/GNN_SHAP_shapvalues.sav'
+filename = './src/GNN_Model1/XP_CICIDS2017/XAI/SHAP_SAVED/GNN_SHAP_shapvalues10000.sav'
 pickle.dump(shap_values, open(filename, 'wb'))
 
 print("explainer saved with pickle successfully")

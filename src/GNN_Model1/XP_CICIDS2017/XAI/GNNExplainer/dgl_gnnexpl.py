@@ -4,8 +4,6 @@
     So we will have 4 test phases (Train1 -> Test1 -> Train2 -> Test2 ...etc.)
 '''
 
-
-
 from dgl import from_networkx
 import sklearn
 import torch.nn as nn
@@ -23,11 +21,27 @@ from sklearn.metrics import confusion_matrix
 import os
 from sklearn.utils import shuffle
 
-from dgl.data.utils import save_graphs
+import os.path as osp
+import torch.nn.functional as F
+from sklearn.metrics import roc_auc_score
+import torch_geometric.transforms as T
+from torch_geometric.datasets import Planetoid
+from torch_geometric.explain import Explainer, GNNExplainer, ModelConfig
+from torch_geometric.nn import GCNConv
+
+import torch_geometric.utils as pyg_utils
+
+import dgl
+from dgl.data import CoraGraphDataset
+from dgl.nn import GNNExplainer
+
 
 #constante
 size_embedding = 152
-nb_batch = 5
+nb_batch = 1
+# to print
+pr = True
+filename = './models/M11111111_weights.txt'
 
 # Accuracy --------------------------------------------------------------------
 def compute_accuracy(pred, labels):
@@ -72,13 +86,11 @@ class SAGE(nn.Module):
     def forward(self, g, nfeats, efeats):
         
         for i, layer in enumerate(self.layers):
+            #nf = 'weights'+str(i)+'.txt'
+            #sourceFile = open(nf, 'w')
             if i != 0:
                 nfeats = self.dropout(nfeats)
             nfeats = layer(g, nfeats, efeats)
-            # Save edge_embeddings
-            nf = 'edge_embeddings'+str(i)+'.txt'
-            sourceFile = open(nf, 'w')
-            print(nfeats, file = sourceFile)
         return nfeats.sum(1)
         # Return a list of node features [[node1_feature1, node1_feature2, ...], [node2_feature1, node2_feature2, ...], ...]
     
@@ -138,8 +150,9 @@ opt = th.optim.Adam(model1.parameters())
 path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
 file_count = len(files)
 
+X_test_gen = pd.DataFrame()
 
-for nb_files in range(file_count):
+for nb_files in range(1):
     data1 = pd.read_csv(f'{path}{files[nb_files]}', encoding="ISO-8859–1", dtype = str)
 
     print(f'{files[nb_files]} ++++++++++++++++++++++++++++++++++++++++++++++')
@@ -307,14 +320,7 @@ for nb_files in range(file_count):
         edge_label1 = G1.edata['label']
         train_mask1 = G1.edata['train_mask']
 
-
-        # to print
-        pr = True
-        # True if you want to print the embedding vectors
-        # the name of the file where the vectors are printed
-        filename = './models/M1_weights.txt'
-
-        for epoch in range(1,1000):
+        for epoch in range(1,1):
             pred = model1(G1, node_features1, edge_features1).cuda()
             loss = criterion1(pred[train_mask1], edge_label1[train_mask1])
             opt.zero_grad()
@@ -341,7 +347,7 @@ for nb_files in range(file_count):
     X1_test[cols_to_norm1] = scaler1.transform(X1_test[cols_to_norm1])
 
     # Save X1_test for XAI
-    X1_test.to_csv(f'./input/Dataset/XAI/X_test{nb_files}.csv', sep=',', index = False)
+    # X1_test.to_csv(f'./input/Dataset/XAI/X_test{nb_files}.csv', sep=',', index = False)
 
     X1_test['h'] = X1_test[ cols_to_norm1 ].values.tolist()
 
@@ -354,6 +360,9 @@ for nb_files in range(file_count):
     columns_titles = [' Source IP', ' Destination IP', 'h', 'label']
     X1_test=X1_test.reindex(columns=columns_titles)
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    X_test_gen = pd.concat([X_test_gen, X1_test], ignore_index = True)
+
     G1_test = nx.from_pandas_edgelist(X1_test, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiDiGraph())
     # G1_test = G1_test.to_directed()
     G1_test = from_networkx(G1_test,edge_attrs=['h','label'] )
@@ -364,12 +373,6 @@ for nb_files in range(file_count):
     G1_test = G1_test.to('cuda:0')
     node_features_test1 = G1_test.ndata['feature']
     edge_features_test1 = G1_test.edata['h']
-
-    # to print
-    pr = True
-    # True if you want to print the embedding vectors
-    # the name of the file where the vectors are printed
-    filename = './models/M1_weights.txt'
 
     print("nb instances : ", len(X1_test.values))
 
@@ -386,9 +389,38 @@ for nb_files in range(file_count):
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
 
-# Save the last Test Graph for XAI after
-# graph_labels = {"glabel": th.tensor([0, 1])}
-# save_graphs("./notes/DGLGraphs/data.bin", [G1_test], actual1)
 
-# Save the model
-th.save(model1.state_dict(), "./models/Final_Model/modelF.pt")
+# Global Test
+# X_test_gen = shuffle(X_test_gen)
+# X_test_gen = X_test_gen.iloc[0: len(X_test_gen)/2]
+
+G1_test_nx = nx.from_pandas_edgelist(X_test_gen, " Source IP", " Destination IP", ['h','label'],create_using=nx.MultiDiGraph())
+# G1_test = G1_test.to_directed()
+G1_test = from_networkx(G1_test_nx,edge_attrs=['h','label'] )
+actual1 = G1_test.edata.pop('label')
+G1_test.ndata['feature'] = th.ones(G1_test.num_nodes(), G1.ndata['h'].shape[2])
+G1_test.ndata['feature'] = th.reshape(G1_test.ndata['feature'], (G1_test.ndata['feature'].shape[0], 1, G1_test.ndata['feature'].shape[1]))
+G1_test.edata['h'] = th.reshape(G1_test.edata['h'], (G1_test.edata['h'].shape[0], 1, G1_test.edata['h'].shape[1]))
+G1_test = G1_test.to('cuda:0')
+node_features_test1 = G1_test.ndata['feature']
+edge_features_test1 = G1_test.edata['h']
+
+print("nb instances : ", len(X_test_gen.values))
+
+test_pred1 = model1(G1_test, node_features_test1, edge_features_test1).cuda()
+test_pred1 = test_pred1.argmax(1)
+test_pred1 = th.Tensor.cpu(test_pred1).detach().numpy()
+
+print('Metrics : ')
+print("Accuracy : ", sklearn.metrics.accuracy_score(actual1, test_pred1))
+print("Precision : ", sklearn.metrics.precision_score(actual1, test_pred1, labels = [0,1]))
+print("Recall : ", sklearn.metrics.recall_score(actual1, test_pred1, labels = [0,1]))
+print("f1_score : ", sklearn.metrics.f1_score(actual1, test_pred1, labels = [0,1]))
+
+
+
+
+# GNNExplainer
+# Explain the prediction for node 10
+explainer = GNNExplainer(model1, num_hops=1)
+new_center, sg, feat_mask, edge_mask = explainer.explain_node(10, G1_test, features)
