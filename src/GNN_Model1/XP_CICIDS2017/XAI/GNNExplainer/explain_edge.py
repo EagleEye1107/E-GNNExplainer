@@ -521,12 +521,12 @@ def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
     print("pred_label : ", pred_label)
     # print(pred_label1)
 
+    # 
+    efeat_mask, edge_mask = init_masks(sg, edge_feat)
+
     print(ddddddd)
 
-    # 
-    feat_mask, edge_mask = init_masks(sg, feat)
-
-    params = [feat_mask, edge_mask]
+    params = [efeat_mask, edge_mask]
     # lr=0.01
     optimizer = th.optim.Adam(params, lr = 0.01)
 
