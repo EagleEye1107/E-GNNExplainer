@@ -422,20 +422,28 @@ from dgl import EID, NID, khop_out_subgraph
 
 
 # init mask
-def init_masks(self, graph, feat):
-    num_nodes, feat_size = feat.size()
+def init_masks(graph, efeat):
+    efeat_size = efeat.size()
     num_edges = graph.num_edges()
-    device = feat.device
+    num_nodes = graph.num_nodes()
+
+    print("efeat_size : ", efeat_size)
+    print("num_edges : ", num_edges)
+    print("num_nodes : ", num_nodes)
+
+    print(dddddddddddddddddd)
+
+    device = efeat.device
 
     std = 0.1
     # feat_mask = [[f1, f2, .... fn]] / n = nb_features
-    feat_mask = nn.Parameter(th.randn(1, feat_size, device=device) * std)
+    efeat_mask = nn.Parameter(th.randn(1, efeat_size, device=device) * std)
 
     std = nn.init.calculate_gain("relu") * sqrt(2.0 / (2 * num_nodes))
     # edge_mask = [e1, e2, .... em] / m = nb_edges
     edge_mask = nn.Parameter(th.randn(num_edges, device=device) * std)
 
-    return feat_mask, edge_mask
+    return efeat_mask, edge_mask
 
 
 # Regularization loss
