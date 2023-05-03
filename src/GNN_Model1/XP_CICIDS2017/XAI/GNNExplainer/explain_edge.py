@@ -470,13 +470,13 @@ def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
     num_nodes = graph.num_nodes()
     num_edges = graph.num_edges()
 
-    print(graph)
-    print(graph.nodes())
-    print(graph.edges())
+    print("graph : ", graph)
+    print("graph.nodes() : ", graph.nodes())
+    print("graph.edges() : ", graph.edges())
 
     # Extract source node-centered k-hop subgraph from the edge_id and its associated node and edge features.
     num_hops = 3
-    source_node = graph.edges()[0][edge_id].numpy()
+    source_node = th.Tensor.cpu(graph.edges()[0][edge_id]).detach().numpy()
     print("edge_id : ", edge_id)
     print("source_node : ", source_node)
     sg, inverse_indices = khop_out_subgraph(graph, source_node, num_hops)
@@ -489,9 +489,9 @@ def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
     sg_nodes = sg.ndata[NID].long()
 
     print("+++++++++++++++++++++++")
-    print(sg)
-    print(sg_edges) # edges ids in graph.edges()
-    print(sg_nodes) # nodes ids in graph.nodes()
+    print("sg : ", sg)
+    print("sg_edges : ", sg_edges) # edges ids in graph.edges()
+    print("sg_nodes : ", sg_nodes) # nodes ids in graph.nodes()
 
     print("+++++++++++++++++++++++")
     edge_feat = edge_feat[sg_edges]
@@ -516,9 +516,11 @@ def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
         # logits = model(g = sg, nfeats = node_feat, efeats = edge_feat, **kwargs)
         logits = model(g = sg, nfeats = node_feat, efeats = edge_feat)
         pred_label = logits.argmax(dim=-1)
-    
-    print(pred_label)
-    
+        # pred_label1 = logits.argmax(1)
+
+    print("pred_label : ", pred_label)
+    # print(pred_label1)
+
     print(ddddddd)
 
     # 
