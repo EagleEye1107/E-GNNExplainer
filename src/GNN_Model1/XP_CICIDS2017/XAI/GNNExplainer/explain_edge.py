@@ -445,27 +445,32 @@ def init_masks(graph, efeat):
 
 
 # Regularization loss
-def loss_regularize(self, loss, feat_mask, edge_mask):
+def loss_regularize(loss, feat_mask, edge_mask):
     # epsilon for numerical stability
     eps = 1e-15
+    # From self GNNExplainer self
+    alpha1 = 0.005,
+    alpha2 = 1.0
+    beta1 = 1.0
+    beta2 = 0.1
 
     edge_mask = edge_mask.sigmoid()
     # Edge mask sparsity regularization
-    loss = loss + self.alpha1 * th.sum(edge_mask)
+    loss = loss + alpha1 * th.sum(edge_mask)
     # Edge mask entropy regularization
     ent = -edge_mask * th.log(edge_mask + eps) - (
         1 - edge_mask
     ) * th.log(1 - edge_mask + eps)
-    loss = loss + self.alpha2 * ent.mean()
+    loss = loss + alpha2 * ent.mean()
 
     feat_mask = feat_mask.sigmoid()
     # Feature mask sparsity regularization
-    loss = loss + self.beta1 * th.mean(feat_mask)
+    loss = loss + beta1 * th.mean(feat_mask)
     # Feature mask entropy regularization
     ent = -feat_mask * th.log(feat_mask + eps) - (
         1 - feat_mask
     ) * th.log(1 - feat_mask + eps)
-    loss = loss + self.beta2 * ent.mean()
+    loss = loss + beta2 * ent.mean()
 
     return loss
 
