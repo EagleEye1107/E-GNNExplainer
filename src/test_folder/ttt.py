@@ -7,20 +7,17 @@ import dgl
 import pandas as pd
 import networkx as nx
 
-# G1 = dgl.graph(([1, 1, 2, 3, 4], [0, 2, 0, 4, 2]))
+G1 = dgl.graph(([0, 0, 1, 1, 2, 4], [1, 2, 2, 4, 3, 5]))
 
-# print(G1.nodes())
-# print(G1.edges())
-# sg, inverse_indices = dgl.khop_in_subgraph(G1, 1, k=1)
-# print("++++++++++++++++++++++++")
-# print(sg.nodes())
-# print(sg.edges())
+print(G1.nodes())
+print(G1.edges())
 
-# print("++++++")
-# print(sg.ndata[dgl.NID])
-# print(sg.ndata[dgl.NID].long())
+sg, inverse_indices = dgl.khop_out_subgraph(G1, 1, k=3)
+print("++++++++++++++++++++++++")
+print(sg.nodes())
+print(sg.edges())
 
-# print(ddddd)
+print(ddddd)
 
 
 # init mask
