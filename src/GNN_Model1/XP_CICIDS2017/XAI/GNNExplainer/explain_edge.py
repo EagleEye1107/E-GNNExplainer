@@ -530,9 +530,8 @@ def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
     # 
     efeat_mask, edge_mask = init_masks(sg, edge_feat)
 
-    print(ddddddd)
-
-    params = [efeat_mask, edge_mask]
+    # params = [efeat_mask, edge_mask]
+    params = [efeat_mask]
     # lr=0.01
     optimizer = th.optim.Adam(params, lr = 0.01)
 
@@ -544,13 +543,12 @@ def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
     for _ in range(100):
         optimizer.zero_grad()
         # Matrix multiplication
-        h = feat * feat_mask.sigmoid()
-        logits = model(
-            graph=sg, feat=h, eweight=edge_mask.sigmoid(), **kwargs
-        )
+        h = edge_feat * efeat_mask.sigmoid()
+        # logits = model(g = sg, nfeats = node_feat, efeats = h, eweight=edge_mask.sigmoid())
+        logits = model(g = sg, nfeats = node_feat, efeats = h)
         log_probs = logits.log_softmax(dim=-1)
         loss = -log_probs[inverse_indices, pred_label[inverse_indices]]
-        loss = loss_regularize(loss, feat_mask, edge_mask)
+        loss = loss_regularize(loss, efeat_mask, edge_mask)
         loss.backward()
         optimizer.step()
 
@@ -562,11 +560,16 @@ def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
     # if self.log:
         # pbar.close()
 
-    feat_mask = feat_mask.detach().sigmoid().squeeze()
+    efeat_mask = efeat_mask.detach().sigmoid().squeeze()
     edge_mask = edge_mask.detach().sigmoid()
 
-    return inverse_indices, sg, feat_mask, edge_mask
+    return inverse_indices, sg, efeat_mask, edge_mask
 
 
 
-explain_edge(model1, 2, G1_test, node_features_test1, edge_features_test1)
+inv_indices, sub_graph, efeat_mask, edge_mask = explain_edge(model1, 2, G1_test, node_features_test1, edge_features_test1)
+
+
+print("final results : ")
+print("efeat_mask : ", efeat_mask)
+print("edge_mask : ", edge_mask)
