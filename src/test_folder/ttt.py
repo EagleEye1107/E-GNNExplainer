@@ -7,19 +7,44 @@ import dgl
 import pandas as pd
 import networkx as nx
 
-tsnr1 = th.randn(1)
-tsnr2 = th.randn(3)
 
-import numpy as np
-npp = np.array([0.0444])
+# dataframe
+sizeh = 3
+nbclasses =  2
+
+edge_mask = th.randn(5)
+print("edge_mask : ", edge_mask)
+
+columns=[" Source IP", " Destination IP", 'h','label']
+data = [[1,2,[1,2,3],0], [2,3,[1,20,3],1],[1,3,[2,2,3],0],[3,4,[3,2,3],0],[1,2,[1,2,4],0]]
+X1_train = pd.DataFrame(data,columns=columns)
+
+# Create our Multigraph
+G1 = nx.from_pandas_edgelist(X1_train, " Source IP", " Destination IP", ['h','label'], create_using=nx.MultiDiGraph())
+G1 = dgl.from_networkx(G1, edge_attrs=['h','label'] )
+G1.ndata['h'] = th.ones(G1.num_nodes(), G1.edata['h'].shape[1])
+G1.edata['train_mask'] = th.ones(len(G1.edata['h']), dtype=th.bool)
+G1.ndata['h'] = th.reshape(G1.ndata['h'], (G1.ndata['h'].shape[0], 1, G1.ndata['h'].shape[1]))
+G1.edata['h'] = th.reshape(G1.edata['h'], (G1.edata['h'].shape[0], 1, G1.edata['h'].shape[1]))
 
 
-print(tsnr1)
-print(0.001 + th.sum(tsnr2))
-print(th.sum(tsnr2).numpy())
-print(npp)
-print(tsnr1 + npp)
-print(dddddddd)
+print(G1)
+print("********************")
+print("edge_mask : ", edge_mask)
+print(G1.edata['h'])
+
+efe = []
+for i, x in enumerate(edge_mask):
+    efe.append(list(G1.edata['h'][i][0].numpy() * x.numpy()))
+
+efe = th.FloatTensor(efe)
+efe = th.reshape(efe, (efe.shape[0], 1, efe.shape[1]))
+G1.edata['h'] = efe
+print(G1.edata['h'])
+
+print(G1)
+
+print(dddddd)
 
 
 

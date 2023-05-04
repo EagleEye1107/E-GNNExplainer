@@ -112,7 +112,17 @@ class Model(nn.Module):
         super().__init__()
         self.gnn = SAGE(ndim_in, ndim_out, edim, activation, dropout)
         self.pred = MLPPredictor(ndim_out, nbclasses)
-    def forward(self, g, nfeats, efeats):
+    def forward(self, g, nfeats, efeats, eweight = None):
+        if eweight != None:
+            # apply eweight on the graph
+            efe = []
+            for i, x in enumerate(eweight):
+                efe.append(list(g.edata['h'][i][0].numpy() * x.numpy()))
+
+            efe = th.FloatTensor(efe)
+            efe = th.reshape(efe, (efe.shape[0], 1, efe.shape[1]))
+            g.edata['h'] = efe
+
         h = self.gnn(g, nfeats, efeats)
         # h = list of node features [[node1_feature1, node1_feature2, ...], [node2_feature1, node2_feature2, ...], ...]
         return self.pred(g, h)
