@@ -12,7 +12,7 @@ import networkx as nx
 sizeh = 3
 nbclasses =  2
 
-edge_mask = th.randn(5)
+edge_mask = th.randn(5).cuda()
 print("edge_mask : ", edge_mask)
 
 columns=[" Source IP", " Destination IP", 'h','label']
@@ -37,7 +37,7 @@ print(G1.edata['h'])
 
 efe = []
 for i, x in enumerate(edge_mask):
-    efe.append(list(th.Tensor.cpu(G1.edata['h'][i][0]).detach().numpy() * x.numpy()))
+    efe.append(list(th.Tensor.cpu(G1.edata['h'][i][0]).detach().numpy() * th.Tensor.cpu(x).detach().numpy()))
 
 efe = th.FloatTensor(efe).cuda()
 efe = th.reshape(efe, (efe.shape[0], 1, efe.shape[1]))
