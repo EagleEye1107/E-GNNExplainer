@@ -27,7 +27,7 @@ from dgl.data.utils import save_graphs
 
 #constante
 size_embedding = 152
-nb_batch = 1
+nb_batch = 5
 
 # Accuracy --------------------------------------------------------------------
 def compute_accuracy(pred, labels):
@@ -149,7 +149,7 @@ path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
 file_count = len(files)
 
 
-for nb_files in range(1):
+for nb_files in range(file_count):
     data1 = pd.read_csv(f'{path}{files[nb_files]}', encoding="ISO-8859–1", dtype = str)
 
     print(f'{files[nb_files]} ++++++++++++++++++++++++++++++++++++++++++++++')
@@ -324,7 +324,7 @@ for nb_files in range(1):
         # the name of the file where the vectors are printed
         filename = './models/M1_weights.txt'
 
-        for epoch in range(1,1):
+        for epoch in range(1,1000):
             pred = model1(G1, node_features1, edge_features1).cuda()
             loss = criterion1(pred[train_mask1], edge_label1[train_mask1])
             opt.zero_grad()
