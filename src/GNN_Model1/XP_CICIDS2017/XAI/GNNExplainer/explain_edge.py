@@ -496,8 +496,6 @@ def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
     print("node_feat : ", node_feat)
     print("+++++++++++++++++++++++")
 
-    # Everything id good for now
-
     # If we add kwargs
     # for key, item in kwargs.items():
     #     if th.is_tensor(item) and item.size(0) == num_nodes:
