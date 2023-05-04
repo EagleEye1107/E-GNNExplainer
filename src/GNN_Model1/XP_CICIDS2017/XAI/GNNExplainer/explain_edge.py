@@ -27,7 +27,7 @@ from dgl.data.utils import save_graphs
 
 #constante
 size_embedding = 152
-nb_batch = 5
+nb_batch = 1
 
 # Accuracy --------------------------------------------------------------------
 def compute_accuracy(pred, labels):
@@ -149,7 +149,7 @@ path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
 file_count = len(files)
 
 
-for nb_files in range(file_count):
+for nb_files in range(1):
     data1 = pd.read_csv(f'{path}{files[nb_files]}', encoding="ISO-8859–1", dtype = str)
 
     print(f'{files[nb_files]} ++++++++++++++++++++++++++++++++++++++++++++++')
@@ -324,7 +324,7 @@ for nb_files in range(file_count):
         # the name of the file where the vectors are printed
         filename = './models/M1_weights.txt'
 
-        for epoch in range(1,1000):
+        for epoch in range(1,1):
             pred = model1(G1, node_features1, edge_features1).cuda()
             loss = criterion1(pred[train_mask1], edge_label1[train_mask1])
             opt.zero_grad()
@@ -413,6 +413,22 @@ from tqdm import tqdm
 from dgl import EID, NID, khop_out_subgraph
 
 
+# columns=[" Source IP", " Destination IP", 'h','label']
+# data = [[0,1,[1,2,3],0], [1,2,[1,20,3],1], [0,2,[2,2,3],0], [2,3,[3,2,3],0], [1,4,[1,2,4],0], [4,5,[1,2,4],0]]
+# X_trr = pd.DataFrame(data,columns=columns)
+
+# G1_test = nx.from_pandas_edgelist(X_trr, " Source IP", " Destination IP", ['h','label'], create_using = nx.MultiDiGraph())
+# # G1_test = G1_test.to_directed()
+# G1_test = from_networkx(G1_test,edge_attrs=['h','label'] )
+# actual1 = G1_test.edata.pop('label')
+# G1_test.ndata['feature'] = th.ones(G1_test.num_nodes(), 76)
+# G1_test.ndata['feature'] = th.reshape(G1_test.ndata['feature'], (G1_test.ndata['feature'].shape[0], 1, G1_test.ndata['feature'].shape[1]))
+# G1_test.edata['h'] = th.reshape(G1_test.edata['h'], (G1_test.edata['h'].shape[0], 1, G1_test.edata['h'].shape[1]))
+# # G1_test = G1_test.to('cuda:0')
+# node_features_test1 = G1_test.ndata['feature']
+# edge_features_test1 = G1_test.edata['h']
+
+
 # init mask
 def init_masks(graph, efeat):
     # efeat.size() = torch.Size([nb_edges, 1, 76])
@@ -471,12 +487,26 @@ def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
     model = model.to(graph.device)
     model.eval()
 
+    print(graph.edges())
+
     # Extract source node-centered k-hop subgraph from the edge_id and its associated node and edge features.
     num_hops = 3
     source_node = th.Tensor.cpu(graph.edges()[0][edge_id]).detach().numpy()
     print("source_node : ", source_node)
+    edge_h = graph.edata['h'][edge_id]
     sg, inverse_indices = khop_out_subgraph(graph, source_node, num_hops)
     print("inverse_indices : ", inverse_indices)
+
+    print(sg.edges())
+    print(edge_h)
+    print(sg.edata['h'])
+
+    for indx, nd_id in enumerate(sg.edges()[0]):
+        if inverse_indices == nd_id :
+            if (sg.edata['h'][indx][0] == edge_h[0]).all() :
+                # print("edge index is : ", indx)
+                edge_indice = indx
+                break
 
     # EID = NID = _ID
     # tensor([0, 1, 2, 4]) : nodes and edges ids
@@ -542,7 +572,7 @@ def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
         logits = model(g = sg, nfeats = node_feat, efeats = h, eweight=edge_mask.sigmoid())
         # logits = model(g = sg, nfeats = node_feat, efeats = h)
         log_probs = logits.log_softmax(dim=-1)
-        loss = -log_probs[inverse_indices, pred_label[inverse_indices]]
+        loss = -log_probs[edge_indice, pred_label[edge_indice]]
         loss = loss_regularize(loss, efeat_mask, edge_mask)
         loss.backward()
         optimizer.step()
@@ -563,14 +593,14 @@ def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
     efeat_mask = efeat_mask.detach().sigmoid().squeeze()
     edge_mask = edge_mask.detach().sigmoid()
 
-    return inverse_indices, sg, efeat_mask, edge_mask
+    return edge_indice, sg, efeat_mask, edge_mask
 
 
 
-inv_indices, sub_graph, efeat_mask, edge_mask = explain_edge(model1, 2000, G1_test, node_features_test1, edge_features_test1)
+edge_indice, sub_graph, efeat_mask, edge_mask = explain_edge(model1, 2, G1_test, node_features_test1, edge_features_test1)
 
 print("final results : ")
 print("efeat_mask : ", efeat_mask)
 print("edge_mask : ", edge_mask)
 print("sub_graph : ", sub_graph)
-print("inv_indices : ", inv_indices)
+print("edge_indice : ", edge_indice)

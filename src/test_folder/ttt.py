@@ -46,8 +46,11 @@ G1.edata['h'] = th.reshape(G1.edata['h'], (G1.edata['h'].shape[0], 1, G1.edata['
 
 G1 = G1.to('cuda:0')
 
+node_id = 0
 
-print(G1)
+print(G1.edges())
+print(G1.edata)
+print(dddddddddddddd)
 print("********************")
 print("edge_mask : ", edge_mask)
 print(G1.edata['h'])
