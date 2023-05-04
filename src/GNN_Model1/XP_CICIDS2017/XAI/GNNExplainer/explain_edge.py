@@ -557,7 +557,9 @@ def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
     print("efeat_mask : ", efeat_mask)
     print("edge_mask : ", edge_mask)
     print("***********************************")
-    for _ in range(1000):
+    for epoch in range(1000):
+        if epoch % 100 == 0:
+            print(f'epoch number {epoch}')
         optimizer.zero_grad()
         # Matrix multiplication
         h = edge_feat * efeat_mask.sigmoid()
@@ -589,7 +591,7 @@ def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
 
 
 
-inv_indices, sub_graph, efeat_mask, edge_mask = explain_edge(model1, 2, G1_test, node_features_test1, edge_features_test1)
+inv_indices, sub_graph, efeat_mask, edge_mask = explain_edge(model1, 2000, G1_test, node_features_test1, edge_features_test1)
 
 print("final results : ")
 print("efeat_mask : ", efeat_mask)
