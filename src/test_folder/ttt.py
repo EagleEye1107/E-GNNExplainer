@@ -8,6 +8,23 @@ import pandas as pd
 import networkx as nx
 
 
+# columns=[" Source IP", " Destination IP", 'h','label']
+# data = [[0,1,[1,2,3],0], [1,2,[1,20,3],1], [0,2,[2,2,3],0], [2,3,[3,2,3],0], [1,4,[1,2,4],0], [4,5,[1,2,4],0]]
+# X_trr = pd.DataFrame(data,columns=columns)
+
+# G1_test = nx.from_pandas_edgelist(X_trr, " Source IP", " Destination IP", ['h','label'], create_using = nx.MultiDiGraph())
+# # G1_test = G1_test.to_directed()
+# G1_test = from_networkx(G1_test,edge_attrs=['h','label'] )
+# actual1 = G1_test.edata.pop('label')
+# G1_test.ndata['feature'] = th.ones(G1_test.num_nodes(), 76)
+# G1_test.ndata['feature'] = th.reshape(G1_test.ndata['feature'], (G1_test.ndata['feature'].shape[0], 1, G1_test.ndata['feature'].shape[1]))
+# G1_test.edata['h'] = th.reshape(G1_test.edata['h'], (G1_test.edata['h'].shape[0], 1, G1_test.edata['h'].shape[1]))
+# # G1_test = G1_test.to('cuda:0')
+# node_features_test1 = G1_test.ndata['feature']
+# edge_features_test1 = G1_test.edata['h']
+
+
+
 # dataframe
 sizeh = 3
 nbclasses =  2
