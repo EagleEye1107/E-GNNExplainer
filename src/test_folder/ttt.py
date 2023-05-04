@@ -7,6 +7,22 @@ import dgl
 import pandas as pd
 import networkx as nx
 
+tsnr1 = th.randn(1)
+tsnr2 = th.randn(3)
+
+import numpy as np
+npp = np.array([0.0444])
+
+
+print(tsnr1)
+print(0.001 + th.sum(tsnr2))
+print(th.sum(tsnr2).numpy())
+print(npp)
+print(tsnr1 + npp)
+print(dddddddd)
+
+
+
 G1 = dgl.graph(([0, 0, 1, 1, 2, 4], [1, 2, 2, 4, 3, 5]))
 
 print(G1.nodes())

@@ -456,7 +456,7 @@ def loss_regularize(loss, feat_mask, edge_mask):
 
     edge_mask = edge_mask.sigmoid()
     # Edge mask sparsity regularization
-    loss = loss + alpha1 * th.sum(edge_mask)
+    loss = loss + th.from_numpy(alpha1 * th.Tensor.cpu(th.sum(edge_mask)).detach().numpy()).cuda()
     # Edge mask entropy regularization
     ent = -edge_mask * th.log(edge_mask + eps) - (
         1 - edge_mask
@@ -493,7 +493,7 @@ def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
     sg, inverse_indices = khop_out_subgraph(graph, source_node, num_hops)
 
     print("inverse_indices : ", inverse_indices)
-    
+
     # EID = NID = _ID
     # tensor([0, 1, 2, 4]) : nodes and edges ids
     sg_edges = sg.edata[EID].long()
@@ -532,7 +532,7 @@ def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
     print("pred_label : ", pred_label)
     # print(pred_label1)
 
-    # 
+    #
     efeat_mask, edge_mask = init_masks(sg, edge_feat)
 
     # params = [efeat_mask, edge_mask]
@@ -545,7 +545,11 @@ def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
         # pbar.set_description(f"Explain node {node_id}")
 
     # num_epochs = 100
-    for _ in range(100):
+    print("***********************************")
+    print(efeat_mask)
+    print(edge_mask)
+    print("***********************************")
+    for _ in range(1000):
         optimizer.zero_grad()
         # Matrix multiplication
         h = edge_feat * efeat_mask.sigmoid()
@@ -565,6 +569,11 @@ def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
     # if self.log:
         # pbar.close()
 
+    print("final results before sigmoid : ")
+    print("efeat_mask : ", efeat_mask)
+    print("edge_mask : ", edge_mask)
+    print("***********************************")
+
     efeat_mask = efeat_mask.detach().sigmoid().squeeze()
     edge_mask = edge_mask.detach().sigmoid()
 
@@ -573,7 +582,6 @@ def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
 
 
 inv_indices, sub_graph, efeat_mask, edge_mask = explain_edge(model1, 2, G1_test, node_features_test1, edge_features_test1)
-
 
 print("final results : ")
 print("efeat_mask : ", efeat_mask)
