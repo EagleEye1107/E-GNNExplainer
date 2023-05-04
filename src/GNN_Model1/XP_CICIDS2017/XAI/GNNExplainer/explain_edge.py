@@ -488,20 +488,16 @@ def loss_regularize(loss, feat_mask, edge_mask):
 def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
     model = model.to(graph.device)
     model.eval()
-    num_nodes = graph.num_nodes()
-    num_edges = graph.num_edges()
 
-    print("graph : ", graph)
-    print("graph.nodes() : ", graph.nodes())
-    print("graph.edges() : ", graph.edges())
+    # print("graph : ", graph)
+    # print("graph.nodes() : ", graph.nodes())
+    # print("graph.edges() : ", graph.edges())
 
     # Extract source node-centered k-hop subgraph from the edge_id and its associated node and edge features.
     num_hops = 3
     source_node = th.Tensor.cpu(graph.edges()[0][edge_id]).detach().numpy()
-    print("edge_id : ", edge_id)
     print("source_node : ", source_node)
     sg, inverse_indices = khop_out_subgraph(graph, source_node, num_hops)
-
     print("inverse_indices : ", inverse_indices)
 
     # EID = NID = _ID
@@ -514,12 +510,13 @@ def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
     print("sg_edges : ", sg_edges) # edges ids in graph.edges()
     print("sg_nodes : ", sg_nodes) # nodes ids in graph.nodes()
 
-    print("+++++++++++++++++++++++")
+    print()
     edge_feat = edge_feat[sg_edges]
     node_feat = node_feat[sg_nodes]
 
-    print(edge_feat)
-    print(node_feat)
+    print("edge_feat : ", edge_feat)
+    print("node_feat : ", node_feat)
+    print("+++++++++++++++++++++++")
 
     # Everything id good for now
 
@@ -556,8 +553,9 @@ def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
 
     # num_epochs = 100
     print("***********************************")
-    print(efeat_mask)
-    print(edge_mask)
+    print("initial masks : ")
+    print("efeat_mask : ", efeat_mask)
+    print("edge_mask : ", edge_mask)
     print("***********************************")
     for _ in range(1000):
         optimizer.zero_grad()
@@ -596,3 +594,5 @@ inv_indices, sub_graph, efeat_mask, edge_mask = explain_edge(model1, 2, G1_test,
 print("final results : ")
 print("efeat_mask : ", efeat_mask)
 print("edge_mask : ", edge_mask)
+print("sub_graph : ", sub_graph)
+print("inv_indices : ", inv_indices)
