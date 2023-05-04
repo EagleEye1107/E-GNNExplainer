@@ -495,7 +495,7 @@ def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
     print("source_node : ", source_node)
     edge_h = graph.edata['h'][edge_id]
     sg, inverse_indices = khop_out_subgraph(graph, source_node, num_hops)
-    print("inverse_indices : ", inverse_indices)
+    print("new_node_indice : ", inverse_indices)
 
     print(sg.edges())
     print(edge_h)
@@ -507,6 +507,8 @@ def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
                 # print("edge index is : ", indx)
                 edge_indice = indx
                 break
+    
+    print("new_edge_indice : ", edge_indice)
 
     # EID = NID = _ID
     # tensor([0, 1, 2, 4]) : nodes and edges ids
@@ -597,7 +599,7 @@ def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
 
 
 
-edge_indice, sub_graph, efeat_mask, edge_mask = explain_edge(model1, 2, G1_test, node_features_test1, edge_features_test1)
+edge_indice, sub_graph, efeat_mask, edge_mask = explain_edge(model1, 2001, G1_test, node_features_test1, edge_features_test1)
 
 print("final results : ")
 print("efeat_mask : ", efeat_mask)
