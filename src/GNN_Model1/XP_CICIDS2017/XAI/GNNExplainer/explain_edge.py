@@ -117,11 +117,11 @@ class Model(nn.Module):
             # apply eweight on the graph
             efe = []
             for i, x in enumerate(eweight):
-                efe.append(list(g.edata['h'][i][0].numpy() * x.numpy()))
+                efe.append(list(th.Tensor.cpu(g.edata['h'][i][0]).detach().numpy() * x.numpy()))
 
-            efe = th.FloatTensor(efe)
+            efe = th.FloatTensor(efe).cuda()
             efe = th.reshape(efe, (efe.shape[0], 1, efe.shape[1]))
-            g.edata['h'] = efe
+            g.edata['h'] = efe = efe
 
         h = self.gnn(g, nfeats, efeats)
         # h = list of node features [[node1_feature1, node1_feature2, ...], [node2_feature1, node2_feature2, ...], ...]

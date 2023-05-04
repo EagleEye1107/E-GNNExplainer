@@ -27,6 +27,8 @@ G1.edata['train_mask'] = th.ones(len(G1.edata['h']), dtype=th.bool)
 G1.ndata['h'] = th.reshape(G1.ndata['h'], (G1.ndata['h'].shape[0], 1, G1.ndata['h'].shape[1]))
 G1.edata['h'] = th.reshape(G1.edata['h'], (G1.edata['h'].shape[0], 1, G1.edata['h'].shape[1]))
 
+G1 = G1.to('cuda:0')
+
 
 print(G1)
 print("********************")
@@ -35,9 +37,9 @@ print(G1.edata['h'])
 
 efe = []
 for i, x in enumerate(edge_mask):
-    efe.append(list(G1.edata['h'][i][0].numpy() * x.numpy()))
+    efe.append(list(th.Tensor.cpu(G1.edata['h'][i][0]).detach().numpy() * x.numpy()))
 
-efe = th.FloatTensor(efe)
+efe = th.FloatTensor(efe).cuda()
 efe = th.reshape(efe, (efe.shape[0], 1, efe.shape[1]))
 G1.edata['h'] = efe
 print(G1.edata['h'])
