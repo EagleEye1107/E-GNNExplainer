@@ -533,7 +533,7 @@ def explain_edge(model, edge_id, graph, node_feat, edge_feat, **kwargs):
     print("efeat_mask : ", efeat_mask)
     print("edge_mask : ", edge_mask)
     print("***********************************")
-    for epoch in range(1000):
+    for epoch in range(1,1000):
         if epoch % 100 == 0:
             print(f'epoch number {epoch}')
         optimizer.zero_grad()
