@@ -4,6 +4,25 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
+
+# train an XGBoost model
+X, y = shap.datasets.iris()
+# X having four features and 150 instance
+# y is an array of 3 classes [0, 1, 2]
+model = xgboost.XGBClassifier().fit(X, y)
+
+class_names = [0, 1, 2]
+
+explainer = shap.TreeExplainer(model)
+shap_values = explainer.shap_values(X)
+
+shap.summary_plot(shap_values, X.values, plot_type="bar", class_names= class_names, feature_names = X.columns)
+
+
+
+
+print(Dddddddddddddddddddddddddddd)
+
 # train an XGBoost model
 X, y = shap.datasets.diabetes()
 model = xgboost.XGBRegressor().fit(X, y)
@@ -19,8 +38,11 @@ shap_values = explainer(X)
 # plt.savefig('./notes/SHAP/graficcccc.png')
 
 
+shap.summary_plot(shap_values[1], X.values, feature_names = X.columns)
+shap.summary_plot(shap_values[0], X.values, feature_names = X.columns)
 
 
+print(dddddd)
 
 # def get_ABS_SHAP(df_shap,df):
 #     #import matplotlib as plt

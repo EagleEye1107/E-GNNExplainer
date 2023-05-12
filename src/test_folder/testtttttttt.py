@@ -1,129 +1,81 @@
-import os.path as osp
-
 import pandas as pd
-import torch
-from sentence_transformers import SentenceTransformer
-
-from torch_geometric.data import HeteroData, download_url, extract_zip
-from torch_geometric.transforms import RandomLinkSplit, ToUndirected
-
-url = 'https://files.grouplens.org/datasets/movielens/ml-latest-small.zip'
-root = osp.join(osp.dirname(osp.realpath(__file__)), '../../data/MovieLens')
-extract_zip(download_url(url, root), root)
-movie_path = osp.join(root, 'ml-latest-small', 'movies.csv')
-rating_path = osp.join(root, 'ml-latest-small', 'ratings.csv')
+from sklearn.model_selection import train_test_split
 
 
-def load_node_csv(path, index_col, encoders=None, **kwargs):
-    df = pd.read_csv(path, index_col=index_col, **kwargs)
-    mapping = {index: i for i, index in enumerate(df.index.unique())}
+def func(data22):
+    print("functionnnnnnnnnnnnn")
+    data22[' Source IP'] = src_ip
+    data22[' Destination IP'] = dst_ip
+    data22['label'] = data_labels
 
-    x = None
-    if encoders is not None:
-        xs = [encoder(df[col]) for col, encoder in encoders.items()]
-        x = torch.cat(xs, dim=-1)
+    # samplll = data22.iloc[0:10]
 
-    return x, mapping
-
-
-def load_edge_csv(path, src_index_col, src_mapping, dst_index_col, dst_mapping,
-                  encoders=None, **kwargs):
-    df = pd.read_csv(path, **kwargs)
-
-    src = [src_mapping[index] for index in df[src_index_col]]
-    dst = [dst_mapping[index] for index in df[dst_index_col]]
-    edge_index = torch.tensor([src, dst])
-
-    edge_attr = None
-    if encoders is not None:
-        edge_attrs = [encoder(df[col]) for col, encoder in encoders.items()]
-        edge_attr = torch.cat(edge_attrs, dim=-1)
-
-    return edge_index, edge_attr
+    print(data22.iloc[0:10][[' Source IP', ' Destination IP', 'label']])
 
 
-class SequenceEncoder(object):
-    # The 'SequenceEncoder' encodes raw column strings into embeddings.
-    def __init__(self, model_name='all-MiniLM-L6-v2', device=None):
-        self.device = device
-        self.model = SentenceTransformer(model_name, device=device)
+data1 = pd.read_csv('./input/Dataset/GlobalDataset/Splitted/CIC-IDS-2017-Dataset4.csv', encoding="ISO-8859–1", dtype = str)
+# Delete two columns (U and V in the excel)
+cols = list(set(list(data1.columns )) - set(list(['Flow Bytes/s',' Flow Packets/s'])) )
+data1 = data1[cols]
 
-    @torch.no_grad()
-    def __call__(self, df):
-        x = self.model.encode(df.values, show_progress_bar=True,
-                              convert_to_tensor=True, device=self.device)
-        return x.cpu()
+# Mise en forme des noeuds
+data1[' Source IP'] = data1[' Source IP'].apply(str)
+data1[' Source Port'] = data1[' Source Port'].apply(str)
+data1[' Destination IP'] = data1[' Destination IP'].apply(str)
+data1[' Destination Port'] = data1[' Destination Port'].apply(str)
+data1[' Source IP'] = data1[' Source IP'] + ':' + data1[' Source Port']
+data1[' Destination IP'] = data1[' Destination IP'] + ':' + data1[' Destination Port']
 
+data1.drop(columns=['Flow ID',' Source Port',' Destination Port',' Timestamp'], inplace=True)
 
-class GenresEncoder(object):
-    # The 'GenreEncoder' splits the raw column strings by 'sep' and converts
-    # individual elements to categorical labels.
-    def __init__(self, sep='|'):
-        self.sep = sep
+# -------------------- ????????????????????????????????????????? --------------------
+# simply do : nom = list(data1[' Label'].unique())
+nom = []
+nom = nom + [data1[' Label'].unique()[0]]
+for i in range(1, len(data1[' Label'].unique())):
+    nom = nom + [data1[' Label'].unique()[i]]
 
-    def __call__(self, df):
-        genres = set(g for col in df.values for g in col.split(self.sep))
-        mapping = {genre: i for i, genre in enumerate(genres)}
+nom.insert(0, nom.pop(nom.index('BENIGN')))
 
-        x = torch.zeros(len(df), len(mapping))
-        for i, col in enumerate(df.values):
-            for genre in col.split(self.sep):
-                x[i, mapping[genre]] = 1
-        return x
+# Naming the two classes BENIGN {0} / Any Intrusion {1}
+data1[' Label'].replace(nom[0], 0,inplace = True)
+for i in range(1,len(data1[' Label'].unique())):
+    data1[' Label'].replace(nom[i], 1,inplace = True)
 
+##################### LABELS FREQ #######################################
+print()
+# print("labels freq after changing labels to binary")
+counts = list(data1[' Label'].value_counts().to_dict().items())
+for j, x in enumerate(counts):
+    x = list(x)
+    x[1] = x[1] / len(data1)
+    counts[j] = x
+##############################################################################
 
-class IdentityEncoder(object):
-    # The 'IdentityEncoder' takes the raw column values and converts them to
-    # PyTorch tensors.
-    def __init__(self, dtype=None):
-        self.dtype = dtype
+data1.rename(columns={" Label": "label"},inplace = True)
+label1 = data1.label
+data1.drop(columns=['label'],inplace = True)
 
-    def __call__(self, df):
-        return torch.from_numpy(df.values).view(-1, 1).to(self.dtype)
+# ******** At this step data1 contains only the data without label column
+# ******** The label column is stored in the label variale
 
+# split train and test
+data1 =  pd.concat([data1, label1], axis=1) # ??????? WHY ?
 
-
-
-
-####################################################################################
-
-
-user_x, user_mapping = load_node_csv(rating_path, index_col='userId')
-
-movie_x, movie_mapping = load_node_csv(
-    movie_path, index_col='movieId', encoders={
-        'title': SequenceEncoder(),
-        'genres': GenresEncoder()
-    })
-
-edge_index, edge_label = load_edge_csv(
-    rating_path,
-    src_index_col='userId',
-    src_mapping=user_mapping,
-    dst_index_col='movieId',
-    dst_mapping=movie_mapping,
-    encoders={'rating': IdentityEncoder(dtype=torch.long)},
-)
+# -------------------- ????????????????????????????????????????? --------------------
+# X will contain the label column due to the concatination made earlier !!
+X1_train, X1_test, y1_train, y1_test = train_test_split(data1, label1, test_size=0.3, random_state=123, stratify= label1)
 
 
-data = HeteroData()
-data['user'].num_nodes = len(user_mapping)  # Users do not have any features.
-data['movie'].x = movie_x
-data['user', 'rates', 'movie'].edge_index = edge_index
-data['user', 'rates', 'movie'].edge_label = edge_label
+print(X1_test.iloc[0:10][[' Source IP', ' Destination IP', 'label']])
+print("=========================================================================")
+# modifs
+src_ip = X1_test[' Source IP']
+dst_ip = X1_test[' Destination IP']
+data_labels = X1_test['label']
 
-print(data)
+columnss = list(set(list(X1_test.iloc[:, :].columns )) - set(list([' Source IP', ' Destination IP', 'label'])))
 
-# We can now convert `data` into an appropriate format for training a
-# graph-based machine learning model:
+X1_test = X1_test[columnss]
 
-# 1. Add a reverse ('movie', 'rev_rates', 'user') relation for message passing.
-data = ToUndirected()(data)
-
-print("+++++++++++++")
-print(data)
-del data['movie', 'rev_rates', 'user'].edge_label  # Remove "reverse" label.
-
-
-print("+++++++++++++")
-print(data)
+func(X1_test)

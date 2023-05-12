@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-X_test = pd.read_csv('./src/GNN_Model1/XP_CICIDS2017/XAI/SHAP_SAVED/Test.csv', encoding="ISO-8859–1", dtype = str)
+X_test = pd.read_csv('./src/GNN_Model1/XP_CICIDS2017/XAI/SHAP_SAVED/Test_all.csv', encoding="ISO-8859–1", dtype = str)
 X_test = X_test.apply(pd.to_numeric)
 X_test = X_test.astype(float)
 
@@ -13,31 +13,27 @@ X_test = X_test.astype(float)
 
 
 # filename_expl = './src/GNN_Model1/XP_CICIDS2017/XAI/SHAP_SAVED/GNN_SHAP_explainer.sav'
-filename = './src/GNN_Model1/XP_CICIDS2017/XAI/SHAP_SAVED/GNN_SHAP_shapvalues.sav'
+filename = './src/GNN_Model1/XP_CICIDS2017/XAI/SHAP_SAVED/GNN_SHAP_shapvalues_all.sav'
 
 
 # load_explainer = pickle.load(open(filename_expl, 'rb'))
 # print(load_explainer)
 load_shap_values = pickle.load(open(filename, 'rb'))
 print(load_shap_values)
-
 print(type(load_shap_values))
 
-print("********")
-print(len(load_shap_values))
+# shap.summary_plot(load_shap_values, X_test, plot_type="bar")
 
-print("+++++++++++")
-print(len(load_shap_values.values))
+shap.summary_plot(load_shap_values[1], X_test.values, feature_names = X_test.columns)
+shap.summary_plot(load_shap_values[0], X_test.values, feature_names = X_test.columns)
 
-print("+++++++++++")
-print(len(load_shap_values.base_values))
+# shap.plots.bar(load_shap_values[:,:, 0])
 
-print("+++++++++++")
-print(len(load_shap_values.data[0]))
-
-print("+++++++++++")
-print(len(load_shap_values[0]))
-
+# print(len(load_shap_values.values))
+# print(len(load_shap_values.values[0]))
+print(ddddd)
+# print(len(load_shap_values.base_values))
+# print(len(load_shap_values.data))
 
 # shap.plots.waterfall(load_shap_values[0], max_display=X_test.shape[1]+10)
 # shap.summary_plot(load_shap_values, X_test, show = False, max_display=X_test.shape[1])
@@ -57,6 +53,8 @@ shap.plots.scatter(load_shap_values[:," Flow IAT Std"])
 
 # visualize all the training set predictions
 # shap.plots.force(load_shap_values.base_values, load_shap_values)
+
+print(ddd)
 
 
 def get_ABS_SHAP(df_shap, df):
