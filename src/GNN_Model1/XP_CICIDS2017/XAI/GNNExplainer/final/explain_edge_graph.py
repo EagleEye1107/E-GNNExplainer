@@ -535,10 +535,6 @@ def explain_edge_features(model, graph, node_feat, edge_feat, **kwargs):
         loss.backward()
         optimizer.step()
 
-    print("final results before sigmoid : ")
-    print("efeat_mask : ", efeat_mask)
-    print("***********************************")
-
     efeat_mask = efeat_mask.detach().sigmoid().squeeze()
 
     return efeat_mask
@@ -619,10 +615,6 @@ def explain_edges(model, graph, node_feat, edge_feat, **kwargs):
         loss.backward()
         optimizer.step()
 
-    print("final results before sigmoid : ")
-    print("edge_mask : ", edge_mask)
-    print("***********************************")
-
     edge_mask = edge_mask.detach().sigmoid()
 
     return edge_mask
@@ -633,11 +625,11 @@ def explain_edges(model, graph, node_feat, edge_feat, **kwargs):
 
 
 
-efeat_mask = explain_edge_features(model1, G1_test, node_features_test1, edge_features_test1)
+# efeat_mask = explain_edge_features(model1, G1_test, node_features_test1, edge_features_test1)
 edge_mask = explain_edges(model1, G1_test, node_features_test1, edge_features_test1)
 
 print()
 print("final results : ")
 print("sub_graph : ", G1_test)
-print("efeat_mask : ", efeat_mask)
+# print("efeat_mask : ", efeat_mask)
 print("edge_mask : ", edge_mask)
