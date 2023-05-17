@@ -635,3 +635,35 @@ print("nb edges : ", G1_test.num_edges())
 print("nb nodes : ", G1_test.num_nodes())
 print("efeat_mask : ", efeat_mask)
 print("edge_mask : ", edge_mask)
+
+
+xai_results = pd.DataFrame(columns =  ["Edge_ID", "Edge_label", "Edge_weight"])
+for i, x in enumerate(edge_mask):
+    xai_results.loc[-1] = [i, G1_test.edata['label'][i], x]  # adding a row
+    xai_results.index = xai_results.index + 1  # shifting index
+    xai_results = xai_results.sort_index()  # sorting by index
+
+
+print("xai_results :", xai_results)
+
+import matplotlib.pyplot as plt
+
+# intrusions
+intrusions = xai_results.loc[xai_results['Edge_label'] == 1]
+intrusions_x_points = np.array(intrusions["Edge_ID"])
+intrusions_y_points = np.array(intrusions["Edge_weight"])
+
+# benign
+benign = xai_results.loc[xai_results['Edge_label'] == 0]
+benign_x_points = np.array(benign["Edge_ID"])
+benign_y_points = np.array(benign["Edge_weight"])
+
+
+# plot
+plt.ylabel("weights")
+plt.xlabel("edge_ids")
+plt.scatter(intrusions_x_points, intrusions_y_points, label = 'intrusions', color = "r", marker = 'o')
+plt.scatter(benign_x_points, benign_y_points, label = 'benign', color = "g", marker = 'o')
+plt.legend()
+
+plt.savefig('./notes/edges.png')

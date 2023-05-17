@@ -28,6 +28,9 @@ from dgl.data.utils import save_graphs
 import shap
 import matplotlib.pyplot as plt
 
+import warnings
+warnings.filterwarnings("ignore")
+
 #constante
 size_embedding = 152
 nb_batch = 1
