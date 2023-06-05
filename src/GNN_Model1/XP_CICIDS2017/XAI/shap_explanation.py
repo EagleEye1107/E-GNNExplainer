@@ -36,6 +36,15 @@ load_shap_values = pickle.load(open(filename, 'rb'))
 # shap.summary_plot(load_shap_values[benign_indx], feature_names = X_test.columns, show = False, max_display=X_test.shape[1])
 # plt.savefig('./notes/SHAP/summary_benign.png')
 
+
+# feature_order = np.abs(load_shap_values[attack_indx].values)
+
+# feature_order = np.sum(np.abs(load_shap_values[attack_indx]), axis=0)
+feature_order = np.argsort(np.sum(np.abs(load_shap_values[attack_indx].values), axis=0))
+print([X_test.columns[i] for i in feature_order][::-1])
+
+print(dddddddddddddddddddddddd)
+
 # attacks scatters
 shap.plots.scatter(load_shap_values[attack_indx," Bwd Packets/s"], show = False)
 plt.savefig('./notes/SHAP/attacks_scatter/scatter1_attacks.png')

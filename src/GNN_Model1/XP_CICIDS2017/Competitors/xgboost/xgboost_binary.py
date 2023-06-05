@@ -110,3 +110,13 @@ for nb_files in range(file_count):
     print("f1_score : ", sklearn.metrics.f1_score(y1_test, y_pred, labels = [0,1]))
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
+
+
+# SHAP
+import shap
+
+
+explainer = shap.TreeExplainer(model)
+shap_values = explainer.shap_values(X1_test)
+
+shap.summary_plot(shap_values, feature_names = X1_test.columns, show = False, max_display=X1_test.shape[1])
