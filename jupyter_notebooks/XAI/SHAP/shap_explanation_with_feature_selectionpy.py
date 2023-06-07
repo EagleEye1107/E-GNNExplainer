@@ -4,7 +4,7 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 
-
+'''
 X_test = pd.read_csv('/home/ahmed/GNN-Based-ANIDS/GNN-Based-ANIDS/src/GNN_Model1/XP_CICIDS2017/XAI/SHAP_SAVED/Test_all.csv', encoding="ISO-8859–1", dtype = str)
 X_test = X_test.apply(pd.to_numeric)
 X_test = X_test.astype(float)
@@ -41,7 +41,7 @@ feature_order_benign = np.argsort(np.sum(np.abs(load_shap_values[benign_indx].va
 feature_order_benign = [X_test.columns[i] for i in feature_order_benign][::-1]
 print(feature_order_benign)
 
-feature_selection_rate = 1
+feature_selection_rate = 0.5
 
 important_features = ['label', ' Source IP', ' Destination IP']
 feature_order_attack = [x for x in feature_order_attack if x not in important_features]
@@ -58,6 +58,108 @@ print("len(least_important) =", len(least_important))
 
 sizeh = 76 - len(least_important)
 print("sizeh =", sizeh)
+'''
+
+# Feature selection with selectKbest
+import pandas as pd
+import numpy as np
+import os
+
+path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
+file_count = len(files)
+
+data1 = pd.DataFrame()
+for nb_files in range(file_count):
+    datag = pd.read_csv(f'{path}{files[nb_files]}', encoding="ISO-8859–1", dtype = str)
+    data1 = pd.concat([data1, datag], ignore_index = True)
+
+
+print("nb total instances in the file : ", len(data1.values))
+# Delete two columns (U and V in the excel)
+cols = list(set(list(data1.columns )) - set(list(['Flow Bytes/s',' Flow Packets/s'])) )
+data1 = data1[cols]
+# Mise en forme des noeuds
+data1[' Source IP'] = data1[' Source IP'].apply(str)
+data1[' Source Port'] = data1[' Source Port'].apply(str)
+data1[' Destination IP'] = data1[' Destination IP'].apply(str)
+data1[' Destination Port'] = data1[' Destination Port'].apply(str)
+data1[' Source IP'] = data1[' Source IP'] + ':' + data1[' Source Port']
+data1[' Destination IP'] = data1[' Destination IP'] + ':' + data1[' Destination Port']
+data1.drop(columns=['Flow ID',' Source Port',' Destination Port',' Timestamp'], inplace=True)
+
+# -------------------- ????????????????????????????????????????? --------------------
+# simply do : nom = list(data1[' Label'].unique())
+nom = []
+nom = nom + [data1[' Label'].unique()[0]]
+for i in range(1, len(data1[' Label'].unique())):
+    nom = nom + [data1[' Label'].unique()[i]]
+
+nom.insert(0, nom.pop(nom.index('BENIGN')))
+
+# Naming the two classes BENIGN {0} / Any Intrusion {1}
+data1[' Label'].replace(nom[0], 0,inplace = True)
+for i in range(1,len(data1[' Label'].unique())):
+    data1[' Label'].replace(nom[i], 1,inplace = True)
+
+data1.rename(columns={" Label": "label"},inplace = True)
+label1 = data1.label
+data1.drop(columns=['label'],inplace = True)
+
+cols = list(set(list(data1.columns )) - set(list([' Source IP', ' Destination IP'])) )
+data1 = data1[cols]
+
+##########
+import category_encoders as ce
+from sklearn.preprocessing import StandardScaler
+encoder1 = ce.TargetEncoder(cols=[' Protocol',  'Fwd PSH Flags', ' Fwd URG Flags', ' Bwd PSH Flags', ' Bwd URG Flags'])
+encoder1.fit(data1, label1)
+data1 = encoder1.transform(data1)
+
+scaler1 = StandardScaler()
+cols_to_norm1 = list(set(list(data1.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])) )
+data1[cols_to_norm1] = scaler1.fit_transform(data1[cols_to_norm1])
+##########
+
+
+X = data1.values
+Y = label1.values
+
+
+# Import the necessary libraries first
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import mutual_info_classif
+from sklearn.feature_selection import chi2
+
+
+# Feature extraction
+nb_features_to_select = 35
+test = SelectKBest(score_func = mutual_info_classif, k = nb_features_to_select)
+fit = test.fit(X, Y)
+
+# Summarize scores
+np.set_printoptions(precision = 3)
+print(fit.scores_)
+
+val = fit.scores_
+
+feature_indx = []
+for i in range(nb_features_to_select):
+    f_indx = np.argmax(val)
+    feature_indx.append(f_indx)
+    val[f_indx] = float('-inf')
+
+# print(feature_indx)
+# print(data1.columns[feature_indx])
+# print(len(data1.columns[feature_indx]))
+
+important_features = [' Label', ' Source IP', ' Destination IP', 'Flow ID',' Source Port',' Destination Port',' Timestamp', 'Flow Bytes/s',' Flow Packets/s']
+final_features = list(set(list(data1.columns[feature_indx]))) + list(set(list(important_features)))
+
+# print(final_features)
+# print(len(final_features))
+
+
+
 
 # E-GraphSAGE
 from dgl import from_networkx
@@ -81,6 +183,8 @@ from dgl.data.utils import save_graphs
 
 import shap
 import matplotlib.pyplot as plt
+
+import copy
 
 #constante
 size_embedding = 152
@@ -159,13 +263,14 @@ class MLPPredictor(nn.Module):
 
 class GPreprocessing():
     def __init__(self):
-        self.encoder_cols = [x for x in [' Protocol',  'Fwd PSH Flags', ' Fwd URG Flags', ' Bwd PSH Flags', ' Bwd URG Flags'] if x not in least_important]
+        self.encoder_cols = [x for x in [' Protocol',  'Fwd PSH Flags', ' Fwd URG Flags', ' Bwd PSH Flags', ' Bwd URG Flags'] if x in final_features]
         if (len(self.encoder_cols) != 0):
             self.encoder1 = ce.TargetEncoder(cols = self.encoder_cols)
         self.scaler1 = StandardScaler()
         super().__init__()
 
-    def train(self, data1):
+    def train(self, data2):
+        data1 = copy.deepcopy(data2)
         # Preprocessing and creation of the h attribute
         label1 = data1['label']
         if (len(self.encoder_cols) != 0):
@@ -193,7 +298,8 @@ class GPreprocessing():
         G1.edata['h'] = th.reshape(G1.edata['h'], (G1.edata['h'].shape[0], 1, G1.edata['h'].shape[1]))
         return G1
 
-    def test(self, data1):
+    def test(self, data2):
+        data1 = copy.deepcopy(data2)
         if (len(self.encoder_cols) != 0):
             data1 = self.encoder1.transform(data1)
         cols_to_norm1 = list(set(list(data1.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])) )
@@ -213,7 +319,8 @@ class GPreprocessing():
         G1_test.edata['h'] = th.reshape(G1_test.edata['h'], (G1_test.edata['h'].shape[0], 1, G1_test.edata['h'].shape[1]))
         return G1_test
 
-    def test_xai(self, data1):
+    def test_xai(self, data2):
+        data1 = copy.deepcopy(data2)
         cols_to_norm1 = list(set(list(data1.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])) )
         data1['h'] = data1[ cols_to_norm1 ].values.tolist()
         data1.drop(columns = cols_to_norm1, inplace = True)
@@ -330,6 +437,7 @@ nbclasses =  2
 # G1.ndata['h'].shape[2] = sizeh = 76 dans ANIDS
 # model1 = Model(G1.ndata['h'].shape[2], size_embedding, G1.ndata['h'].shape[2], F.relu, 0.2).cuda()
 
+sizeh = 35
 print("sizeh =", sizeh)
 
 model1 = Model(sizeh, size_embedding, sizeh, F.relu, 0.2).cuda()
@@ -347,13 +455,19 @@ for nb_files in range(file_count):
 
     print("++++++++++++++++++++++++++++ Train ++++++++++++++++++++++++++++++++")
 
+    # Feature Selection with SelectKBest
+    data1 = data1[final_features]
+    print("len of data1 =", len(data1))
+
     # Delete two columns (U and V in the excel)
     cols = list(set(list(data1.columns )) - set(list(['Flow Bytes/s',' Flow Packets/s'])) )
     data1 = data1[cols]
     
     # Feature Selection +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    cols = list(set(list(data1.columns )) - set(least_important))
-    data1 = data1[cols]
+    # cols = list(set(list(data1.columns )) - set(least_important))
+    # data1 = data1[cols]
+    # print(len(cols))
+    # print(len(data1.columns))
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     # Mise en forme des noeuds
@@ -419,6 +533,9 @@ for nb_files in range(file_count):
         y1_train_batched = X1_train_batched['label']
 
         pred1, edge_label1 = model1.train(X1_train_batched, 1000)
+        print("######################################################")
+        print(len(X1_train_batched.columns))
+        print("######################################################")
 
         print('Train metrics :')
         print("Accuracy : ", sklearn.metrics.accuracy_score(edge_label1, pred1))
@@ -431,6 +548,9 @@ for nb_files in range(file_count):
     print("nb Test instances : ", len(X1_test.values))
 
     test_pred1, actual1 = model1.predict(X1_test)
+    print("######################################################")
+    print(len(X1_test.columns))
+    print("######################################################")
     print(test_pred1)
     print(len(test_pred1))
     print(len(actual1))
@@ -444,13 +564,17 @@ for nb_files in range(file_count):
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
 
+
 # SHAP
 X1_test1 = X1_test.loc[X1_test['label'] == 1].iloc[0:2500]
 X1_test0 = X1_test.loc[X1_test['label'] == 0].iloc[0:2500]
 X1_test = pd.concat([X1_test1, X1_test0], ignore_index = True)
 
 
-X1_train_batched = X1_train_batched.iloc[0:5000]
+X1_train_batched1 = X1_train_batched.loc[X1_train_batched['label'] == 1].iloc[0:5]
+X1_train_batched0 = X1_train_batched.loc[X1_train_batched['label'] == 0].iloc[0:5]
+X1_train_batched = pd.concat([X1_train_batched1, X1_train_batched0], ignore_index = True)
+# X1_train_batched = X1_train_batched.iloc[0:100]
 y1_train_batched = X1_train_batched['label']
 
 print(X1_test)
@@ -502,6 +626,11 @@ print()
 
 cols_to_norm1 = list(set(list(data1.iloc[:, :].columns )) - set(list([' Source IP', ' Destination IP'])))
 
+
+print(len(X1_train_batched.columns))
+print(len(X1_test.columns))
+
+
 X1_train_batched[cols_to_norm1] = X1_train_batched[cols_to_norm1].apply(pd.to_numeric)
 X1_train_batched[cols_to_norm1] = X1_train_batched[cols_to_norm1].astype(float)
 X1_test[cols_to_norm1] = X1_test[cols_to_norm1].apply(pd.to_numeric)
@@ -523,7 +652,7 @@ X1_test.to_csv(f'/home/ahmed/GNN-Based-ANIDS/GNN-Based-ANIDS/src/GNN_Model1/XP_C
 # *************************************************************************************************************************************
 
 # Preprocessing and creation of the h attribute
-encoder1 = ce.TargetEncoder(cols=[' Protocol',  'Fwd PSH Flags', ' Fwd URG Flags', ' Bwd PSH Flags', ' Bwd URG Flags'])
+encoder1 = ce.TargetEncoder(cols = [x for x in [' Protocol',  'Fwd PSH Flags', ' Fwd URG Flags', ' Bwd PSH Flags', ' Bwd URG Flags'] if x in final_features])
 encoder1.fit(X1_train_batched, y1_train_batched)
 X1_train_batched = encoder1.transform(X1_train_batched)
 # scaler (normalization)
@@ -546,7 +675,7 @@ X1_test[cols_to_norm1] = scaler1.transform(X1_test[cols_to_norm1])
 
 general_cols = X1_test.columns
 
-explainer = shap.KernelExplainer(model1.xai_predict, X1_train_batched, link = "identity")
+explainer = shap.KernelExplainer(model1.xai_predict, X1_train_batched)
 shap_values = explainer.shap_values(X1_test)
 
 

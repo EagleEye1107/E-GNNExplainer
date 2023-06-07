@@ -41,7 +41,7 @@ feature_order_benign = np.argsort(np.sum(np.abs(load_shap_values[benign_indx].va
 feature_order_benign = [X_test.columns[i] for i in feature_order_benign][::-1]
 print(feature_order_benign)
 
-feature_selection_rate = 1
+feature_selection_rate = 0.5
 
 important_features = ['label', ' Source IP', ' Destination IP']
 feature_order_attack = [x for x in feature_order_attack if x not in important_features]
@@ -81,6 +81,8 @@ from dgl.data.utils import save_graphs
 
 import shap
 import matplotlib.pyplot as plt
+
+import copy
 
 #constante
 size_embedding = 152
@@ -165,7 +167,8 @@ class GPreprocessing():
         self.scaler1 = StandardScaler()
         super().__init__()
 
-    def train(self, data1):
+    def train(self, data2):
+        data1 = copy.deepcopy(data2)
         # Preprocessing and creation of the h attribute
         label1 = data1['label']
         if (len(self.encoder_cols) != 0):
@@ -193,7 +196,8 @@ class GPreprocessing():
         G1.edata['h'] = th.reshape(G1.edata['h'], (G1.edata['h'].shape[0], 1, G1.edata['h'].shape[1]))
         return G1
 
-    def test(self, data1):
+    def test(self, data2):
+        data1 = copy.deepcopy(data2)
         if (len(self.encoder_cols) != 0):
             data1 = self.encoder1.transform(data1)
         cols_to_norm1 = list(set(list(data1.iloc[:, :].columns )) - set(list(['label', ' Source IP', ' Destination IP'])) )
@@ -414,13 +418,19 @@ for nb_files in range(file_count):
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
 
+
+
+
 # SHAP
 X1_test1 = X1_test.loc[X1_test['label'] == 1].iloc[0:2500]
 X1_test0 = X1_test.loc[X1_test['label'] == 0].iloc[0:2500]
 X1_test = pd.concat([X1_test1, X1_test0], ignore_index = True)
 
 
-X1_train_batched = X1_train_batched.iloc[0:5000]
+X1_train_batched1 = X1_train_batched.loc[X1_train_batched['label'] == 1].iloc[0:2500]
+X1_train_batched0 = X1_train_batched.loc[X1_train_batched['label'] == 0].iloc[0:2500]
+X1_train_batched = pd.concat([X1_train_batched1, X1_train_batched0], ignore_index = True)
+# X1_train_batched = X1_train_batched.iloc[0:5000]
 
 print(X1_test)
 print(list(set(list(X1_test.columns))))
@@ -485,19 +495,25 @@ print(X1_test.dtypes.to_string())
 print("----------")
 print(len(X1_test.columns))
 
-X1_test.to_csv(f'/home/ahmed/GNN-Based-ANIDS/GNN-Based-ANIDS/src/GNN_Model1/XP_CICIDS2017/XAI/SHAP_SAVED/Test_shap_feature_selection5000_x_train.csv', sep=',', index = False)
+X1_test.to_csv(f'/home/ahmed/GNN-Based-ANIDS/GNN-Based-ANIDS/src/GNN_Model1/XP_CICIDS2017/XAI/SHAP_SAVED/Test_shap_feature_selection_5000edge_50percentfeatures.csv', sep=',', index = False)
 
+
+print("######################################################")
+print(len(X1_train_batched.columns))
+print(len(X1_test.columns))
+print("######################################################")
 
 
 
 # XAI ######################
+# explainer = shap.Explainer(model1.xai_predict, X1_train_batched, algorithm = "linear")
 explainer = shap.Explainer(model1.xai_predict, X1_train_batched)
 shap_values = explainer(X1_test)
 
 import pickle
-filename_expl = '/home/ahmed/GNN-Based-ANIDS/GNN-Based-ANIDS/src/GNN_Model1/XP_CICIDS2017/XAI/SHAP_SAVED/GNN_SHAP_explainer_shap_feature_selection5000_x_train.sav'
+filename_expl = '/home/ahmed/GNN-Based-ANIDS/GNN-Based-ANIDS/src/GNN_Model1/XP_CICIDS2017/XAI/SHAP_SAVED/GNN_SHAP_explainer_shap_feature_selection_5000edge_50percentfeatures.sav'
 pickle.dump(explainer, open(filename_expl, 'wb'))
-filename = '/home/ahmed/GNN-Based-ANIDS/GNN-Based-ANIDS/src/GNN_Model1/XP_CICIDS2017/XAI/SHAP_SAVED/GNN_SHAP_shapvalues_shap_feature_selection5000_x_train.sav'
+filename = '/home/ahmed/GNN-Based-ANIDS/GNN-Based-ANIDS/src/GNN_Model1/XP_CICIDS2017/XAI/SHAP_SAVED/GNN_SHAP_shapvalues_shap_feature_selection_5000edge_50percentfeatures.sav'
 pickle.dump(shap_values, open(filename, 'wb'))
 
 print("explainer saved with pickle successfully")
