@@ -1,8 +1,6 @@
 import pandas as pd
 import os
 
-# path, dirs, files = next(os.walk("./input/Dataset/MachineLearningCVE/"))
-# path, dirs, files = next(os.walk("./input/Dataset/TrafficLabelling/"))
 path, dirs, files = next(os.walk("./input/Dataset/GlobalDataset/Splitted/"))
 file_count = len(files)
 

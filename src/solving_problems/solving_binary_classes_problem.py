@@ -1,12 +1,3 @@
-''''
-    This version of GNN1 is similar to the original,
-    The only difference is that the test will be done after training on each dataset file
-    So we will have 7 test phaes (Train1 -> Test1 -> Train2 -> Test2 ...etc.)
-'''
-
-
-
-import csv
 # import dgl.nn as dglnn
 from dgl import from_networkx
 import sklearn
